@@ -43,29 +43,21 @@ export default function Contact() {
   ];
 
   return (
-    <section id="contact" className="py-20 px-4 sm:px-6 lg:px-8 relative">
-      <div className="absolute inset-0 opacity-5" style={{
-        backgroundImage: `
-          linear-gradient(rgba(59, 130, 246, 0.1) 1px, transparent 1px),
-          linear-gradient(90deg, rgba(59, 130, 246, 0.1) 1px, transparent 1px)
-        `,
-        backgroundSize: '35px 35px'
-      }}></div>
-
-      <div className="max-w-5xl mx-auto relative z-10">
-        <div className="text-center mb-12">
-          <h2 className="text-4xl sm:text-5xl font-heading font-bold mb-4 glow-text-cyan" data-testid="text-contact-title">
+    <section id="contact" className="py-20 px-4 sm:px-6 lg:px-8 border-t border-border">
+      <div className="max-w-5xl mx-auto">
+        <div className="text-center mb-16">
+          <h2 className="text-4xl sm:text-5xl font-heading font-bold mb-4" data-testid="text-contact-title">
             Get In Touch
           </h2>
-          <div className="w-20 h-1 gradient-primary mx-auto rounded-full"></div>
-          <p className="text-muted-foreground mt-4 max-w-2xl mx-auto">
+          <div className="w-20 h-1 bg-foreground mx-auto"></div>
+          <p className="text-muted-foreground mt-6 max-w-2xl mx-auto">
             Let's collaborate on exciting AI projects or discuss opportunities in machine learning
           </p>
         </div>
 
         <div className="grid lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2">
-            <Card className="glassmorphism">
+            <Card className="border border-border">
               <CardHeader>
                 <CardTitle className="text-2xl font-heading">Send a Message</CardTitle>
                 <CardDescription>Fill out the form below and I'll get back to you soon</CardDescription>
@@ -126,7 +118,7 @@ export default function Contact() {
                   <Button
                     type="submit"
                     size="lg"
-                    className="w-full gradient-primary glow-border-primary"
+                    className="w-full"
                     data-testid="button-submit"
                   >
                     <Send className="w-4 h-4 mr-2" />
@@ -138,7 +130,7 @@ export default function Contact() {
           </div>
 
           <div className="space-y-4">
-            <Card className="glassmorphism">
+            <Card className="border border-border">
               <CardHeader>
                 <CardTitle className="text-xl font-heading">Contact Info</CardTitle>
                 <CardDescription>Connect with me through these channels</CardDescription>
@@ -148,12 +140,12 @@ export default function Contact() {
                   <a
                     key={index}
                     href={method.link}
-                    className="flex items-start gap-3 p-3 rounded-md hover-elevate active-elevate-2 transition-all group"
+                    className="flex items-start gap-3 p-3 border border-border rounded-md hover-elevate active-elevate-2 transition-all group"
                     target="_blank"
                     rel="noopener noreferrer"
                     data-testid={`link-contact-${index}`}
                   >
-                    <method.icon className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
+                    <method.icon className="w-5 h-5 mt-0.5 flex-shrink-0" />
                     <div className="flex-1 min-w-0">
                       <div className="text-sm font-medium">{method.label}</div>
                       <div className="text-xs text-muted-foreground truncate">{method.value}</div>
@@ -163,7 +155,7 @@ export default function Contact() {
               </CardContent>
             </Card>
 
-            <Card className="glassmorphism bg-gradient-to-br from-primary/10 to-purple-500/10">
+            <Card className="border border-border">
               <CardContent className="p-6">
                 <p className="text-sm text-muted-foreground leading-relaxed">
                   Open to freelance opportunities, collaborations, and full-time positions in AI/ML engineering.
@@ -174,7 +166,7 @@ export default function Contact() {
         </div>
       </div>
 
-      <div className="text-center mt-16 pt-8 border-t border-border/20">
+      <div className="text-center mt-16 pt-8 border-t border-border">
         <p className="text-sm text-muted-foreground">
           © 2024 AI/ML Portfolio. Built with passion for artificial intelligence.
         </p>

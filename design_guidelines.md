@@ -1,13 +1,13 @@
 # AI/ML Portfolio Design Guidelines
 
 ## Design Approach
-**Reference-Based Approach**: Drawing inspiration from futuristic tech portfolios and AI/ML showcases with emphasis on modern UI patterns, tech aesthetics, and immersive experiences.
+**Professional Minimalism**: Clean, modern portfolio design with focus on content and readability. Black and white color scheme for maximum professionalism and recruiter appeal.
 
 ## Core Design Principles
-- **High-tech Futurism**: Sleek, polished, cutting-edge visual language
-- **Immersive Experience**: Smooth transitions, subtle animations, engaging interactions
-- **Professional Polish**: Clean typography, consistent spacing, cohesive aesthetic
-- **Tech-Inspired Visual Identity**: AI-themed elements, geometric patterns, glowing accents
+- **Professional Excellence**: Clean, sophisticated, business-appropriate design
+- **Clarity First**: Clear hierarchy, excellent readability, focus on content
+- **Minimal & Elegant**: Simple aesthetics, purposeful whitespace, refined interactions
+- **Recruiter-Friendly**: Easy navigation, scannable content, professional presentation
 
 ## Typography System
 - **Headings**: Modern sans-serif (e.g., Inter, Space Grotesk), bold weights (700-800) for impact
@@ -66,44 +66,44 @@
 
 ## Visual Treatment
 
-### Color Guidelines (Tech-Inspired Palette)
-- Deep blues, purples, cyans as primary
-- Neon accents for highlights and glows
-- Dark backgrounds with gradient overlays
-- High contrast for readability
+### Color Guidelines (Professional B&W Palette)
+- Pure black (#000000) for text and accents
+- Pure white (#FFFFFF) for backgrounds
+- Grayscale range (gray-50 to gray-900) for hierarchy
+- High contrast for excellent readability
 
-### Glassmorphism Effects
-- Frosted glass appearance on cards and navigation
-- Backdrop blur filter
-- Subtle borders with transparency
-- Light background with low opacity
+### Visual Treatment
+- Clean borders, no glassmorphism
+- Solid backgrounds, no gradients
+- Sharp, professional aesthetics
+- Crisp lines and defined sections
 
-### Gradient Usage
-- Smooth color transitions in backgrounds
-- Animated or shifting gradients in hero
-- Accent gradients on buttons and cards
-- Consistent gradient direction throughout
+### Typography Emphasis
+- Strong typographic hierarchy
+- Bold headings for impact
+- Clear distinction between content levels
+- Professional font pairing
 
-### Glowing Accents
-- Soft glows on headings and key elements
-- Neon-style borders on hover states
-- Subtle shadow effects with colored tints
-- Button and card edge lighting
+### Minimal Decorative Elements
+- Simple geometric accents (lines, rectangles)
+- No particle effects or animations
+- Clean dividers between sections
+- Professional underlines and borders
 
-### Tech-Inspired Elements
-- Grid patterns in backgrounds
-- Geometric shapes and lines as decorative elements
-- Particle effects (subtle, non-distracting)
-- Circuit-board style connectors or patterns
+### Professional Polish
+- Subtle shadows for depth (gray-based)
+- Clean hover states (simple background changes)
+- No glowing effects
+- Refined, business-appropriate interactions
 
 ## Animation Strategy
-**Principle**: Subtle and purposeful, enhancing without overwhelming
+**Principle**: Minimal and professional, enhancing usability without distraction
 
-- **Scroll Animations**: Fade-in, slide-up effects using Intersection Observer
-- **Hover Interactions**: Lift, glow, scale effects on cards
-- **Continuous Animations**: Floating elements, gradient shifts (very subtle)
-- **Smooth Scroll**: Between sections for seamless navigation
-- **Loading Transitions**: Staggered entry animations for section content
+- **Scroll Animations**: Simple fade-in effects (very subtle)
+- **Hover Interactions**: Simple background color change, no lift effects
+- **No Continuous Animations**: Static, professional presentation
+- **Smooth Scroll**: Between sections for navigation
+- **Instant Transitions**: Fast, responsive, no loading animations
 
 ## Images
 **Large Hero Image**: No traditional hero image - instead use animated gradient background with particle effects and geometric shapes

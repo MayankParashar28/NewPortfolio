@@ -22,21 +22,13 @@ export default function About() {
   ];
 
   return (
-    <section id="about" className="py-20 px-4 sm:px-6 lg:px-8 relative">
-      <div className="absolute inset-0 opacity-5" style={{
-        backgroundImage: `
-          linear-gradient(rgba(59, 130, 246, 0.1) 1px, transparent 1px),
-          linear-gradient(90deg, rgba(59, 130, 246, 0.1) 1px, transparent 1px)
-        `,
-        backgroundSize: '30px 30px'
-      }}></div>
-
-      <div className="max-w-7xl mx-auto relative z-10">
-        <div className="text-center mb-12">
-          <h2 className="text-4xl sm:text-5xl font-heading font-bold mb-4 glow-text-cyan" data-testid="text-about-title">
+    <section id="about" className="py-20 px-4 sm:px-6 lg:px-8 border-t border-border">
+      <div className="max-w-7xl mx-auto">
+        <div className="text-center mb-16">
+          <h2 className="text-4xl sm:text-5xl font-heading font-bold mb-4" data-testid="text-about-title">
             About Me
           </h2>
-          <div className="w-20 h-1 gradient-primary mx-auto rounded-full"></div>
+          <div className="w-20 h-1 bg-foreground mx-auto"></div>
         </div>
 
         <div className="grid lg:grid-cols-2 gap-12 items-center">
@@ -57,8 +49,8 @@ export default function About() {
 
             <div className="grid sm:grid-cols-3 gap-4 mt-8">
               {highlights.map((item, index) => (
-                <Card key={index} className="p-4 glassmorphism hover-elevate active-elevate-2 transition-all" data-testid={`card-highlight-${index}`}>
-                  <item.icon className="w-8 h-8 text-primary mb-3" />
+                <Card key={index} className="p-4 border border-border hover-elevate transition-all" data-testid={`card-highlight-${index}`}>
+                  <item.icon className="w-8 h-8 mb-3" />
                   <h4 className="font-heading font-semibold mb-2 text-sm">{item.title}</h4>
                   <p className="text-xs text-muted-foreground">{item.description}</p>
                 </Card>
@@ -67,12 +59,11 @@ export default function About() {
           </div>
 
           <div className="order-1 lg:order-2">
-            <div className="relative">
-              <div className="absolute -inset-4 gradient-primary opacity-20 blur-2xl rounded-lg"></div>
+            <div className="relative border border-border p-2">
               <img
                 src={neuralNetworkImg}
                 alt="AI Neural Network Visualization"
-                className="relative rounded-lg shadow-2xl w-full"
+                className="w-full grayscale"
                 data-testid="img-about-visualization"
               />
             </div>

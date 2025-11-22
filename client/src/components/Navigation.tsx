@@ -34,18 +34,18 @@ export default function Navigation() {
 
   return (
     <nav
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        isScrolled ? "glassmorphism shadow-lg" : "bg-transparent"
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 bg-background ${
+        isScrolled ? "border-b border-border shadow-sm" : ""
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <button
             onClick={() => scrollToSection("hero")}
-            className="text-xl font-heading font-bold glow-text-cyan hover-elevate active-elevate-2 px-3 py-2 rounded-md"
+            className="text-xl font-heading font-bold hover-elevate active-elevate-2 px-3 py-2 rounded-md"
             data-testid="button-logo"
           >
-            AI/ML Portfolio
+            Portfolio
           </button>
 
           <div className="hidden md:flex items-center gap-2">
@@ -74,7 +74,7 @@ export default function Navigation() {
       </div>
 
       {isMobileMenuOpen && (
-        <div className="md:hidden glassmorphism border-t border-border/20">
+        <div className="md:hidden bg-background border-t border-border">
           <div className="px-4 py-4 space-y-2">
             {navLinks.map((link) => (
               <Button

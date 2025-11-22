@@ -35,22 +35,14 @@ export default function Projects() {
   ];
 
   return (
-    <section id="projects" className="py-20 px-4 sm:px-6 lg:px-8 relative">
-      <div className="absolute inset-0 opacity-5" style={{
-        backgroundImage: `
-          linear-gradient(rgba(168, 85, 247, 0.1) 1px, transparent 1px),
-          linear-gradient(90deg, rgba(168, 85, 247, 0.1) 1px, transparent 1px)
-        `,
-        backgroundSize: '40px 40px'
-      }}></div>
-
-      <div className="max-w-7xl mx-auto relative z-10">
-        <div className="text-center mb-12">
-          <h2 className="text-4xl sm:text-5xl font-heading font-bold mb-4 glow-text-cyan" data-testid="text-projects-title">
+    <section id="projects" className="py-20 px-4 sm:px-6 lg:px-8 border-t border-border">
+      <div className="max-w-7xl mx-auto">
+        <div className="text-center mb-16">
+          <h2 className="text-4xl sm:text-5xl font-heading font-bold mb-4" data-testid="text-projects-title">
             Featured Projects
           </h2>
-          <div className="w-20 h-1 gradient-primary mx-auto rounded-full"></div>
-          <p className="text-muted-foreground mt-4 max-w-2xl mx-auto">
+          <div className="w-20 h-1 bg-foreground mx-auto"></div>
+          <p className="text-muted-foreground mt-6 max-w-2xl mx-auto">
             Innovative AI solutions showcasing practical applications of machine learning
           </p>
         </div>
@@ -59,17 +51,16 @@ export default function Projects() {
           {projects.map((project, index) => (
             <Card
               key={index}
-              className="glassmorphism overflow-hidden group hover-elevate transition-all duration-300"
+              className="border border-border overflow-hidden group hover-elevate transition-all duration-300"
               data-testid={`card-project-${index}`}
             >
-              <div className="relative overflow-hidden aspect-video">
+              <div className="relative overflow-hidden aspect-video border-b border-border">
                 <img
                   src={project.image}
                   alt={project.title}
-                  className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                  className="w-full h-full object-cover grayscale transition-transform duration-300 group-hover:scale-105"
                   data-testid={`img-project-${index}`}
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-card to-transparent opacity-60"></div>
               </div>
 
               <CardHeader>
@@ -94,7 +85,7 @@ export default function Projects() {
                   <Button
                     variant="outline"
                     size="sm"
-                    className="flex-1 glassmorphism"
+                    className="flex-1"
                     onClick={() => console.log(`View ${project.title} on GitHub`)}
                     data-testid={`button-project-${index}-github`}
                   >
@@ -103,7 +94,7 @@ export default function Projects() {
                   </Button>
                   <Button
                     size="sm"
-                    className="flex-1 gradient-primary"
+                    className="flex-1"
                     onClick={() => console.log(`View ${project.title} demo`)}
                     data-testid={`button-project-${index}-demo`}
                   >

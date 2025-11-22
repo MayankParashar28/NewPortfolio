@@ -41,14 +41,14 @@ export default function Certificates() {
   ];
 
   return (
-    <section id="certificates" className="py-20 px-4 sm:px-6 lg:px-8 relative bg-gradient-to-b from-transparent via-card/10 to-transparent">
+    <section id="certificates" className="py-20 px-4 sm:px-6 lg:px-8 border-t border-border bg-muted/30">
       <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-12">
-          <h2 className="text-4xl sm:text-5xl font-heading font-bold mb-4 glow-text-cyan" data-testid="text-certificates-title">
+        <div className="text-center mb-16">
+          <h2 className="text-4xl sm:text-5xl font-heading font-bold mb-4" data-testid="text-certificates-title">
             Certifications & Achievements
           </h2>
-          <div className="w-20 h-1 gradient-primary mx-auto rounded-full"></div>
-          <p className="text-muted-foreground mt-4 max-w-2xl mx-auto">
+          <div className="w-20 h-1 bg-foreground mx-auto"></div>
+          <p className="text-muted-foreground mt-6 max-w-2xl mx-auto">
             Continuous learning and professional development in AI and machine learning
           </p>
         </div>
@@ -57,17 +57,16 @@ export default function Certificates() {
           {certificates.map((cert, index) => (
             <Card
               key={index}
-              className="glassmorphism hover-elevate transition-all group"
+              className="border border-border hover-elevate transition-all group"
               data-testid={`card-certificate-${index}`}
             >
               <CardHeader>
                 <div className="flex items-start gap-4">
-                  <div className="relative flex-shrink-0">
-                    <div className="absolute -inset-2 bg-primary/20 blur-xl rounded-full group-hover:bg-primary/30 transition-all"></div>
+                  <div className="flex-shrink-0 border border-border p-2">
                     <img
                       src={cert.image}
                       alt={cert.title}
-                      className="relative w-16 h-16 rounded-full object-cover"
+                      className="w-12 h-12 object-cover grayscale"
                       data-testid={`img-certificate-${index}`}
                     />
                   </div>
@@ -76,7 +75,7 @@ export default function Certificates() {
                       {cert.title}
                     </CardTitle>
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <Award className="w-4 h-4 text-primary" />
+                      <Award className="w-4 h-4" />
                       <span data-testid={`text-certificate-issuer-${index}`}>{cert.issuer}</span>
                       <span>•</span>
                       <span data-testid={`text-certificate-date-${index}`}>{cert.date}</span>
@@ -92,7 +91,7 @@ export default function Certificates() {
                 <Button
                   variant="outline"
                   size="sm"
-                  className="w-full glassmorphism"
+                  className="w-full"
                   onClick={() => console.log(`View ${cert.title} credential`)}
                   data-testid={`button-certificate-${index}-view`}
                 >
