@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import ThemeToggle from "./ThemeToggle";
 
 export default function Navigation() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -48,28 +49,33 @@ export default function Navigation() {
             Portfolio
           </button>
 
-          <div className="hidden md:flex items-center gap-2">
-            {navLinks.map((link) => (
-              <Button
-                key={link.id}
-                variant="ghost"
-                onClick={() => scrollToSection(link.id)}
-                data-testid={`button-nav-${link.id}`}
-              >
-                {link.label}
-              </Button>
-            ))}
+          <div className="hidden md:flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              {navLinks.map((link) => (
+                <Button
+                  key={link.id}
+                  variant="ghost"
+                  onClick={() => scrollToSection(link.id)}
+                  data-testid={`button-nav-${link.id}`}
+                >
+                  {link.label}
+                </Button>
+              ))}
+            </div>
+            <ThemeToggle />
           </div>
 
-          <Button
-            variant="ghost"
-            size="icon"
-            className="md:hidden"
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            data-testid="button-mobile-menu"
-          >
-            {isMobileMenuOpen ? <X /> : <Menu />}
-          </Button>
+          <div className="flex md:hidden items-center gap-3">
+            <ThemeToggle />
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              data-testid="button-mobile-menu"
+            >
+              {isMobileMenuOpen ? <X /> : <Menu />}
+            </Button>
+          </div>
         </div>
       </div>
 
