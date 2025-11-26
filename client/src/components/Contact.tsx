@@ -3,8 +3,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Mail, Github, Linkedin, Send } from "lucide-react";
+import { Send, Mail, Github, Linkedin } from "lucide-react";
 import { useState } from "react";
+import { user } from "@/data";
+import { motion } from "framer-motion";
+import TextScramble from "@/components/TextScramble";
 
 export default function Contact() {
   const [formData, setFormData] = useState({
@@ -16,48 +19,45 @@ export default function Contact() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Form submitted:", formData);
-    alert("Message sent! (This is a demo - no actual email sent)");
+    const { name, email, subject, message } = formData;
+    const mailtoLink = `mailto:${user.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(
+      `Name: ${name}\nEmail: ${email}\n\nMessage:\n${message}`
+    )}`;
+    window.location.href = mailtoLink;
     setFormData({ name: "", email: "", subject: "", message: "" });
   };
 
-  const contactMethods = [
-    {
-      icon: Mail,
-      label: "Email",
-      value: "your.email@example.com",
-      link: "mailto:your.email@example.com"
-    },
-    {
-      icon: Github,
-      label: "GitHub",
-      value: "github.com/yourusername",
-      link: "https://github.com"
-    },
-    {
-      icon: Linkedin,
-      label: "LinkedIn",
-      value: "linkedin.com/in/yourusername",
-      link: "https://linkedin.com"
-    }
-  ];
-
   return (
-    <section id="contact" className="py-20 px-4 sm:px-6 lg:px-8 border-t border-border">
-      <div className="max-w-5xl mx-auto">
+    <section id="contact" className="py-20 px-4 sm:px-6 lg:px-8 border-t border-border relative overflow-hidden">
+      <div className="max-w-5xl mx-auto relative z-10">
         <div className="text-center mb-16">
-          <h2 className="text-4xl sm:text-5xl font-heading font-bold mb-4" data-testid="text-contact-title">
-            Get In Touch
-          </h2>
-          <div className="w-20 h-1 bg-foreground mx-auto"></div>
-          <p className="text-muted-foreground mt-6 max-w-2xl mx-auto">
-            Let's collaborate on exciting AI projects or discuss opportunities in machine learning
-          </p>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            viewport={{ once: true }}
+          >
+            <TextScramble
+              text="Get In Touch"
+              as="h2"
+              className="text-4xl sm:text-5xl font-heading font-bold mb-4"
+            />
+            <div className="w-20 h-1 bg-foreground mx-auto"></div>
+            <p className="text-muted-foreground mt-6 max-w-2xl mx-auto">
+              Let's collaborate on exciting AI projects or discuss opportunities in machine learning
+            </p>
+          </motion.div>
         </div>
 
         <div className="grid lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2">
-            <Card className="border border-border">
+          <motion.div
+            className="lg:col-span-2"
+            initial={{ opacity: 0, x: -50 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            viewport={{ once: true }}
+          >
+            <Card className="border border-border h-full">
               <CardHeader>
                 <CardTitle className="text-2xl font-heading">Send a Message</CardTitle>
                 <CardDescription>Fill out the form below and I'll get back to you soon</CardDescription>
@@ -127,16 +127,41 @@ export default function Contact() {
                 </form>
               </CardContent>
             </Card>
-          </div>
+          </motion.div>
 
-          <div className="space-y-4">
+          <motion.div
+            className="space-y-4"
+            initial={{ opacity: 0, x: 50 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5, delay: 0.4 }}
+            viewport={{ once: true }}
+          >
             <Card className="border border-border">
               <CardHeader>
                 <CardTitle className="text-xl font-heading">Contact Info</CardTitle>
                 <CardDescription>Connect with me through these channels</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                {contactMethods.map((method, index) => (
+                {[
+                  {
+                    icon: Mail,
+                    label: "Email",
+                    value: user.email,
+                    link: user.socials.email
+                  },
+                  {
+                    icon: Github,
+                    label: "GitHub",
+                    value: user.socials.github.replace("https://", ""),
+                    link: user.socials.github
+                  },
+                  {
+                    icon: Linkedin,
+                    label: "LinkedIn",
+                    value: user.socials.linkedin.replace("https://", ""),
+                    link: user.socials.linkedin
+                  }
+                ].map((method, index) => (
                   <a
                     key={index}
                     href={method.link}
@@ -155,6 +180,7 @@ export default function Contact() {
               </CardContent>
             </Card>
 
+
             <Card className="border border-border">
               <CardContent className="p-6">
                 <p className="text-sm text-muted-foreground leading-relaxed">
@@ -162,14 +188,8 @@ export default function Contact() {
                 </p>
               </CardContent>
             </Card>
-          </div>
+          </motion.div>
         </div>
-      </div>
-
-      <div className="text-center mt-16 pt-8 border-t border-border">
-        <p className="text-sm text-muted-foreground">
-          © 2024 AI/ML Portfolio. Built with passion for artificial intelligence.
-        </p>
       </div>
     </section>
   );

@@ -1,5 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { ChevronDown, Github, Linkedin, Mail } from "lucide-react";
+import Typewriter from "typewriter-effect";
+import { user } from "@/data";
+import { motion } from "framer-motion";
+import GlitchText from "@/components/GlitchText";
+import Magnetic from "@/components/Magnetic";
 
 export default function Hero() {
   const scrollToSection = (sectionId: string) => {
@@ -10,81 +15,129 @@ export default function Hero() {
   };
 
   return (
-    <section id="hero" className="relative min-h-screen flex items-center justify-center">
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center py-20">
-        <div className="mb-8 inline-block">
-          <span className="px-4 py-2 border border-border rounded-full text-sm font-medium" data-testid="text-badge">
-            AI & Machine Learning Student
+    <section id="hero" className="relative min-h-screen flex items-center justify-center overflow-hidden">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center py-20 relative z-10">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="mb-8 inline-block"
+        >
+          <span className="px-4 py-2 border border-border rounded-full text-sm font-medium backdrop-blur-sm bg-background/50" data-testid="text-badge">
+            {user.title}
           </span>
-        </div>
+        </motion.div>
 
-        <h1 className="text-5xl sm:text-6xl lg:text-7xl font-heading font-bold mb-6 tracking-tight" data-testid="text-hero-title">
+        <motion.h1
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.1 }}
+          className="text-5xl sm:text-6xl lg:text-7xl font-heading font-bold mb-6 tracking-tight"
+          data-testid="text-hero-title"
+        >
+          <span className="block text-2xl sm:text-3xl mb-2 text-muted-foreground font-normal">
+            Hello, I'm <GlitchText text={user.name} className="font-bold text-foreground" />
+          </span>
           Building the Future with
-          <span className="block mt-2">
-            Artificial Intelligence
+          <span className="block mt-2 text-primary h-[1.2em]">
+            <Typewriter
+              options={{
+                strings: [
+                  "Artificial Intelligence",
+                  "Machine Learning",
+                  "Deep Learning",
+                  "Data Science",
+                ],
+                autoStart: true,
+                loop: true,
+                deleteSpeed: 50,
+                delay: 50,
+              }}
+            />
           </span>
-        </h1>
+        </motion.h1>
 
-        <div className="w-24 h-1 bg-foreground mx-auto mb-8"></div>
+        <motion.div
+          initial={{ scaleX: 0 }}
+          animate={{ scaleX: 1 }}
+          transition={{ duration: 0.8, delay: 0.3 }}
+          className="w-24 h-1 bg-foreground mx-auto mb-8"
+        ></motion.div>
 
-        <p className="text-lg sm:text-xl text-muted-foreground max-w-3xl mx-auto mb-12 leading-relaxed" data-testid="text-hero-description">
-          Passionate about creating intelligent systems and exploring the frontiers of machine learning, 
+        <motion.p
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.4 }}
+          className="text-lg sm:text-xl text-muted-foreground max-w-3xl mx-auto mb-12 leading-relaxed"
+          data-testid="text-hero-description"
+        >
+          Passionate about creating intelligent systems and exploring the frontiers of machine learning,
           deep learning, and neural networks. Transforming ideas into innovative AI solutions.
-        </p>
+        </motion.p>
 
-        <div className="flex flex-wrap items-center justify-center gap-4 mb-12">
-          <Button
-            size="lg"
-            onClick={() => scrollToSection("projects")}
-            data-testid="button-view-projects"
-          >
-            View My Work
-          </Button>
-          <Button
-            size="lg"
-            variant="outline"
-            onClick={() => scrollToSection("contact")}
-            data-testid="button-get-in-touch"
-          >
-            Get in Touch
-          </Button>
-        </div>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.5 }}
+          className="flex flex-wrap items-center justify-center gap-4 mb-12"
+        >
+          <Magnetic strength={0.4}>
+            <Button
+              size="lg"
+              onClick={() => scrollToSection("projects")}
+              data-testid="button-view-projects"
+              className="hover:scale-105 transition-transform"
+            >
+              View My Work
+            </Button>
+          </Magnetic>
+          <Magnetic strength={0.4}>
+            <Button
+              size="lg"
+              variant="outline"
+              onClick={() => scrollToSection("contact")}
+              data-testid="button-get-in-touch"
+              className="hover:scale-105 transition-transform"
+            >
+              Get in Touch
+            </Button>
+          </Magnetic>
+        </motion.div>
 
-        <div className="flex items-center justify-center gap-4">
-          <Button
-            variant="ghost"
-            size="icon"
-            data-testid="button-github"
-            onClick={() => console.log('GitHub clicked')}
-          >
-            <Github className="w-5 h-5" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            data-testid="button-linkedin"
-            onClick={() => console.log('LinkedIn clicked')}
-          >
-            <Linkedin className="w-5 h-5" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            data-testid="button-email"
-            onClick={() => console.log('Email clicked')}
-          >
-            <Mail className="w-5 h-5" />
-          </Button>
-        </div>
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5, delay: 0.6 }}
+          className="flex items-center justify-center gap-4"
+        >
+          <a href={user.socials.github} target="_blank" rel="noopener noreferrer">
+            <Button variant="ghost" size="icon" data-testid="button-github" className="hover:scale-110 transition-transform">
+              <Github className="w-5 h-5" />
+            </Button>
+          </a>
+          <a href={user.socials.linkedin} target="_blank" rel="noopener noreferrer">
+            <Button variant="ghost" size="icon" data-testid="button-linkedin" className="hover:scale-110 transition-transform">
+              <Linkedin className="w-5 h-5" />
+            </Button>
+          </a>
+          <a href={user.socials.email}>
+            <Button variant="ghost" size="icon" data-testid="button-email" className="hover:scale-110 transition-transform">
+              <Mail className="w-5 h-5" />
+            </Button>
+          </a>
+        </motion.div>
       </div>
 
-      <button
+      <motion.button
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 1, repeat: Infinity, repeatType: "reverse" }}
         onClick={() => scrollToSection("about")}
         className="absolute bottom-8 left-1/2 -translate-x-1/2 hover-elevate active-elevate-2 p-2 rounded-full"
         data-testid="button-scroll-down"
       >
         <ChevronDown className="w-8 h-8" />
-      </button>
+      </motion.button>
     </section>
   );
 }

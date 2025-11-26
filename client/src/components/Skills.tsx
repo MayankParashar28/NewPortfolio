@@ -1,72 +1,102 @@
-import { Card } from "@/components/ui/card";
-import { SiPython, SiTensorflow, SiPytorch, SiScikitlearn, SiJupyter, SiGit } from "react-icons/si";
-import { Database, Brain, BarChart3 } from "lucide-react";
+import React from "react";
+import { motion } from "framer-motion";
+import { Tilt } from "react-tilt";
+import { SiPython, SiTensorflow, SiPytorch, SiScikitlearn, SiJupyter, SiGit, SiReact, SiTypescript, SiNodedotjs, SiDocker, SiMongodb, SiPostgresql } from "react-icons/si";
+import { Brain, Database, Code2, Terminal, Cpu, Globe } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import TextScramble from "@/components/TextScramble";
 
-export default function Skills() {
-  const skills = [
-    { name: "Python", level: 90, icon: SiPython, color: "text-blue-500" },
-    { name: "TensorFlow", level: 85, icon: SiTensorflow, color: "text-orange-500" },
-    { name: "PyTorch", level: 80, icon: SiPytorch, color: "text-red-500" },
-    { name: "Scikit-learn", level: 85, icon: SiScikitlearn, color: "text-orange-400" },
-    { name: "Deep Learning", level: 85, icon: Brain, color: "text-purple-500" },
-    { name: "Computer Vision", level: 80, icon: Brain, color: "text-cyan-500" },
-    { name: "NLP", level: 75, icon: Brain, color: "text-green-500" },
-    { name: "Jupyter", level: 90, icon: SiJupyter, color: "text-orange-600" },
-    { name: "Git", level: 85, icon: SiGit, color: "text-red-600" },
-    { name: "SQL", level: 75, icon: Database, color: "text-blue-400" },
-    { name: "R", level: 75, icon: BarChart3, color: "text-blue-500" },
-  ];
+const skills = [
+  { name: "Python", icon: SiPython, color: "#3776AB", category: "Languages" },
+  { name: "TensorFlow", icon: SiTensorflow, color: "#FF6F00", category: "AI/ML" },
+  { name: "PyTorch", icon: SiPytorch, color: "#EE4C2C", category: "AI/ML" },
+  { name: "React", icon: SiReact, color: "#61DAFB", category: "Frontend" },
+  { name: "TypeScript", icon: SiTypescript, color: "#3178C6", category: "Languages" },
+  { name: "Node.js", icon: SiNodedotjs, color: "#339933", category: "Backend" },
+  { name: "Scikit-learn", icon: SiScikitlearn, color: "#F7931E", category: "AI/ML" },
+  { name: "Docker", icon: SiDocker, color: "#2496ED", category: "DevOps" },
+  { name: "PostgreSQL", icon: SiPostgresql, color: "#4169E1", category: "Database" },
+  { name: "Deep Learning", icon: Brain, color: "#9333EA", category: "AI/ML" },
+  { name: "Computer Vision", icon: Cpu, color: "#06B6D4", category: "AI/ML" },
+  { name: "NLP", icon: Globe, color: "#22C55E", category: "AI/ML" },
+];
 
+const defaultOptions = {
+  reverse: false,
+  max: 35,
+  perspective: 1000,
+  scale: 1.1,
+  speed: 1000,
+  transition: true,
+  axis: null,
+  reset: true,
+  easing: "cubic-bezier(.03,.98,.52,.99)",
+};
+
+export default React.memo(function Skills() {
   return (
-    <section id="skills" className="py-20 px-4 sm:px-6 lg:px-8 border-t border-border bg-muted/30">
-      <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl sm:text-5xl font-heading font-bold mb-4" data-testid="text-skills-title">
-            Skills & Expertise
-          </h2>
-          <div className="w-20 h-1 bg-foreground mx-auto"></div>
-          <p className="text-muted-foreground mt-6 max-w-2xl mx-auto">
-            A comprehensive toolkit for building intelligent systems and solving complex problems
-          </p>
+    <section id="skills" className="py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-primary/5 to-transparent pointer-events-none" />
+
+      <div className="max-w-6xl mx-auto relative z-10">
+        <div className="text-center mb-12">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            viewport={{ once: true }}
+          >
+            <TextScramble
+              text="Skills & Expertise"
+              as="h2"
+              className="text-3xl sm:text-5xl font-heading font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-primary to-purple-500 inline-block"
+            />
+            <p className="text-muted-foreground text-base max-w-2xl mx-auto">
+              Mastering the tools of tomorrow.
+            </p>
+          </motion.div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
           {skills.map((skill, index) => (
-            <Card
+            <motion.div
               key={index}
-              className="p-4 border border-border hover-elevate transition-all group relative overflow-hidden"
-              data-testid={`card-skill-${index}`}
+              initial={{ opacity: 0, scale: 0.8 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.4, delay: index * 0.05 }}
+              viewport={{ once: true }}
             >
-              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-foreground to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-              
-              <div className="flex items-center gap-4">
-                <div className="relative">
-                  <div className="absolute -inset-2 bg-foreground/5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity blur"></div>
-                  <div className="relative bg-background rounded-lg p-3 border border-border">
-                    <skill.icon className={`w-6 h-6 ${skill.color}`} />
+              <Tilt options={defaultOptions} className="h-full">
+                <div className="h-full p-3 rounded-xl bg-white/5 backdrop-blur-md border border-white/10 shadow-lg hover:shadow-primary/20 hover:border-primary/30 transition-all duration-300 group flex flex-col items-center justify-center gap-3 text-center">
+                  <motion.div
+                    className="p-2.5 rounded-full bg-white/5 group-hover:bg-white/10 transition-colors duration-300"
+                    style={{ color: skill.color }}
+                    animate={{ y: [0, -5, 0] }}
+                    transition={{
+                      duration: 3,
+                      repeat: Infinity,
+                      ease: "easeInOut",
+                      delay: index * 0.2, // Staggered delay for natural feel
+                    }}
+                  >
+                    <skill.icon className="w-6 h-6 sm:w-8 sm:h-8" />
+                  </motion.div>
+
+                  <div>
+                    <h3 className="font-heading font-semibold text-sm sm:text-base mb-0.5 text-foreground">
+                      {skill.name}
+                    </h3>
+                    <span className="text-[10px] font-mono text-muted-foreground px-1.5 py-0.5 rounded-full bg-white/5">
+                      {skill.category}
+                    </span>
                   </div>
                 </div>
-                
-                <div className="flex-1">
-                  <h3 className="font-heading font-semibold text-sm leading-tight" data-testid={`text-skill-name-${index}`}>
-                    {skill.name}
-                  </h3>
-                  <div className="flex items-center gap-2 mt-1">
-                    <div className="flex-1 h-1.5 bg-border rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-foreground transition-all duration-300 group-hover:bg-foreground rounded-full"
-                        style={{ width: `${skill.level}%` }}
-                        data-testid={`progress-${index}`}
-                      ></div>
-                    </div>
-                    <span className="text-xs font-mono text-muted-foreground min-w-max">{skill.level}%</span>
-                  </div>
-                </div>
-              </div>
-            </Card>
+              </Tilt>
+            </motion.div>
           ))}
         </div>
       </div>
     </section>
   );
-}
+});

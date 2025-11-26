@@ -1,8 +1,22 @@
 import { Card } from "@/components/ui/card";
 import { Brain, Code2, Sparkles } from "lucide-react";
-import neuralNetworkImg from "@assets/generated_images/ai_neural_network_visualization.png";
+import { user } from "@/data";
+import { useRef } from "react";
+import { motion, useScroll, useTransform } from "framer-motion";
+import ScrollReveal from "@/components/ScrollReveal";
+import SpotlightCard from "@/components/SpotlightCard";
+import TextScramble from "@/components/TextScramble";
 
 export default function About() {
+  const containerRef = useRef(null);
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start end", "end start"]
+  });
+
+  const y = useTransform(scrollYProgress, [0, 1], [50, -50]);
+  const opacity = useTransform(scrollYProgress, [0, 0.2, 0.9, 1], [0, 1, 1, 0]);
+
   const highlights = [
     {
       icon: Brain,
@@ -21,52 +35,74 @@ export default function About() {
     }
   ];
 
+
+
   return (
     <section id="about" className="py-20 px-4 sm:px-6 lg:px-8 border-t border-border">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-16">
-          <h2 className="text-4xl sm:text-5xl font-heading font-bold mb-4" data-testid="text-about-title">
-            About Me
-          </h2>
+          <TextScramble
+            text="About Me"
+            as="h2"
+            className="text-4xl sm:text-5xl font-heading font-bold mb-4 inline-block"
+          />
           <div className="w-20 h-1 bg-foreground mx-auto"></div>
         </div>
 
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           <div className="order-2 lg:order-1">
-            <h3 className="text-2xl sm:text-3xl font-heading font-bold mb-6" data-testid="text-about-heading">
-              Exploring the Possibilities of AI
-            </h3>
-            <p className="text-muted-foreground mb-6 leading-relaxed" data-testid="text-about-paragraph-1">
-              I'm a dedicated AI and Machine Learning student with a strong foundation in computer science 
-              and a burning curiosity for intelligent systems. My journey in AI has been driven by the 
-              desire to create technology that can learn, adapt, and solve meaningful problems.
-            </p>
-            <p className="text-muted-foreground mb-6 leading-relaxed" data-testid="text-about-paragraph-2">
-              From developing neural networks to implementing computer vision solutions, I'm constantly 
-              pushing the boundaries of what's possible with machine learning. I believe in the power of 
-              AI to transform industries and improve lives, and I'm committed to being part of that transformation.
-            </p>
+            <ScrollReveal animation="fade-up">
+              <h3 className="text-2xl sm:text-3xl font-heading font-bold mb-6" data-testid="text-about-heading">
+                {user.about.title}
+              </h3>
+            </ScrollReveal>
+
+            <ScrollReveal animation="fade-up" delay={0.1}>
+              <p className="text-muted-foreground mb-6 leading-relaxed" data-testid="text-about-paragraph-1">
+                {user.about.description1}
+              </p>
+            </ScrollReveal>
+
+            <ScrollReveal animation="fade-up" delay={0.2}>
+              <p className="text-muted-foreground mb-6 leading-relaxed" data-testid="text-about-paragraph-2">
+                {user.about.description2}
+              </p>
+            </ScrollReveal>
+
+
 
             <div className="grid sm:grid-cols-3 gap-4 mt-8">
               {highlights.map((item, index) => (
-                <Card key={index} className="p-4 border border-border hover-elevate transition-all" data-testid={`card-highlight-${index}`}>
-                  <item.icon className="w-8 h-8 mb-3" />
-                  <h4 className="font-heading font-semibold mb-2 text-sm">{item.title}</h4>
-                  <p className="text-xs text-muted-foreground">{item.description}</p>
-                </Card>
+                <ScrollReveal key={index} animation="fade-up" delay={0.3 + index * 0.1} className="h-full">
+                  <SpotlightCard className="h-full">
+                    <Card className="p-4 border border-border hover-elevate transition-all h-full bg-transparent" data-testid={`card-highlight-${index}`}>
+                      <item.icon className="w-8 h-8 mb-3" />
+                      <h4 className="font-heading font-semibold mb-2 text-sm">{item.title}</h4>
+                      <p className="text-xs text-muted-foreground">{item.description}</p>
+                    </Card>
+                  </SpotlightCard>
+                </ScrollReveal>
               ))}
             </div>
           </div>
 
           <div className="order-1 lg:order-2">
-            <div className="relative border border-border p-2">
+            <motion.div
+              ref={containerRef}
+              style={{ y, opacity }}
+              className="relative border border-border p-2"
+            >
               <img
-                src={neuralNetworkImg}
-                alt="AI Neural Network Visualization"
+                src={user.about.image}
+                alt={`${user.name} - AI/ML Engineer`}
+                loading="lazy"
+                decoding="async"
+                width={500}
+                height={500}
                 className="w-full grayscale"
                 data-testid="img-about-visualization"
               />
-            </div>
+            </motion.div>
           </div>
         </div>
       </div>

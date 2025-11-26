@@ -1,33 +1,54 @@
-import { Switch, Route } from "wouter";
+import { lazy, Suspense } from "react";
+import { Switch, Route, useLocation } from "wouter";
+import { AnimatePresence } from "framer-motion";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
-import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/ThemeProvider";
-import Cursor3D from "@/components/Cursor3D";
+import InteractiveSelection from "@/components/InteractiveSelection";
 import Home from "@/pages/Home";
 import NotFound from "@/pages/not-found";
+import Navigation from "@/components/Navigation";
+import Footer from "@/components/Footer";
+import BackToTop from "@/components/BackToTop";
+import ScrollProgress from "@/components/ScrollProgress";
+
+// Lazy load 3D components for performance
+const Cursor3D = lazy(() => import("@/components/Cursor3D"));
+const ParticleBackground = lazy(() => import("@/components/ParticleBackground"));
 
 function Router() {
+  const [location] = useLocation();
+
   return (
-    <Switch>
-      <Route path="/" component={Home} />
-      <Route component={NotFound} />
-    </Switch>
+    <AnimatePresence mode="wait">
+      <Switch location={location} key={location}>
+        <Route path="/" component={Home} />
+        <Route component={NotFound} />
+      </Switch>
+    </AnimatePresence>
   );
 }
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <ThemeProvider defaultTheme="light">
-        <TooltipProvider>
-          <Cursor3D />
-          <Toaster />
+    <ThemeProvider defaultTheme="dark">
+      <QueryClientProvider client={queryClient}>
+        <div className="min-h-screen text-foreground font-sans antialiased selection:bg-primary selection:text-primary-foreground">
+          <ScrollProgress />
+          <Suspense fallback={null}>
+            <ParticleBackground />
+            <Cursor3D />
+          </Suspense>
+          <InteractiveSelection />
+          <Navigation />
           <Router />
-        </TooltipProvider>
-      </ThemeProvider>
-    </QueryClientProvider>
+          <BackToTop />
+          <Footer />
+        </div>
+        <Toaster />
+      </QueryClientProvider>
+    </ThemeProvider>
   );
 }
 
