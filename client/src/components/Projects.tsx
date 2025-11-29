@@ -94,15 +94,17 @@ export default React.memo(function Projects() {
                         <Github className="w-3 h-3 mr-1.5" />
                         Code
                       </Button>
-                      <Button
-                        size="sm"
-                        className="flex-1 h-8 text-xs"
-                        onClick={() => window.open(project.links.demo, "_blank")}
-                        data-testid={`button-project-${index}-demo`}
-                      >
-                        <ExternalLink className="w-3 h-3 mr-1.5" />
-                        Demo
-                      </Button>
+                      {project.links.demo && project.links.demo !== "#" && (
+                        <Button
+                          size="sm"
+                          className="flex-1 h-8 text-xs"
+                          onClick={() => window.open(project.links.demo, "_blank")}
+                          data-testid={`button-project-${index}-demo`}
+                        >
+                          <ExternalLink className="w-3 h-3 mr-1.5" />
+                          Demo
+                        </Button>
+                      )}
                     </div>
                   </div>
                 </SpotlightCard>

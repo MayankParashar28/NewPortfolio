@@ -6,6 +6,7 @@ import { motion, useScroll, useTransform } from "framer-motion";
 import ScrollReveal from "@/components/ScrollReveal";
 import SpotlightCard from "@/components/SpotlightCard";
 import TextScramble from "@/components/TextScramble";
+import ScratchRevealImage from "@/components/ScratchRevealImage";
 
 export default function About() {
   const containerRef = useRef(null);
@@ -92,17 +93,28 @@ export default function About() {
               style={{ y, opacity }}
               className="relative border border-border p-2"
             >
-              <img
+              <ScratchRevealImage
                 src={user.about.image}
                 alt={`${user.name} - AI/ML Engineer`}
-                loading="lazy"
-                decoding="async"
                 width={500}
                 height={500}
-                className="w-full grayscale"
-                data-testid="img-about-visualization"
+                className="w-full"
               />
             </motion.div>
+
+            {user.about.quote && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.4 }}
+                className="mt-6 text-center"
+              >
+                <blockquote className="text-lg italic text-muted-foreground border-l-4 border-primary pl-4 py-2 bg-muted/30 rounded-r-lg">
+                  "{user.about.quote}"
+                </blockquote>
+              </motion.div>
+            )}
           </div>
         </div>
       </div>

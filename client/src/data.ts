@@ -5,6 +5,8 @@ import dlResearchImg from "@assets/generated_images/deep_learning_research_visua
 import myPhoto from "@assets/myphoto.png";
 import neuralNetworkImg from "@assets/generated_images/ai_neural_network_visualization.png";
 
+import ibmLogo from "@assets/ibm_logo.png";
+
 import certBadge1 from "@assets/generated_images/ai_certification_badge_design.png";
 import certBadge2 from "@assets/generated_images/ml_certification_emblem.png";
 
@@ -24,26 +26,28 @@ export const user = {
         description1: "I'm a dedicated AI and Machine Learning student with a strong foundation in computer science and a burning curiosity for intelligent systems. My journey in AI has been driven by the desire to create technology that can learn, adapt, and solve meaningful problems.",
         description2: "From developing neural networks to implementing computer vision solutions, I'm constantly pushing the boundaries of what's possible with machine learning. I believe in the power of AI to transform industries and improve lives, and I'm committed to being part of that transformation.",
         image: myPhoto,
+        quote: "Artificial intelligence is not a substitute for human intelligence; it is a tool to amplify human creativity and ingenuity.",
+        revealImage: neuralNetworkImg,
     },
     projects: [
         {
             title: "Face Analysis System",
             description: "A full-stack web application developed with Django and Python that leverages Computer Vision and Deep Learning to analyze human faces. ",
-            image: mlDashboardImg,
+            image: cvProjectImg,
             tags: ["Python", "Django", "Image Processing", "Computer Vision", "Deep Learning", "Machine Learning"],
             links: {
                 github: "https://github.com/MayankParashar28/Face_Analysis",
-                demo: "#",
+                demo: "",
             },
         },
         {
             title: "Intelligent Video Analysis System",
             description: "A robust AI application built with Python and Streamlit that transforms lengthy digital content into concise summaries. By integrating LangChain and the Groq API, the system processes both YouTube videos and standard web pages to extract key insights in real-time.",
-            image: cvProjectImg,
+            image: mlDashboardImg,
             tags: ["Generative AI", "LangChain", "Groq", "Streamlit", "Content Summarization"],
             links: {
                 github: "https://github.com/MayankParashar28/WebTube-Insight",
-                demo: "#",
+                demo: "",
             },
         },
         {
@@ -53,7 +57,7 @@ export const user = {
             tags: ["NLP", "BERT", "Transformers", "Python", "TextGeneration"],
             links: {
                 github: "https://github.com/MayankParashar28/Next-Predict",
-                demo: "#",
+                demo: "",
             },
         },
         {
@@ -63,7 +67,7 @@ export const user = {
             tags: ["Generative AI", "Groq", "Llama3", "Streamlit", "Content Summarization", "LangChain"],
             links: {
                 github: "https://github.com/MayankParashar28/Open_Search",
-                demo: "#",
+                demo: "",
             },
         },
         {
@@ -73,38 +77,46 @@ export const user = {
             tags: ["FullStack", "WebDevelopment", "NodeJS", "MVCArchitecture", "MongoDB", "Stripe", "Cloudinary"],
             links: {
                 github: "https://github.com/MayankParashar28/RentRipple",
-                demo: "#",
+                demo: "",
             },
 
         }, {
             title: "EaseNavigator",
             description: "EaseNavigator is a smart logistics platform designed to solve range anxiety for Electric Vehicle (EV) drivers. It uses this system integrates a predictive energy model that calculates real-time battery drainage based on specific vehicle efficiency data, distance, and route constraints",
-            image: mlDashboardImg,
+            image: dlResearchImg,
             tags: ["FullStack", "WebDevelopment", "OSRM", "MVCArchitecture", "PredictiveModeling", "Stripe", "Cloudinary"],
             links: {
                 github: "https://github.com/MayankParashar28/EaseNavigator",
-                demo: "#",
+                demo: "",
             },
         }, {
             title: "BlogiFy: Secure SSR Blogging",
             description: "BlogiFy redefines the writing experience by embedding artificial intelligence directly into the editorial workflow. Unlike static blogging sites, this application functions as an intelligent co-pilot, helping users brainstorm.",
-            image: mlDashboardImg,
+            image: neuralNetworkImg,
             tags: ["FullStack", "WebDevelopment", "BackendEngineering", "MVCArchitecture", "LLMIntegration", "Stripe", "Security"],
             links: {
                 github: "https://github.com/MayankParashar28/BlogiFy",
-                demo: "#",
+                demo: "",
             },
         }
     ],
 
     certificates: [
         {
+            title: "Machine Learning with Python",
+            issuer: "IBM SkillsBuild",
+            date: "2025",
+            description: "Successfully completed and received a passing grade in Machine Learning with Python (ML0101EN).",
+            image: ibmLogo,
+            credentialUrl: "https://courses.skillsbuild.skillsnetwork.site/certificates/b7e655cd0afc424894dc886e403fb5d6"
+        },
+        {
             title: "Deep Learning Specialization",
             issuer: "Coursera & DeepLearning.AI",
             date: "2024",
             description: "Comprehensive specialization covering neural networks, CNNs, RNNs, and deployment strategies.",
             image: certBadge1,
-            credentialUrl: "#"
+            credentialUrl: ""
         },
         {
             title: "Machine Learning Engineering",
@@ -112,7 +124,7 @@ export const user = {
             date: "2024",
             description: "Advanced course on production ML systems, MLOps, and scalable AI infrastructure.",
             image: certBadge2,
-            credentialUrl: "#"
+            credentialUrl: ""
         },
         {
             title: "TensorFlow Developer Certificate",
@@ -120,7 +132,7 @@ export const user = {
             date: "2023",
             description: "Professional certification in building and training neural networks using TensorFlow.",
             image: certBadge1,
-            credentialUrl: "#"
+            credentialUrl: ""
         },
         {
             title: "Natural Language Processing",
@@ -128,7 +140,7 @@ export const user = {
             date: "2023",
             description: "Specialized training in transformer models, BERT, GPT, and state-of-the-art NLP techniques.",
             image: certBadge2,
-            credentialUrl: "#"
+            credentialUrl: ""
         },
         {
             title: "AWS Machine Learning Specialty",
@@ -136,16 +148,8 @@ export const user = {
             date: "2024",
             description: "Validated expertise in building, training, tuning, and deploying machine learning models on AWS.",
             image: certBadge1,
-            credentialUrl: "#"
+            credentialUrl: ""
         },
-        {
-            title: "Microsoft Azure AI Engineer",
-            issuer: "Microsoft",
-            date: "2024",
-            description: "Certification for designing and implementing AI solutions using Azure Cognitive Services and Azure Machine Learning.",
-            image: certBadge2,
-            credentialUrl: "#"
-        }
     ],
     contact: [
         {

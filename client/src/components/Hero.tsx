@@ -138,6 +138,18 @@ export default function Hero() {
       >
         <ChevronDown className="w-8 h-8" />
       </motion.button>
+
+      <motion.div
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.5, delay: 1.2 }}
+        className="absolute bottom-8 left-8 hidden lg:block max-w-xs"
+      >
+        <p className="text-xs text-muted-foreground italic border-l-2 border-primary/50 pl-3">
+          "The best way to predict the future is to invent it." <br />
+          <span className="not-italic text-[10px] opacity-70">– Alan Kay</span>
+        </p>
+      </motion.div>
     </section>
   );
 }

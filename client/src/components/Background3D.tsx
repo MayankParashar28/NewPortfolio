@@ -92,8 +92,9 @@ function Connections({ color }: { color: string }) {
   }, []);
 
   const [data] = useState(() => {
-    const count = 400; // Increased from 250
-    const radius = 12; // Increased radius
+    const isMobile = window.innerWidth < 768;
+    const count = isMobile ? 50 : 100; // Reduced for mobile performance
+    const radius = 12;
     const points = generateSpherePoints(count, radius);
     const indices: number[] = [];
     const colors = new Float32Array(count * 3);
@@ -147,6 +148,15 @@ function Connections({ color }: { color: string }) {
     return () => window.removeEventListener("mousemove", handleMouseMove);
   }, []);
 
+  const { tempMatrix, tempRaycaster, tempVec3, tempClosestPoint, tempDir, tempColor } = useMemo(() => ({
+    tempMatrix: new THREE.Matrix4(),
+    tempRaycaster: new THREE.Raycaster(),
+    tempVec3: new THREE.Vector3(),
+    tempClosestPoint: new THREE.Vector3(),
+    tempDir: new THREE.Vector3(),
+    tempColor: new THREE.Color()
+  }), []);
+
   useFrame((state, delta) => {
     if (groupRef.current && geometryRef.current) {
       // Rotation
@@ -161,13 +171,12 @@ function Connections({ color }: { color: string }) {
       groupRef.current.updateMatrixWorld();
 
       // Physics
-      const inverseMatrix = new THREE.Matrix4().copy(groupRef.current.matrixWorld).invert();
+      tempMatrix.copy(groupRef.current.matrixWorld).invert();
 
-      const raycaster = new THREE.Raycaster();
-      raycaster.setFromCamera(mouseRef.current, state.camera);
+      tempRaycaster.setFromCamera(mouseRef.current, state.camera);
 
-      const rayOrigin = raycaster.ray.origin.clone().applyMatrix4(inverseMatrix);
-      const rayDir = raycaster.ray.direction.clone().transformDirection(inverseMatrix).normalize();
+      const rayOrigin = tempRaycaster.ray.origin.clone().applyMatrix4(tempMatrix);
+      const rayDir = tempRaycaster.ray.direction.clone().transformDirection(tempMatrix).normalize();
       const localRay = new THREE.Ray(rayOrigin, rayDir);
 
       const positions = geometryRef.current.attributes.position.array as Float32Array;
@@ -191,44 +200,40 @@ function Connections({ color }: { color: string }) {
         const px = positions[i];
         const py = positions[i + 1];
         const pz = positions[i + 2];
-        const pVec = new THREE.Vector3(px, py, pz);
+        tempVec3.set(px, py, pz);
 
         // Mouse Interaction
-        const distSq = localRay.distanceSqToPoint(pVec);
+        const distSq = localRay.distanceSqToPoint(tempVec3);
         const interactionRadius = 15.0;
 
         if (distSq < interactionRadius) {
-          const closestPointOnRay = new THREE.Vector3();
-          localRay.closestPointToPoint(pVec, closestPointOnRay);
+          localRay.closestPointToPoint(tempVec3, tempClosestPoint);
 
-          const dir = pVec.clone().sub(closestPointOnRay).normalize();
+          tempDir.copy(tempVec3).sub(tempClosestPoint).normalize();
 
           // Smoother force calculation
-          // Use sqrt to make falloff linear with distance, not quadratic
-          // And reduce the multiplier significantly
           const dist = Math.sqrt(distSq);
           const radius = Math.sqrt(interactionRadius);
-          const force = (radius - dist) * 2.0; // Reduced from ~225 max to ~8 max
+          const force = (radius - dist) * 2.0;
 
-          positions[i] += dir.x * force * delta;
-          positions[i + 1] += dir.y * force * delta;
-          positions[i + 2] += dir.z * force * delta;
+          positions[i] += tempDir.x * force * delta;
+          positions[i + 1] += tempDir.y * force * delta;
+          positions[i + 2] += tempDir.z * force * delta;
         }
 
         // Shockwave Interaction
         if (shockwaveRef.current.active) {
-          // ... (shockwave logic remains same, or can be smoothed too if needed)
-          const shockDist = pVec.distanceTo(rayOrigin);
-          const distFromCenter = pVec.length();
+          const shockDist = tempVec3.distanceTo(rayOrigin);
+          const distFromCenter = tempVec3.length();
           const wavePos = shockwaveRef.current.radius;
           const waveWidth = 2.0;
 
           if (Math.abs(distFromCenter - wavePos) < waveWidth) {
-            const dir = pVec.clone().normalize();
-            const force = 5.0 * (1 - Math.abs(distFromCenter - wavePos) / waveWidth); // Reduced from 10.0
-            positions[i] += dir.x * force * delta;
-            positions[i + 1] += dir.y * force * delta;
-            positions[i + 2] += dir.z * force * delta;
+            tempDir.copy(tempVec3).normalize();
+            const force = 5.0 * (1 - Math.abs(distFromCenter - wavePos) / waveWidth);
+            positions[i] += tempDir.x * force * delta;
+            positions[i + 1] += tempDir.y * force * delta;
+            positions[i + 2] += tempDir.z * force * delta;
           }
         }
 
@@ -237,7 +242,7 @@ function Connections({ color }: { color: string }) {
         const iy = initialPositions[i + 1];
         const iz = initialPositions[i + 2];
 
-        const springStrength = 5.0; // Increased from 3.0 for snappier but smooth return
+        const springStrength = 5.0;
         positions[i] += (ix - positions[i]) * springStrength * delta;
         positions[i + 1] += (iy - positions[i + 1]) * springStrength * delta;
         positions[i + 2] += (iz - positions[i + 2]) * springStrength * delta;
@@ -248,12 +253,12 @@ function Connections({ color }: { color: string }) {
         const dz = positions[i + 2] - iz;
         const displacement = Math.sqrt(dx * dx + dy * dy + dz * dz);
 
-        const lerpFactor = Math.min(displacement * 0.5, 1); // 0 to 1 based on movement
+        const lerpFactor = Math.min(displacement * 0.5, 1);
 
-        const c = baseColor.clone().lerp(highlightColor, lerpFactor);
-        colors[i] = c.r;
-        colors[i + 1] = c.g;
-        colors[i + 2] = c.b;
+        tempColor.copy(baseColor).lerp(highlightColor, lerpFactor);
+        colors[i] = tempColor.r;
+        colors[i + 1] = tempColor.g;
+        colors[i + 2] = tempColor.b;
       }
 
       geometryRef.current.attributes.position.needsUpdate = true;

@@ -7,8 +7,17 @@ export default function Cursor3D() {
     const cursorLensRef = useRef<HTMLDivElement>(null);
     const cursorDotRef = useRef<HTMLDivElement>(null);
     const trailsRef = useRef<HTMLDivElement[]>([]);
-    const [isHovering, setIsHovering] = useState(false);
-    const [isClicking, setIsClicking] = useState(false);
+
+    // State for rendering classes
+    const [isHoveringState, setIsHoveringState] = useState(false);
+    const [isClickingState, setIsClickingState] = useState(false);
+    const [isHiddenState, setIsHiddenState] = useState(false);
+
+    // Refs for logic (to avoid stale closures in event listeners/loops)
+    const isHoveringRef = useRef(false);
+    const isHiddenRef = useRef(false);
+    const isClickingRef = useRef(false);
+
     const { theme } = useTheme();
     const { playHover, playClick } = useSound();
 
@@ -47,19 +56,34 @@ export default function Cursor3D() {
             // Update dot immediately
             if (cursorDotRef.current) {
                 cursorDotRef.current.style.transform = `translate(${e.clientX}px, ${e.clientY}px) translate(-50%, -50%)`;
+                // Hide dot if hidden
+                cursorDotRef.current.style.opacity = isHiddenRef.current ? '0' : '1';
             }
         };
 
         const handleMouseDown = () => {
-            setIsClicking(true);
+            isClickingRef.current = true;
+            setIsClickingState(true);
             playClick();
         };
-        const handleMouseUp = () => setIsClicking(false);
+        const handleMouseUp = () => {
+            isClickingRef.current = false;
+            setIsClickingState(false);
+        };
 
         const handleMouseOver = (e: MouseEvent) => {
-            if (isScrollingRef.current) return; // Don't play sound while scrolling
+            if (isScrollingRef.current) return;
 
             const target = e.target as HTMLElement;
+
+            // Check for hidden cursor
+            const shouldHide = !!target.closest('[data-cursor-hidden="true"]');
+
+            if (shouldHide !== isHiddenRef.current) {
+                isHiddenRef.current = shouldHide;
+                setIsHiddenState(shouldHide);
+            }
+
             const isClickable =
                 target.tagName === 'A' ||
                 target.tagName === 'BUTTON' ||
@@ -68,14 +92,26 @@ export default function Cursor3D() {
                 target.classList.contains('hover-elevate') ||
                 window.getComputedStyle(target).cursor === 'pointer';
 
-            if (isClickable && !isHovering) {
+            if (isClickable && !isHoveringRef.current) {
                 playHover();
             }
-            setIsHovering(!!isClickable);
+
+            if (!!isClickable !== isHoveringRef.current) {
+                isHoveringRef.current = !!isClickable;
+                setIsHoveringState(!!isClickable);
+            }
         };
 
         const handleMouseOut = () => {
-            setIsHovering(false);
+            isHoveringRef.current = false;
+            setIsHoveringState(false);
+            // Don't reset hidden state on mouseout immediately, let mouseover handle it
+            // or reset if leaving window? 
+            // Actually, if we leave the element, mouseover on new element will fire.
+            // But if we leave the window, we might want to reset.
+            // For now, let's keep it simple.
+            isHiddenRef.current = false;
+            setIsHiddenState(false);
         };
 
         const handleTouchMove = (e: TouchEvent) => {
@@ -83,7 +119,6 @@ export default function Cursor3D() {
                 const touch = e.touches[0];
                 mouseRef.current = { x: touch.clientX, y: touch.clientY };
 
-                // Update dot immediately
                 if (cursorDotRef.current) {
                     cursorDotRef.current.style.transform = `translate(${touch.clientX}px, ${touch.clientY}px) translate(-50%, -50%)`;
                 }
@@ -91,12 +126,16 @@ export default function Cursor3D() {
         };
 
         const handleTouchStart = (e: TouchEvent) => {
-            setIsClicking(true);
+            isClickingRef.current = true;
+            setIsClickingState(true);
             playClick();
             handleTouchMove(e);
         };
 
-        const handleTouchEnd = () => setIsClicking(false);
+        const handleTouchEnd = () => {
+            isClickingRef.current = false;
+            setIsClickingState(false);
+        };
 
         window.addEventListener("mousemove", handleMouseMove);
         window.addEventListener("mousedown", handleMouseDown);
@@ -115,6 +154,8 @@ export default function Cursor3D() {
 
             if (cursorLensRef.current) {
                 cursorLensRef.current.style.transform = `translate(${lensPosRef.current.x}px, ${lensPosRef.current.y}px) translate(-50%, -50%)`;
+                // Apply hidden opacity here too to ensure sync
+                cursorLensRef.current.style.opacity = isHiddenRef.current ? '0' : '1';
             }
 
             // 2. Trail Logic
@@ -138,7 +179,13 @@ export default function Cursor3D() {
                 const ratio = index / trailHistoryRef.current.length; // 0 to 1
 
                 el.style.transform = `translate(${pos.x}px, ${pos.y}px) translate(-50%, -50%) scale(${ratio})`;
-                el.style.opacity = `${ratio * 0.5}`;
+
+                // Hide trails if cursor is hidden
+                if (isHiddenRef.current) {
+                    el.style.opacity = '0';
+                } else {
+                    el.style.opacity = `${ratio * 0.5}`;
+                }
             });
 
             requestRef.current = requestAnimationFrame(animate);
@@ -185,6 +232,7 @@ export default function Cursor3D() {
           pointer-events: none;
           z-index: 100000;
           mix-blend-mode: difference;
+          transition: opacity 0.2s ease;
         }
 
         .cursor-trail-dot {
@@ -202,6 +250,7 @@ export default function Cursor3D() {
           /* Ensure no border or other styles interfere */
           border: none;
           outline: none;
+          transition: opacity 0.2s ease;
         }
 
         .cursor-lens {
@@ -223,7 +272,7 @@ export default function Cursor3D() {
             0 0 15px rgba(0, 0, 0, 0.1),
             inset 0 0 10px rgba(255, 255, 255, 0.1);
             
-          transition: width 0.3s, height 0.3s, border-radius 0.3s;
+          transition: width 0.3s, height 0.3s, border-radius 0.3s, opacity 0.15s ease-out;
         }
 
         .cursor-lens.hovering {
@@ -238,9 +287,18 @@ export default function Cursor3D() {
           height: 30px;
           backdrop-filter: invert(1) blur(2px);
         }
+
+        .cursor-hidden {
+            opacity: 0 !important;
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+        }
       `}</style>
-            <div ref={cursorDotRef} className="cursor-dot" />
-            <div ref={cursorLensRef} className={`cursor-lens ${isHovering ? 'hovering' : ''} ${isClicking ? 'clicking' : ''}`} />
+            <div ref={cursorDotRef} className={`cursor-dot ${isHiddenState ? 'cursor-hidden' : ''}`} />
+            <div ref={cursorLensRef} className={`cursor-lens ${isHoveringState ? 'hovering' : ''} ${isClickingState ? 'clicking' : ''} ${isHiddenState ? 'cursor-hidden' : ''}`} />
         </>,
         document.body
     );

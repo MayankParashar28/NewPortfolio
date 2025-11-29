@@ -28,7 +28,8 @@ export default function TextScramble({
             setIsAnimating(true);
             let iteration = 0;
             const totalIterations = text.length;
-            const intervalDuration = duration / (totalIterations * 2); // Adjust speed based on length
+            const intervalTime = 30;
+            const stepsPerTick = (text.length * intervalTime) / duration;
 
             const interval = setInterval(() => {
                 setDisplayText((prev) =>
@@ -49,8 +50,8 @@ export default function TextScramble({
                     setDisplayText(text); // Ensure final text is correct
                 }
 
-                iteration += 1 / 3; // Slower resolve for smoother effect
-            }, 30);
+                iteration += stepsPerTick;
+            }, intervalTime);
 
             return () => clearInterval(interval);
         }

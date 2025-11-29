@@ -82,6 +82,9 @@ function Particles({ count = 1000 }) {
 }
 
 export default function ParticleBackground() {
+    const isMobile = window.innerWidth < 768;
+    const particleCount = isMobile ? 50 : 300;
+
     return (
         <div className="fixed inset-0 z-0 pointer-events-none">
             <Canvas
@@ -91,7 +94,7 @@ export default function ParticleBackground() {
             >
                 <ambientLight intensity={0.5} />
                 <pointLight position={[10, 10, 10]} />
-                <Particles count={300} />
+                <Particles count={particleCount} />
             </Canvas>
         </div>
     );

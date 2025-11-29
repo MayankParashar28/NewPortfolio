@@ -58,7 +58,7 @@ export default function Certificates() {
                         <img
                           src={cert.image}
                           alt={cert.title}
-                          className="w-12 h-12 object-cover grayscale group-hover:grayscale-0 transition-all duration-300"
+                          className="w-12 h-12 object-contain transition-all duration-300"
                         />
                       </div>
                       <div className="flex-1 min-w-0">
@@ -81,15 +81,17 @@ export default function Certificates() {
                       {cert.description}
                     </p>
 
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="w-full mt-auto bg-transparent border-white/10 hover:bg-primary/10 hover:border-primary/50 hover:text-primary transition-all duration-300"
-                      onClick={() => window.open(cert.credentialUrl || "#", "_blank")}
-                    >
-                      <ExternalLink className="w-4 h-4 mr-2" />
-                      View Credential
-                    </Button>
+                    {cert.credentialUrl && cert.credentialUrl !== "#" && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-full mt-auto bg-transparent border-white/10 hover:bg-primary/10 hover:border-primary/50 hover:text-primary transition-all duration-300"
+                        onClick={() => window.open(cert.credentialUrl, "_blank")}
+                      >
+                        <ExternalLink className="w-4 h-4 mr-2" />
+                        View Credential
+                      </Button>
+                    )}
                   </div>
                 </SpotlightCard>
               </Tilt>

@@ -13,6 +13,8 @@ import Footer from "@/components/Footer";
 import BackToTop from "@/components/BackToTop";
 import ScrollProgress from "@/components/ScrollProgress";
 
+import SmoothScroll from "@/components/SmoothScroll";
+
 // Lazy load 3D components for performance
 const Cursor3D = lazy(() => import("@/components/Cursor3D"));
 const ParticleBackground = lazy(() => import("@/components/ParticleBackground"));
@@ -35,6 +37,7 @@ function App() {
     <ThemeProvider defaultTheme="dark">
       <QueryClientProvider client={queryClient}>
         <div className="min-h-screen text-foreground font-sans antialiased selection:bg-primary selection:text-primary-foreground">
+          <SmoothScroll />
           <ScrollProgress />
           <Suspense fallback={null}>
             <ParticleBackground />

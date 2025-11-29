@@ -133,22 +133,26 @@ export default function InteractiveSelection() {
                         zIndex: 99999, // Super high z-index
                         boxShadow: `0 0 ${sparkle.size * 2}px ${sparkle.color}`,
                         animation: "fade-out 0.5s forwards"
-                    }}
+                    }
+                    }
                 />
-            ))}
-            {ripples.map(ripple => (
-                <div
-                    key={ripple.id}
-                    className="copy-ripple-effect"
-                    style={{
-                        left: ripple.x,
-                        top: ripple.y,
-                        width: "100vmax",
-                        height: "100vmax",
-                        transform: "translate(-50%, -50%) scale(0)",
-                    }}
-                />
-            ))}
+            ))
+            }
+            {
+                ripples.map(ripple => (
+                    <div
+                        key={ripple.id}
+                        className="copy-ripple-effect"
+                        style={{
+                            left: ripple.x,
+                            top: ripple.y,
+                            width: "100vmax",
+                            height: "100vmax",
+                            transform: "translate(-50%, -50%) scale(0)",
+                        }}
+                    />
+                ))
+            }
             <style>{`
         @keyframes fade-out {
           0% { opacity: 1; transform: scale(1); }
