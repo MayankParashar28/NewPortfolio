@@ -37,6 +37,7 @@ export default function Hero() {
         >
           <span className="block text-2xl sm:text-3xl mb-2 text-muted-foreground font-normal">
             Hello, I'm <GlitchText text={user.name} className="font-bold text-foreground" />
+            <span className="block text-xl sm:text-2xl mt-1 text-muted-foreground/80 font-normal">AI/ML Engineer</span>
           </span>
           Building the Future with
           <span className="block mt-2 text-primary h-[1.2em]">
@@ -45,7 +46,8 @@ export default function Hero() {
                 strings: [
                   "Artificial Intelligence",
                   "Machine Learning",
-                  "Deep Learning",
+                  "Generative AI",
+                  "AI & LLMs",
                   "Data Science",
                 ],
                 autoStart: true,
@@ -57,17 +59,19 @@ export default function Hero() {
           </span>
         </motion.h1>
 
+
+
         <motion.div
           initial={{ scaleX: 0 }}
           animate={{ scaleX: 1 }}
-          transition={{ duration: 0.8, delay: 0.3 }}
+          transition={{ duration: 0.8, delay: 0.4 }}
           className="w-24 h-1 bg-foreground mx-auto mb-8"
         ></motion.div>
 
         <motion.p
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.4 }}
+          transition={{ duration: 0.5, delay: 0.5 }}
           className="text-lg sm:text-xl text-muted-foreground max-w-3xl mx-auto mb-12 leading-relaxed"
           data-testid="text-hero-description"
         >
@@ -78,7 +82,7 @@ export default function Hero() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.5 }}
+          transition={{ duration: 0.5, delay: 0.6 }}
           className="flex flex-wrap items-center justify-center gap-4 mb-12"
         >
           <Magnetic strength={0.4}>
@@ -107,7 +111,7 @@ export default function Hero() {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: 0.5, delay: 0.6 }}
+          transition={{ duration: 0.5, delay: 0.7 }}
           className="flex items-center justify-center gap-4"
         >
           <a href={user.socials.github} target="_blank" rel="noopener noreferrer">
@@ -150,6 +154,6 @@ export default function Hero() {
           <span className="not-italic text-[10px] opacity-70">– Alan Kay</span>
         </p>
       </motion.div>
-    </section>
+    </section >
   );
 }

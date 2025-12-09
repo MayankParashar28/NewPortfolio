@@ -97,8 +97,8 @@ export default function Contact() {
               className="text-4xl sm:text-5xl font-heading font-bold mb-4"
             />
             <div className="w-20 h-1 bg-foreground mx-auto"></div>
-            <p className="text-muted-foreground mt-6 max-w-2xl mx-auto">
-              Let's collaborate on exciting AI projects or discuss opportunities in machine learning
+            <p className="text-muted-foreground mt-6 max-w-2xl mx-auto text-lg leading-relaxed">
+              Actively looking for <span className="text-primary font-semibold">ML/AI Engineer</span> and <span className="text-primary font-semibold">Data Scientist</span> roles; available for internships and full-time.
             </p>
           </motion.div>
         </div>

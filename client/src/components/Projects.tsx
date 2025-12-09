@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ExternalLink, Github } from "lucide-react";
@@ -21,10 +21,18 @@ const defaultOptions = {
 };
 
 export default React.memo(function Projects() {
+  const [activeCategory, setActiveCategory] = useState("All");
+
+  const categories = ["All", ...Array.from(new Set(user.projects.map((p) => p.category || "Other")))];
+
+  const filteredProjects = activeCategory === "All"
+    ? user.projects
+    : user.projects.filter((p) => (p.category || "Other") === activeCategory);
+
   return (
     <section id="projects" className="py-20 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
       <div className="max-w-7xl mx-auto relative z-10">
-        <div className="text-center mb-16">
+        <div className="text-center mb-12">
           <ScrollReveal animation="fade-up">
             <TextScramble
               text="Featured Projects"
@@ -36,14 +44,32 @@ export default React.memo(function Projects() {
               Innovative AI solutions showcasing practical applications of machine learning
             </p>
           </ScrollReveal>
+
+          <ScrollReveal animation="fade-up" delay={0.1}>
+            <div className="flex flex-wrap justify-center gap-2 mt-8">
+              {categories.map((category) => (
+                <Button
+                  key={category}
+                  variant={activeCategory === category ? "default" : "outline"}
+                  onClick={() => setActiveCategory(category)}
+                  className={`rounded-full transition-all ${activeCategory === category
+                      ? "shadow-lg shadow-primary/25 scale-105"
+                      : "hover:bg-primary/10 hover:text-primary border-primary/20"
+                    }`}
+                >
+                  {category}
+                </Button>
+              ))}
+            </div>
+          </ScrollReveal>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {user.projects.map((project, index) => (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 min-h-[400px]">
+          {filteredProjects.map((project, index) => (
             <ScrollReveal
-              key={index}
+              key={`${project.title}-${index}`}
               animation="fade-up"
-              delay={index * 0.1}
+              delay={index * 0.1} // Simple stagger based on index in filtered view
               className="h-full"
             >
               <Tilt options={defaultOptions} className="h-full">

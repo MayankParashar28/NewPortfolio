@@ -6,6 +6,7 @@ import { Tilt } from "react-tilt";
 import ScrollReveal from "@/components/ScrollReveal";
 import SpotlightCard from "@/components/SpotlightCard";
 import TextScramble from "@/components/TextScramble";
+import { useTheme } from "@/components/ThemeProvider";
 
 const defaultOptions = {
   reverse: false,
@@ -21,6 +22,7 @@ const defaultOptions = {
 
 export default function Certificates() {
   const certificates = user.certificates;
+  const { theme } = useTheme();
 
   return (
     <section id="certificates" className="py-20 px-4 sm:px-6 lg:px-8 border-t border-border bg-muted/30 relative overflow-hidden">
@@ -50,7 +52,7 @@ export default function Certificates() {
               <Tilt options={defaultOptions} className="h-full">
                 <SpotlightCard
                   className="h-full border border-white/10 bg-white/5 backdrop-blur-md rounded-xl hover:border-primary/30 transition-all duration-300 group"
-                  spotlightColor="rgba(255, 255, 255, 0.15)"
+                  spotlightColor={theme === "dark" ? "rgba(255, 255, 255, 0.15)" : "rgba(0, 0, 0, 0.05)"}
                 >
                   <div className="p-6 flex flex-col h-full relative z-10">
                     <div className="flex items-start gap-4 mb-4">
@@ -58,7 +60,7 @@ export default function Certificates() {
                         <img
                           src={cert.image}
                           alt={cert.title}
-                          className="w-12 h-12 object-contain transition-all duration-300"
+                          className={`w-16 h-16 object-contain transition-all duration-300 ${cert.logoClassName || ""}`}
                         />
                       </div>
                       <div className="flex-1 min-w-0">
@@ -82,15 +84,21 @@ export default function Certificates() {
                     </p>
 
                     {cert.credentialUrl && cert.credentialUrl !== "#" && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="w-full mt-auto bg-transparent border-white/10 hover:bg-primary/10 hover:border-primary/50 hover:text-primary transition-all duration-300"
-                        onClick={() => window.open(cert.credentialUrl, "_blank")}
+                      <a
+                        href={cert.credentialUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="w-full mt-auto"
                       >
-                        <ExternalLink className="w-4 h-4 mr-2" />
-                        View Credential
-                      </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="w-full bg-transparent border-white/10 hover:bg-primary/10 hover:border-primary/50 hover:text-primary transition-all duration-300"
+                        >
+                          <ExternalLink className="w-4 h-4 mr-2" />
+                          View Credential
+                        </Button>
+                      </a>
                     )}
                   </div>
                 </SpotlightCard>

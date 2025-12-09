@@ -1,4 +1,5 @@
 import { useRef, useState } from "react";
+import { useTheme } from "./ThemeProvider";
 
 interface SpotlightCardProps {
     children: React.ReactNode;
@@ -9,11 +10,14 @@ interface SpotlightCardProps {
 export default function SpotlightCard({
     children,
     className = "",
-    spotlightColor = "rgba(255, 255, 255, 0.25)" // Increased opacity
+    spotlightColor
 }: SpotlightCardProps) {
     const divRef = useRef<HTMLDivElement>(null);
     const [position, setPosition] = useState({ x: 0, y: 0 });
     const [opacity, setOpacity] = useState(0);
+    const { theme } = useTheme();
+
+    const finalSpotlightColor = spotlightColor || (theme === "dark" ? "rgba(255, 255, 255, 0.25)" : "rgba(0, 0, 0, 0.1)");
 
     const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
         if (!divRef.current) return;
@@ -38,7 +42,7 @@ export default function SpotlightCard({
                 className="pointer-events-none absolute -inset-px transition duration-300 z-30" // Increased z-index
                 style={{
                     opacity,
-                    background: `radial-gradient(600px circle at ${position.x}px ${position.y}px, ${spotlightColor}, transparent 40%)`,
+                    background: `radial-gradient(600px circle at ${position.x}px ${position.y}px, ${finalSpotlightColor}, transparent 40%)`,
                 }}
             />
             {children}

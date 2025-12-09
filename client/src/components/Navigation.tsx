@@ -66,39 +66,34 @@ export default function Navigation() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center gap-2">
-            <Magnetic strength={0.2}>
-              <button
-                onClick={() => scrollToSection("hero")}
-                className="text-xl font-heading font-bold hover-elevate active-elevate-2 px-3 py-2 rounded-md"
-                data-testid="button-logo"
-              >
-                {user.name}
-              </button>
-            </Magnetic>
+            <button
+              onClick={() => scrollToSection("hero")}
+              className="text-xl font-heading font-bold hover-elevate active-elevate-2 px-3 py-2 rounded-md"
+              data-testid="button-logo"
+            >
+              {user.name}
+            </button>
           </div>
 
           <div className="hidden md:flex items-center gap-4">
             <div className="flex items-center gap-2">
               {navLinks.map((link) => (
-                <Magnetic key={link.id} strength={0.3}>
-                  <Button
-                    variant="ghost"
-                    onClick={() => scrollToSection(link.id)}
-                    data-testid={`button-nav-${link.id}`}
-                  >
-                    {link.label}
-                  </Button>
-                </Magnetic>
+                <Button
+                  key={link.id}
+                  variant="ghost"
+                  onClick={() => scrollToSection(link.id)}
+                  data-testid={`button-nav-${link.id}`}
+                >
+                  {link.label}
+                </Button>
               ))}
             </div>
-            <Magnetic strength={0.4}>
-              <a href={user.resumeUrl} download="Mayank_Parashar_Resume.pdf">
-                <Button variant="default" className="gap-2" data-testid="button-resume-download">
-                  <Download className="w-4 h-4" />
-                  Resume
-                </Button>
-              </a>
-            </Magnetic>
+            <a href={user.resumeUrl} download="Mayank_Parashar_Resume.pdf">
+              <Button variant="default" className="gap-2" data-testid="button-resume-download">
+                <Download className="w-4 h-4" />
+                Resume
+              </Button>
+            </a>
             <ThemeToggle />
           </div>
 

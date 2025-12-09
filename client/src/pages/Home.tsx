@@ -1,5 +1,5 @@
 import { lazy, Suspense } from "react";
-import Navigation from "@/components/Navigation";
+
 const Background3D = lazy(() => import("@/components/Background3D"));
 import Hero from "@/components/Hero";
 import About from "@/components/About";
@@ -31,7 +31,7 @@ export default function Home() {
           <Background3D />
         </Suspense>
         <div className="relative z-10">
-          <Navigation />
+
           <main id="main-content" className="relative">
             <Hero />
             <About />
