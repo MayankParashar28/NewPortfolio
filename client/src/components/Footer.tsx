@@ -1,5 +1,6 @@
-import { Github, Linkedin, Mail } from "lucide-react";
+import { Github, Linkedin, Mail, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
+
 
 import { user } from "@/data";
 
@@ -22,6 +23,15 @@ export default function Footer() {
                     </div>
                 </div>
                 <div className="flex items-center gap-4">
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        className="hover:scale-110 transition-transform"
+                        onClick={() => window.dispatchEvent(new CustomEvent("trigger-easter-egg"))}
+                        aria-label="Trigger AI Magic"
+                    >
+                        <Sparkles className="w-5 h-5" />
+                    </Button>
                     <a href={user.socials.github} target="_blank" rel="noopener noreferrer" data-testid="footer-github">
                         <Button variant="ghost" size="icon" className="hover:scale-110 transition-transform" aria-label="GitHub">
                             <Github className="w-5 h-5" />

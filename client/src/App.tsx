@@ -6,6 +6,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import InteractiveSelection from "@/components/InteractiveSelection";
+import EasterEgg from "@/components/EasterEgg";
 import Home from "@/pages/Home";
 import NotFound from "@/pages/not-found";
 import Navigation from "@/components/Navigation";
@@ -44,6 +45,7 @@ function App() {
             <Cursor3D />
           </Suspense>
           <InteractiveSelection />
+          <EasterEgg />
           <Navigation />
           <Router />
           <BackToTop />
