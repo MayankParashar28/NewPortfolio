@@ -1073,8 +1073,10 @@ function ProfileForm({ defaultValues, onSubmit, isPending }: {
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
-            if (file.size > 5 * 1024 * 1024) { // 5MB limit
-                alert("File size should be less than 5MB");
+            // Vercel Serverless limit is 4.5MB for the body. 
+            // Base64 adds ~33% overhead. 3MB * 1.33 = ~4MB, which is safe.
+            if (file.size > 3 * 1024 * 1024) { // Reduced to 3MB limit
+                toast({ title: "File too large", description: "Please upload a PDF smaller than 3MB.", variant: "destructive" });
                 return;
             }
             setFileName(file.name);
@@ -1094,7 +1096,16 @@ function ProfileForm({ defaultValues, onSubmit, isPending }: {
             const res = await apiRequest("POST", "/api/analyze-resume", {
                 resumeBase64: form.getValues("resumeUrl"),
             });
-            const data = await res.json();
+
+            // Handle non-JSON responses (like Vercel 413s or 504s)
+            let data;
+            const contentType = res.headers.get("content-type");
+            if (contentType && contentType.includes("application/json")) {
+                data = await res.json();
+            } else {
+                const text = await res.text();
+                throw new Error(`Server Error (${res.status}): ${text.substring(0, 100)}...`);
+            }
 
             if (res.ok) {
                 setAnalysisFeedback(data.analysis);
@@ -1103,6 +1114,7 @@ function ProfileForm({ defaultValues, onSubmit, isPending }: {
                 throw new Error(data.message || "Failed to analyze");
             }
         } catch (error: any) {
+            console.error("Resume analysis failed:", error);
             toast({ title: "Analysis Failed", description: error.message, variant: "destructive" });
         } finally {
             setIsAnalyzing(false);
@@ -1130,7 +1142,7 @@ function ProfileForm({ defaultValues, onSubmit, isPending }: {
                                         </div>
                                         <div>
                                             <p className="font-medium text-foreground">Click or drag PDF here</p>
-                                            <p className="text-sm text-muted-foreground mt-1">Max file size: 5MB</p>
+                                            <p className="text-sm text-muted-foreground mt-1">Max file size: 3MB</p>
                                         </div>
                                     </div>
                                 </div>
