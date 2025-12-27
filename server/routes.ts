@@ -4,7 +4,7 @@ import { setupAuth } from "./auth";
 import { storage } from "./storage";
 import { insertProjectSchema, insertSkillSchema, insertCertificateSchema, insertProfileSchema } from "../shared/schema";
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { PDFParse } from 'pdf-parse';
+
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // setup authentication routes and middleware
@@ -132,52 +132,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json(profile);
   });
 
-  app.post("/api/analyze-resume", isAuthenticated, async (req, res) => {
-    try {
-      const { resumeBase64 } = req.body;
 
-      if (!process.env.GEMINI_API_KEY) {
-        return res.status(500).json({ message: "Gemini API Key is not configured on the server." });
-      }
-
-      // 1. Extract raw text from PDF
-      const base64Data = resumeBase64.replace(/^data:application\/pdf;base64,/, "");
-      const dataBuffer = Buffer.from(base64Data, "base64");
-      console.log("[DEBUG] Parsing PDF...");
-
-      const parser = new PDFParse({ data: dataBuffer });
-      const pdfData = await parser.getText();
-
-      const resumeText = pdfData.text.slice(0, 10000); // Gemini has a larger context window
-      console.log("[DEBUG] PDF Parsed. Text Length:", resumeText.length);
-
-      // 2. Send to Gemini
-      console.log("[DEBUG] Initializing Gemini...");
-      const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-      const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
-
-      const prompt = `
-        You are an expert Resume Reviewer. Analyze the following resume text.
-        Provide constructive feedback in 3-4 bullet points. 
-        Focus on: Impact, Clarity, and Keywords.
-        Be concise and helpful. 
-        
-        Resume Text:
-        ${resumeText}
-      `;
-
-      console.log("[DEBUG] Sending prompt to Gemini...");
-      const result = await model.generateContent(prompt);
-      const response = await result.response;
-      const text = response.text();
-      console.log("[DEBUG] Gemini Response received:", text.slice(0, 50) + "...");
-
-      res.json({ analysis: text });
-    } catch (error: any) {
-      console.error("Resume Analysis Error:", error);
-      res.status(500).json({ message: error.message || "Failed to analyze resume" });
-    }
-  });
 
   const httpServer = createServer(app);
   return httpServer;
