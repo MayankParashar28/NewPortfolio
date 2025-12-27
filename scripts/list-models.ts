@@ -1,36 +1,46 @@
 
-import { GoogleGenerativeAI } from "@google/generative-ai";
 import * as dotenv from "dotenv";
-dotenv.config();
+import fs from 'fs';
+import path from 'path';
+import https from 'https';
 
-async function listModels() {
-    try {
-        const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" }); // arbitrary, just need client
-        // Actually the SDK doesn't have a direct listModels method on the client instance easily exposed in all versions?
-        // Wait, typical usage:
-        // const genAI = new GoogleGenerativeAI(API_KEY);
-        // But listing models usually requires fetching via REST if the SDK doesn't expose it handy.
-        // However, let's try to assume the user might have 'gemini-2.0-flash-exp'.
+// Load env directly to avoid path issues
+const envPath = path.resolve(process.cwd(), '.env');
+const envConfig = dotenv.parse(fs.readFileSync(envPath));
+const apiKey = envConfig.GEMINI_API_KEY;
 
-        // Let's use a raw fetch to list models to be sure.
-        const key = process.env.GEMINI_API_KEY;
-        if (!key) {
-            console.error("No API Key found");
-            return;
-        }
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${key}`);
-        const data = await response.json();
-        console.log("Available Models:");
-        if (data.models) {
-            data.models.forEach((m: any) => console.log(`- ${m.name} (${m.supportedGenerationMethods.join(', ')})`));
-        } else {
-            console.log(JSON.stringify(data, null, 2));
-        }
-
-    } catch (error) {
-        console.error("Error listing models:", error);
-    }
+if (!apiKey) {
+    console.error("CRITICAL: GEMINI_API_KEY not found in .env");
+    process.exit(1);
 }
 
-listModels();
+console.log(`Using API Key: ${apiKey.substring(0, 5)}...`);
+
+const url = `https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`;
+
+https.get(url, (res) => {
+    let data = '';
+    res.on('data', (chunk) => data += chunk);
+    res.on('end', () => {
+        try {
+            const json = JSON.parse(data);
+            if (json.error) {
+                console.error("API Error:", json.error);
+            } else if (json.models) {
+                console.log("--- Available Models ---");
+                json.models.forEach((m: any) => {
+                    console.log(`Name: ${m.name}`);
+                    console.log(`Methods: ${m.supportedGenerationMethods}`);
+                    console.log('---');
+                });
+            } else {
+                console.log("Unexpected response:", json);
+            }
+        } catch (e) {
+            console.error("Parse error:", e);
+            console.log("Raw body:", data);
+        }
+    });
+}).on('error', (err) => {
+    console.error("Network error:", err);
+});
