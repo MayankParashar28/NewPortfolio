@@ -1,18 +1,30 @@
 import { Button } from "@/components/ui/button";
 import { ChevronDown, Github, Linkedin, Mail } from "lucide-react";
 import Typewriter from "typewriter-effect";
-import { user } from "@/data";
 import { motion } from "framer-motion";
 import GlitchText from "@/components/GlitchText";
 import Magnetic from "@/components/Magnetic";
+import { useQuery } from "@tanstack/react-query";
+import { Profile } from "@shared/schema";
 
 export default function Hero() {
+  const { data: profile } = useQuery<Profile>({
+    queryKey: ["/api/profile"],
+  });
+
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);
     if (element) {
       element.scrollIntoView({ behavior: "smooth" });
     }
   };
+
+  const name = profile?.name || "Mayank Parashar";
+  const title = profile?.title || "AI & Machine Learning Student";
+  const tagline = profile?.tagline || "Building the Future with Artificial Intelligence";
+  const githubUrl = profile?.githubUrl || "https://github.com";
+  const linkedinUrl = profile?.linkedinUrl || "https://linkedin.com";
+  const email = profile?.email || "mailto:email@example.com";
 
   return (
     <section id="hero" className="relative min-h-screen flex items-center justify-center overflow-hidden">
@@ -24,7 +36,7 @@ export default function Hero() {
           className="mb-8 inline-block"
         >
           <span className="px-4 py-2 border border-border rounded-full text-sm font-medium backdrop-blur-sm bg-background/50" data-testid="text-badge">
-            {user.title}
+            {title}
           </span>
         </motion.div>
 
@@ -36,7 +48,7 @@ export default function Hero() {
           data-testid="text-hero-title"
         >
           <span className="block text-2xl sm:text-3xl mb-2 text-muted-foreground font-normal">
-            Hello, I'm <GlitchText text={user.name} className="font-bold text-foreground" />
+            Hello, I'm <GlitchText text={name} className="font-bold text-foreground" />
             <span className="block text-xl sm:text-2xl mt-1 text-muted-foreground/80 font-normal">AI/ML Engineer</span>
           </span>
           Building the Future with
@@ -59,8 +71,6 @@ export default function Hero() {
           </span>
         </motion.h1>
 
-
-
         <motion.div
           initial={{ scaleX: 0 }}
           animate={{ scaleX: 1 }}
@@ -75,8 +85,7 @@ export default function Hero() {
           className="text-lg sm:text-xl text-muted-foreground max-w-3xl mx-auto mb-12 leading-relaxed"
           data-testid="text-hero-description"
         >
-          Passionate about creating intelligent systems and exploring the frontiers of machine learning,
-          deep learning, and neural networks. Transforming ideas into innovative AI solutions.
+          {tagline}
         </motion.p>
 
         <motion.div
@@ -114,17 +123,17 @@ export default function Hero() {
           transition={{ duration: 0.5, delay: 0.7 }}
           className="flex items-center justify-center gap-4"
         >
-          <a href={user.socials.github} target="_blank" rel="noopener noreferrer">
+          <a href={githubUrl} target="_blank" rel="noopener noreferrer">
             <Button variant="ghost" size="icon" data-testid="button-github" className="hover:scale-110 transition-transform">
               <Github className="w-5 h-5" />
             </Button>
           </a>
-          <a href={user.socials.linkedin} target="_blank" rel="noopener noreferrer">
+          <a href={linkedinUrl} target="_blank" rel="noopener noreferrer">
             <Button variant="ghost" size="icon" data-testid="button-linkedin" className="hover:scale-110 transition-transform">
               <Linkedin className="w-5 h-5" />
             </Button>
           </a>
-          <a href={user.socials.email}>
+          <a href={`mailto:${email}`}>
             <Button variant="ghost" size="icon" data-testid="button-email" className="hover:scale-110 transition-transform">
               <Mail className="w-5 h-5" />
             </Button>

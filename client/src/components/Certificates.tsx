@@ -1,12 +1,13 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ExternalLink, Award, BadgeCheck } from "lucide-react";
-import { user } from "@/data";
+import { ExternalLink, Award, BadgeCheck, Loader2 } from "lucide-react";
 import { Tilt } from "react-tilt";
 import ScrollReveal from "@/components/ScrollReveal";
 import SpotlightCard from "@/components/SpotlightCard";
 import TextScramble from "@/components/TextScramble";
 import { useTheme } from "@/components/ThemeProvider";
+import { useQuery } from "@tanstack/react-query";
+import { Certificate } from "@shared/schema";
 
 const defaultOptions = {
   reverse: false,
@@ -21,8 +22,21 @@ const defaultOptions = {
 };
 
 export default function Certificates() {
-  const certificates = user.certificates;
   const { theme } = useTheme();
+
+  const { data: certificates, isLoading } = useQuery<Certificate[]>({
+    queryKey: ["/api/certificates"],
+  });
+
+  if (isLoading) {
+    return (
+      <section id="certificates" className="py-20 flex justify-center">
+        <Loader2 className="w-10 h-10 animate-spin text-primary" />
+      </section>
+    );
+  }
+
+  const safeCertificates = certificates || [];
 
   return (
     <section id="certificates" className="py-20 px-4 sm:px-6 lg:px-8 border-t border-border bg-muted/30 relative overflow-hidden">
@@ -42,7 +56,7 @@ export default function Certificates() {
         </div>
 
         <div className="grid md:grid-cols-2 gap-8">
-          {certificates.map((cert, index) => (
+          {safeCertificates.map((cert, index) => (
             <ScrollReveal
               key={index}
               animation="fade-up"
@@ -60,7 +74,7 @@ export default function Certificates() {
                         <img
                           src={cert.image}
                           alt={cert.title}
-                          className={`w-16 h-16 object-cover transition-all duration-300 ${cert.logoClassName || ""}`}
+                          className={`w-16 h-16 object-cover transition-all duration-300`}
                         />
                       </div>
                       <div className="flex-1 min-w-0">
@@ -105,6 +119,11 @@ export default function Certificates() {
               </Tilt>
             </ScrollReveal>
           ))}
+          {safeCertificates.length === 0 && (
+            <div className="col-span-full text-center text-muted-foreground py-10">
+              No certificates found. Add them via Admin Dashboard.
+            </div>
+          )}
         </div>
       </div>
     </section>
