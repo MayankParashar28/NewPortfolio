@@ -1023,7 +1023,7 @@ function ProfileManager() {
 
     return (
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-            <Card className="border-border/50 bg-black/40 backdrop-blur-md overflow-hidden">
+            <Card className="border-border/50 bg-card/30 backdrop-blur-md overflow-hidden">
                 <CardHeader>
                     <CardTitle className="text-2xl font-heading font-bold text-foreground flex items-center gap-2">
                         <FileText className="w-6 h-6 text-primary" />
