@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { setupAuth } from "./auth";
 import { storage } from "./storage";
-import { insertProjectSchema, insertSkillSchema, insertCertificateSchema, insertProfileSchema } from "@shared/schema";
+import { insertProjectSchema, insertSkillSchema, insertCertificateSchema, insertProfileSchema } from "../shared/schema";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { PDFParse } from 'pdf-parse';
 
