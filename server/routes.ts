@@ -131,7 +131,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const profile = await storage.updateProfile(parsed.data);
     res.json(profile);
   });
+  // AI Resume Analysis
+  app.post("/api/analyze-resume", isAuthenticated, async (req, res) => {
+    try {
+      if (!process.env.GEMINI_API_KEY) {
+        throw new Error("GEMINI_API_KEY is not configured");
+      }
 
+      const { resumeBase64 } = req.body;
+      if (!resumeBase64 || !resumeBase64.startsWith("data:application/pdf;base64,")) {
+        return res.status(400).json({ message: "Invalid PDF data provided" });
+      }
+
+      // Extract base64 content
+      const base64Data = resumeBase64.split(",")[1];
+
+      const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+      const prompt = `
+      You are an expert technical recruiter and AI resume analyzer. 
+      Analyze the attached resume PDF.
+      
+      Provide a concise 3-part review in Markdown format:
+      1. **Strengths**: 3-4 bullet points on what stands out (skills, impact, etc).
+      2. **Improvements**: 2-3 specific, actionable tips to make it better.
+      3. **ATS Score**: An estimated score out of 100 based on keyword density and formatting.
+      
+      Keep the tone professional yet encouraging.
+      `;
+
+      const result = await model.generateContent([
+        prompt,
+        {
+          inlineData: {
+            data: base64Data,
+            mimeType: "application/pdf",
+          },
+        },
+      ]);
+
+      const text = result.response.text();
+      res.json({ analysis: text });
+
+    } catch (error: any) {
+      console.error("Resume analysis error:", error);
+      res.status(500).json({ message: error.message || "Failed to analyze resume" });
+    }
+  });
 
 
   const httpServer = createServer(app);
