@@ -1,9 +1,10 @@
 import React, { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ExternalLink, Github } from "lucide-react";
+import { ExternalLink, Github, Loader2 } from "lucide-react";
 import { Tilt } from "react-tilt";
-import { user } from "@/data";
+import { useQuery } from "@tanstack/react-query";
+import { Project } from "@shared/schema";
 import ScrollReveal from "@/components/ScrollReveal";
 import SpotlightCard from "@/components/SpotlightCard";
 import TextScramble from "@/components/TextScramble";
@@ -23,11 +24,25 @@ const defaultOptions = {
 export default React.memo(function Projects() {
   const [activeCategory, setActiveCategory] = useState("All");
 
-  const categories = ["All", ...Array.from(new Set(user.projects.map((p) => p.category || "Other")))];
+  const { data: projects, isLoading } = useQuery<Project[]>({
+    queryKey: ["/api/projects"],
+  });
+
+  if (isLoading) {
+    return (
+      <section id="projects" className="py-20 flex justify-center">
+        <Loader2 className="w-10 h-10 animate-spin text-primary" />
+      </section>
+    );
+  }
+
+  // Handle case where projects might be undefined or empty
+  const safeProjects = projects || [];
+  const categories = ["All", ...Array.from(new Set(safeProjects.map((p) => p.category || "Other")))];
 
   const filteredProjects = activeCategory === "All"
-    ? user.projects
-    : user.projects.filter((p) => (p.category || "Other") === activeCategory);
+    ? safeProjects
+    : safeProjects.filter((p) => (p.category || "Other") === activeCategory);
 
   return (
     <section id="projects" className="py-20 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
@@ -53,8 +68,8 @@ export default React.memo(function Projects() {
                   variant={activeCategory === category ? "default" : "outline"}
                   onClick={() => setActiveCategory(category)}
                   className={`rounded-full transition-all ${activeCategory === category
-                      ? "shadow-lg shadow-primary/25 scale-105"
-                      : "hover:bg-primary/10 hover:text-primary border-primary/20"
+                    ? "shadow-lg shadow-primary/25 scale-105"
+                    : "hover:bg-primary/10 hover:text-primary border-primary/20"
                     }`}
                 >
                   {category}
@@ -114,17 +129,17 @@ export default React.memo(function Projects() {
                         variant="outline"
                         size="sm"
                         className="flex-1 h-8 text-xs bg-transparent border-white/20 hover:bg-white/10 hover:text-primary"
-                        onClick={() => window.open(project.links.github, "_blank")}
+                        onClick={() => window.open(project.githubLink, "_blank")}
                         data-testid={`button-project-${index}-github`}
                       >
                         <Github className="w-3 h-3 mr-1.5" />
                         Code
                       </Button>
-                      {project.links.demo && project.links.demo !== "#" && (
+                      {project.demoLink && (
                         <Button
                           size="sm"
                           className="flex-1 h-8 text-xs"
-                          onClick={() => window.open(project.links.demo, "_blank")}
+                          onClick={() => window.open(project.demoLink as string, "_blank")}
                           data-testid={`button-project-${index}-demo`}
                         >
                           <ExternalLink className="w-3 h-3 mr-1.5" />

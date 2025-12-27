@@ -1,37 +1,150 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { Tilt } from "react-tilt";
-import { SiPython, SiTensorflow, SiPytorch, SiScikitlearn, SiJupyter, SiGit, SiReact, SiTypescript, SiNodedotjs, SiDocker, SiMongodb, SiPostgresql, SiAmazon, SiStreamlit, SiHuggingface } from "react-icons/si";
-import { Brain, Database, Code2, Terminal, Cpu, Globe, Sparkles, Workflow } from "lucide-react";
+// Icons mapping - in a real app, you might map string names to these components
+// Icons mapping
+import {
+  SiPython, SiTensorflow, SiPytorch, SiScikitlearn, SiJupyter, SiGit, SiReact,
+  SiTypescript, SiNodedotjs, SiDocker, SiMongodb, SiPostgresql, SiAmazon,
+  SiStreamlit, SiHuggingface, SiJavascript, SiHtml5, SiCss3, SiNextdotjs,
+  SiTailwindcss, SiFirebase, SiGraphql, SiMysql, SiRedis, SiLinux,
+  SiKubernetes, SiGo, SiRust, SiCplusplus, SiAngular, SiVuedotjs, SiSvelte,
+  SiSpring, SiDjango, SiFlask, SiFastapi, SiExpress, SiGooglecloud,
+  SiLangchain, SiOpenai, SiKeras, SiOpencv
+} from "react-icons/si";
+import {
+  Brain, Database, Code2, Terminal, Cpu, Globe, Sparkles, Workflow,
+  Loader2, Server, Cloud, Layout, Eye, MessageSquareText, Bot
+} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import TextScramble from "@/components/TextScramble";
+import { useQuery } from "@tanstack/react-query";
+import { Skill } from "@shared/schema";
 
-const skills = [
-  // Core ML/AI
-  { name: "Python", icon: SiPython, color: "#3776AB", category: "Core ML/AI" },
-  { name: "TensorFlow", icon: SiTensorflow, color: "#FF6F00", category: "Core ML/AI" },
-  { name: "PyTorch", icon: SiPytorch, color: "#EE4C2C", category: "Core ML/AI" },
-  { name: "Scikit-learn", icon: SiScikitlearn, color: "#F7931E", category: "Core ML/AI" },
-  { name: "Deep Learning", icon: Brain, color: "#9333EA", category: "Core ML/AI" },
-  { name: "Computer Vision", icon: Cpu, color: "#06B6D4", category: "Core ML/AI" },
-  { name: "NLP", icon: Globe, color: "#22C55E", category: "Core ML/AI" },
-  { name: "Generative AI", icon: Sparkles, color: "#9F7AEA", category: "Core ML/AI" },
-  { name: "LangChain", icon: Workflow, color: "#1C3C3C", category: "Core ML/AI" },
-  { name: "Streamlit", icon: SiStreamlit, color: "#FF4B4B", category: "Core ML/AI" },
-  { name: "Hugging Face", icon: SiHuggingface, color: "#FFD21E", category: "Core ML/AI" },
+// Simple fallback icon map
+// Comprehensive icon map
+const iconMap: Record<string, any> = {
+  // Manual text mapping
+  "Python": SiPython,
+  "python": SiPython,
+  "TensorFlow": SiTensorflow,
+  "Deep Learning": Brain,
+  "React": SiReact,
+  "react": SiReact,
+  "React.js": SiReact,
+  "Vue": SiVuedotjs,
+  "vue": SiVuedotjs,
+  "Angular": SiAngular,
+  "angular": SiAngular,
+  "Node.js": SiNodedotjs,
+  "Node": SiNodedotjs,
+  "node": SiNodedotjs,
+  "TypeScript": SiTypescript,
+  "typescript": SiTypescript,
+  "JavaScript": SiJavascript,
+  "javascript": SiJavascript,
+  "Java": SiSpring,
+  "java": SiSpring,
+  "C++": SiCplusplus,
+  "c++": SiCplusplus,
+  "Go": SiGo,
+  "go": SiGo,
+  "Rust": SiRust,
+  "rust": SiRust,
+  "Docker": SiDocker,
+  "docker": SiDocker,
+  "AWS": SiAmazon,
+  "aws": SiAmazon,
+  "Git": SiGit,
+  "git": SiGit,
+  "PostgreSQL": SiPostgresql,
+  "MongoDB": SiMongodb,
+  "Tailwind": SiTailwindcss,
+  "CSS": SiCss3,
+  "HTML": SiHtml5,
+  "Next.js": SiNextdotjs,
+  "next.js": SiNextdotjs,
 
-  // Software Engineering
-  { name: "React", icon: SiReact, color: "#61DAFB", category: "Software Engineering" },
-  { name: "TypeScript", icon: SiTypescript, color: "#3178C6", category: "Software Engineering" },
-  { name: "Node.js", icon: SiNodedotjs, color: "#339933", category: "Software Engineering" },
-  { name: "PostgreSQL", icon: SiPostgresql, color: "#4169E1", category: "Software Engineering" },
-  { name: "Git", icon: SiGit, color: "#F05032", category: "Software Engineering" },
+  // AI / ML Specific
+  "scikit-learn": SiScikitlearn,
+  "sciketlearn": SiScikitlearn, // typo handling
+  "sklearn": SiScikitlearn,
+  "Computer Vision": SiOpencv, // Prefer OpenCV icon or generic
+  "computer vision": SiOpencv,
+  "compuer vision": SiOpencv, // typo
+  "cv": SiOpencv,
+  "opencv": SiOpencv,
+  "NLP": MessageSquareText,
+  "nlp": MessageSquareText,
+  "Natural Language Processing": MessageSquareText,
+  "Gen AI": Sparkles,
+  "gen ai": Sparkles,
+  "Generative AI": Sparkles,
+  "LLM": Bot,
+  "llm": Bot,
+  "LangChain": SiLangchain,
+  "langchain": SiLangchain,
+  "Streamlit": SiStreamlit,
+  "streamlit": SiStreamlit,
+  "OpenAI": SiOpenai,
+  "openai": SiOpenai,
+  "Keras": SiKeras,
+  "keras": SiKeras,
+  "Pytorch": SiPytorch,
+  "pytorch": SiPytorch,
 
-  // Cloud/DevOps
-  { name: "Docker", icon: SiDocker, color: "#2496ED", category: "Cloud/DevOps" },
-  { name: "AWS", icon: SiAmazon, color: "#FF9900", category: "Cloud/DevOps" },
-];
+  // Direct icon name mapping
+  "SiPython": SiPython,
+  "SiTensorflow": SiTensorflow,
+  "SiPytorch": SiPytorch,
+  "SiScikitlearn": SiScikitlearn,
+  "SiJupyter": SiJupyter,
+  "SiGit": SiGit,
+  "SiReact": SiReact,
+  "SiTypescript": SiTypescript,
+  "SiNodedotjs": SiNodedotjs,
+  "SiDocker": SiDocker,
+  "SiMongodb": SiMongodb,
+  "SiPostgresql": SiPostgresql,
+  "SiAmazon": SiAmazon,
+  "SiStreamlit": SiStreamlit,
+  "SiHuggingface": SiHuggingface,
+  "SiJavascript": SiJavascript,
+  "SiHtml5": SiHtml5,
+  "SiCss3": SiHtml5, // Fallback or distinct
+  "SiNextdotjs": SiNextdotjs,
+  "SiTailwindcss": SiTailwindcss,
+  "SiFirebase": SiFirebase,
+  "SiGraphql": SiGraphql,
+  "SiMysql": SiMysql,
+  "SiRedis": SiRedis,
+  "SiLinux": SiLinux,
+  "SiKubernetes": SiKubernetes,
+  "SiGo": SiGo,
+  "SiRust": SiRust,
+  "SiCplusplus": SiCplusplus,
+  "SiAngular": SiAngular,
+  "SiVue": SiVuedotjs,
+  "SiSvelte": SiSvelte,
+  "SiSpring": SiSpring,
+  "SiDjango": SiDjango,
+  "SiFlask": SiFlask,
+  "SiFastapi": SiFastapi,
+  "SiExpress": SiExpress,
+  "SiGooglecloud": SiGooglecloud,
+  "SiLangchain": SiLangchain,
+  "SiOpenai": SiOpenai,
+  "SiKeras": SiKeras,
+  "SiOpencv": SiOpencv,
+
+  // Generic
+  "default": Code2,
+  "server": Server,
+  "database": Database,
+  "cloud": Cloud,
+  "layout": Layout
+};
 
 const defaultOptions = {
   reverse: false,
@@ -46,15 +159,50 @@ const defaultOptions = {
 };
 
 export default React.memo(function Skills() {
+  const { data: skills, isLoading } = useQuery<Skill[]>({
+    queryKey: ["/api/skills"],
+  });
+
+  if (isLoading) {
+    return (
+      <section id="skills" className="py-20 flex justify-center min-h-screen">
+        <Loader2 className="w-10 h-10 animate-spin text-primary" />
+      </section>
+    );
+  }
+
+  const safeSkills = skills || [];
+
   // Define the order of categories
   const categoryOrder = ["Core ML/AI", "Software Engineering", "Cloud/DevOps"];
 
   // Group skills by category
-  const groupedSkills = skills.reduce((acc, skill) => {
+  const groupedSkills = safeSkills.reduce((acc, skill) => {
     if (!acc[skill.category]) acc[skill.category] = [];
     acc[skill.category].push(skill);
     return acc;
-  }, {} as Record<string, typeof skills>);
+  }, {} as Record<string, typeof safeSkills>);
+
+  const getIcon = (skill: Skill) => {
+    // Try to match by DB icon field first, BUT ignore 'default' placeholder
+    if (skill.icon && skill.icon !== "default" && iconMap[skill.icon]) {
+      return iconMap[skill.icon];
+    }
+
+    // Normalization for robust name matching
+    // 1. Exact match
+    if (iconMap[skill.name]) return iconMap[skill.name];
+
+    // 2. Lowercase match
+    const lower = skill.name.toLowerCase();
+    if (iconMap[lower]) return iconMap[lower];
+
+    // 3. Trimmed match
+    const trimmed = lower.trim();
+    if (iconMap[trimmed]) return iconMap[trimmed];
+
+    return Code2; // Default icon
+  };
 
   return (
     <section id="skills" className="py-20 px-4 sm:px-6 lg:px-8 relative overflow-hidden min-h-screen flex flex-col justify-center">
@@ -103,19 +251,13 @@ export default React.memo(function Skills() {
                   >
                     <Tilt options={defaultOptions} className="h-full">
                       <div className="h-full p-2.5 rounded-xl bg-white/5 backdrop-blur-md border border-white/10 shadow-lg hover:shadow-primary/20 hover:border-primary/30 transition-all duration-300 group flex flex-col items-center justify-center gap-2 text-center">
-                        <motion.div
+                        <div
                           className="p-2 rounded-full bg-white/5 group-hover:bg-white/10 transition-colors duration-300"
-                          style={{ color: skill.color }}
-                          animate={{ y: [0, -5, 0] }}
-                          transition={{
-                            duration: 3,
-                            repeat: Infinity,
-                            ease: "easeInOut",
-                            delay: index * 0.2, // Staggered delay for natural feel
-                          }}
+                          style={{ color: skill.color || "#ffffff" }}
+                        // Animate logic here...
                         >
-                          <skill.icon className="w-5 h-5 sm:w-6 sm:h-6" />
-                        </motion.div>
+                          {React.createElement(getIcon(skill), { className: "w-5 h-5 sm:w-6 sm:h-6" })}
+                        </div>
 
                         <div>
                           <h3 className="font-heading font-semibold text-xs sm:text-sm mb-0.5 text-foreground">

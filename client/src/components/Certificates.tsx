@@ -60,7 +60,7 @@ export default function Certificates() {
                         <img
                           src={cert.image}
                           alt={cert.title}
-                          className={`w-16 h-16 object-contain transition-all duration-300 ${cert.logoClassName || ""}`}
+                          className={`w-16 h-16 object-cover transition-all duration-300 ${cert.logoClassName || ""}`}
                         />
                       </div>
                       <div className="flex-1 min-w-0">

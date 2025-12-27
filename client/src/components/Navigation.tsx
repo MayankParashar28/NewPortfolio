@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import ThemeToggle from "./ThemeToggle";
 import Magnetic from "@/components/Magnetic";
 import { motion, useScroll, useMotionValueEvent } from "framer-motion";
+import { useQuery } from "@tanstack/react-query";
+import { Profile } from "@shared/schema";
 
 import { user } from "@/data";
 import {
@@ -18,6 +20,13 @@ export default function Navigation() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [hidden, setHidden] = useState(false);
   const { scrollY } = useScroll();
+
+  const { data: profile } = useQuery<Profile>({
+    queryKey: ["/api/profile"],
+    staleTime: 0
+  });
+
+  const resumeUrl = profile?.resumeUrl || user.resumeUrl;
 
   useMotionValueEvent(scrollY, "change", (latest) => {
     const previous = scrollY.getPrevious() || 0;
@@ -88,7 +97,7 @@ export default function Navigation() {
                 </Button>
               ))}
             </div>
-            <a href={user.resumeUrl} download="Mayank_Parashar_Resume.pdf">
+            <a href={resumeUrl} download="Mayank_Parashar_Resume.pdf">
               <Button variant="default" className="gap-2" data-testid="button-resume-download">
                 <Download className="w-4 h-4" />
                 Resume
@@ -98,7 +107,7 @@ export default function Navigation() {
           </div>
 
           <div className="flex md:hidden items-center gap-3">
-            <a href={user.resumeUrl} download="Mayank_Parashar_Resume.pdf">
+            <a href={resumeUrl} download="Mayank_Parashar_Resume.pdf">
               <Button
                 variant="ghost"
                 size="icon"
@@ -144,7 +153,7 @@ export default function Navigation() {
               {link.label}
             </Button>
           ))}
-          <a href={user.resumeUrl} download="Mayank_Parashar_Resume.pdf" className="block">
+          <a href={resumeUrl} download="Mayank_Parashar_Resume.pdf" className="block">
             <Button variant="default" className="w-full gap-2" data-testid="button-mobile-resume-download">
               <Download className="w-4 h-4" />
               Download Resume

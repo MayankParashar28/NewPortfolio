@@ -6,7 +6,7 @@ import { useSound } from "@/hooks/useSound";
 export default function Cursor3D() {
     const cursorLensRef = useRef<HTMLDivElement>(null);
     const cursorDotRef = useRef<HTMLDivElement>(null);
-    const trailsRef = useRef<HTMLDivElement[]>([]);
+
 
     // State for rendering classes
     const [isHoveringState, setIsHoveringState] = useState(false);
@@ -24,8 +24,7 @@ export default function Cursor3D() {
     // Refs for physics
     const mouseRef = useRef({ x: -100, y: -100 });
     const lensPosRef = useRef({ x: -100, y: -100 });
-    // Trail history
-    const trailHistoryRef = useRef<{ x: number, y: number }[]>([]);
+
     const requestRef = useRef<number>();
 
     const isScrollingRef = useRef(false);
@@ -147,46 +146,12 @@ export default function Cursor3D() {
         document.addEventListener("mouseout", handleMouseOut);
 
         const animate = () => {
-            // 1. Lens Physics
-            const ease = 0.12;
-            lensPosRef.current.x += (mouseRef.current.x - lensPosRef.current.x) * ease;
-            lensPosRef.current.y += (mouseRef.current.y - lensPosRef.current.y) * ease;
-
+            // 1. Direct Assignment (No Physics Lag)
             if (cursorLensRef.current) {
-                cursorLensRef.current.style.transform = `translate(${lensPosRef.current.x}px, ${lensPosRef.current.y}px) translate(-50%, -50%)`;
+                cursorLensRef.current.style.transform = `translate(${mouseRef.current.x}px, ${mouseRef.current.y}px) translate(-50%, -50%)`;
                 // Apply hidden opacity here too to ensure sync
                 cursorLensRef.current.style.opacity = isHiddenRef.current ? '0' : '1';
             }
-
-            // 2. Trail Logic
-            // Add current mouse pos to history
-            trailHistoryRef.current.push({ ...mouseRef.current });
-            if (trailHistoryRef.current.length > 12) { // Trail length
-                trailHistoryRef.current.shift();
-            }
-
-            // Update trail elements
-            trailHistoryRef.current.forEach((pos, index) => {
-                // Create element if needed (lazy init for performance)
-                if (!trailsRef.current[index]) {
-                    const el = document.createElement('div');
-                    el.className = 'cursor-trail-dot';
-                    document.body.appendChild(el);
-                    trailsRef.current[index] = el;
-                }
-
-                const el = trailsRef.current[index];
-                const ratio = index / trailHistoryRef.current.length; // 0 to 1
-
-                el.style.transform = `translate(${pos.x}px, ${pos.y}px) translate(-50%, -50%) scale(${ratio})`;
-
-                // Hide trails if cursor is hidden
-                if (isHiddenRef.current) {
-                    el.style.opacity = '0';
-                } else {
-                    el.style.opacity = `${ratio * 0.5}`;
-                }
-            });
 
             requestRef.current = requestAnimationFrame(animate);
         };
@@ -203,8 +168,6 @@ export default function Cursor3D() {
             window.removeEventListener("touchstart", handleTouchStart);
             window.removeEventListener("touchend", handleTouchEnd);
             if (requestRef.current) cancelAnimationFrame(requestRef.current);
-            // Cleanup trails
-            trailsRef.current.forEach(el => el.remove());
         };
     }, []);
 
@@ -235,23 +198,7 @@ export default function Cursor3D() {
           transition: opacity 0.2s ease;
         }
 
-        .cursor-trail-dot {
-          position: fixed;
-          top: 0;
-          left: 0;
-          width: 6px;
-          height: 6px;
-          background-color: white;
-          border-radius: 50%; /* Should be circular */
-          pointer-events: none;
-          z-index: 99998;
-          mix-blend-mode: difference;
-          will-change: transform, opacity;
-          /* Ensure no border or other styles interfere */
-          border: none;
-          outline: none;
-          transition: opacity 0.2s ease;
-        }
+
 
         .cursor-lens {
           position: fixed;
@@ -263,14 +210,14 @@ export default function Cursor3D() {
           pointer-events: none;
           z-index: 99990; /* Behind dot and trail */
           
-          background: rgba(255, 255, 255, 0.02);
-          backdrop-filter: invert(1) blur(1px);
-          -webkit-backdrop-filter: invert(1) blur(1px);
+          background: transparent;
+          backdrop-filter: none;
+          -webkit-backdrop-filter: none;
           
-          border: 1px solid rgba(255, 255, 255, 0.2);
-          box-shadow: 
-            0 0 15px rgba(0, 0, 0, 0.1),
-            inset 0 0 10px rgba(255, 255, 255, 0.1);
+          mix-blend-mode: difference;
+          
+          border: 1.5px solid white;
+          box-shadow: none;
             
           transition: width 0.3s, height 0.3s, border-radius 0.3s, opacity 0.15s ease-out;
         }

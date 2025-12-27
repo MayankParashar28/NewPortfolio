@@ -1,42 +1,24 @@
 import { Moon, Sun } from "lucide-react";
 import { useTheme } from "./ThemeProvider";
+import { Button } from "@/components/ui/button";
 
 export default function ThemeToggle() {
   const { theme, setTheme } = useTheme();
 
-  const toggleTheme = () => {
-    setTheme(theme === "light" ? "dark" : "light");
-  };
-
   return (
-    <button
-      onClick={toggleTheme}
-      className="relative w-16 h-8 rounded-full bg-muted border border-border overflow-hidden group"
-      style={{
-        boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.2), 0 2px 4px rgba(0,0,0,0.1)',
-        transition: 'all 0.3s ease'
-      }}
-      data-testid="button-theme-toggle"
-      aria-label="Toggle theme"
+    <Button
+      variant="ghost"
+      size="icon"
+      onClick={() => setTheme(theme === "light" ? "dark" : "light")}
+      className="rounded-full w-10 h-10 transition-transform duration-200 hover:scale-110 active:scale-95 text-foreground hover:bg-muted"
+      title={theme === "light" ? "Switch to Dark Mode" : "Switch to Light Mode"}
     >
-      <div
-        className="absolute top-1 left-1 w-6 h-6 rounded-full bg-foreground transition-all duration-300 ease-in-out flex items-center justify-center"
-        style={{
-          transform: theme === "dark" ? "translateX(32px)" : "translateX(0)",
-          boxShadow: '0 2px 8px rgba(0,0,0,0.3), inset 0 -2px 4px rgba(0,0,0,0.2), inset 0 2px 4px rgba(255,255,255,0.1)',
-        }}
-      >
-        {theme === "light" ? (
-          <Sun className="w-4 h-4 text-background" />
-        ) : (
-          <Moon className="w-4 h-4 text-background" />
-        )}
-      </div>
-      
-      <div className="absolute inset-0 flex items-center justify-between px-2 pointer-events-none">
-        <Sun className={`w-3 h-3 transition-opacity duration-300 ${theme === "light" ? "opacity-0" : "opacity-40"}`} />
-        <Moon className={`w-3 h-3 transition-opacity duration-300 ${theme === "dark" ? "opacity-0" : "opacity-40"}`} />
-      </div>
-    </button>
+      {theme === "light" ? (
+        <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+      ) : (
+        <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+      )}
+      <span className="sr-only">Toggle theme</span>
+    </Button>
   );
 }

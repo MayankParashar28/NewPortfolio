@@ -33,7 +33,7 @@ export const user = {
         techFocus: "Current focus: LLM agents, RAG, and scalable ML systems on cloud (AWS).",
         image: myPhoto,
         quote: "Artificial intelligence is not a substitute for human intelligence; it is a tool to amplify human creativity and ingenuity.",
-        seeking: ["Internships", "Full-time roles in ML Engineer", "AI Engineer", "Data Scientist"],
+        seeking: ["Internships", "Full-time roles in ML Engineer", "AI Engineer", "Computer Vision Engineer"],
         revealImage: neuralNetworkImg,
     },
     projects: [
