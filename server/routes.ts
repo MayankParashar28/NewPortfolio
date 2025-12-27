@@ -4,6 +4,9 @@ import { setupAuth } from "./auth";
 import { storage } from "./storage";
 import { insertProjectSchema, insertSkillSchema, insertCertificateSchema, insertProfileSchema } from "../shared/schema";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleAIFileManager } from "@google/generative-ai/server";
+import fs from "fs";
+import path from "path";
 
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -143,36 +146,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid PDF data provided" });
       }
 
-      // Extract base64 content
+      // 1. Write PDF to temporary file (Gemini File Manager needs a file path)
       const base64Data = resumeBase64.split(",")[1];
+      const tempFilePath = path.join(process.cwd(), `temp_${Date.now()}.pdf`);
+      await fs.promises.writeFile(tempFilePath, Buffer.from(base64Data, "base64"));
 
-      const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+      try {
+        // 2. Upload to Gemini
+        const fileManager = new GoogleAIFileManager(process.env.GEMINI_API_KEY);
+        const uploadResult = await fileManager.uploadFile(tempFilePath, {
+          mimeType: "application/pdf",
+          displayName: "Resume Analysis",
+        });
 
-      const prompt = `
-      You are an expert technical recruiter and AI resume analyzer. 
-      Analyze the attached resume PDF.
-      
-      Provide a concise 3-part review in Markdown format:
-      1. **Strengths**: 3-4 bullet points on what stands out (skills, impact, etc).
-      2. **Improvements**: 2-3 specific, actionable tips to make it better.
-      3. **ATS Score**: An estimated score out of 100 based on keyword density and formatting.
-      
-      Keep the tone professional yet encouraging.
-      `;
+        // 3. Generate Content using the File URI
+        const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-      const result = await model.generateContent([
-        prompt,
-        {
-          inlineData: {
-            data: base64Data,
-            mimeType: "application/pdf",
+        const prompt = `
+        You are an expert technical recruiter and AI resume analyzer. 
+        Analyze the attached resume PDF.
+        
+        Provide a concise 3-part review in Markdown format:
+        1. **Strengths**: 3-4 bullet points on what stands out (skills, impact, etc).
+        2. **Improvements**: 2-3 specific, actionable tips to make it better.
+        3. **ATS Score**: An estimated score out of 100 based on keyword density and formatting.
+        
+        Keep the tone professional yet encouraging.
+        `;
+
+        const result = await model.generateContent([
+          prompt,
+          {
+            fileData: {
+              fileUri: uploadResult.file.uri,
+              mimeType: uploadResult.file.mimeType,
+            },
           },
-        },
-      ]);
+        ]);
 
-      const text = result.response.text();
-      res.json({ analysis: text });
+        const text = result.response.text();
+
+        // 4. Cleanup (Delete temp file)
+        await fs.promises.unlink(tempFilePath);
+
+        res.json({ analysis: text });
+
+      } catch (innerError: any) {
+        // Cleanup on error
+        if (fs.existsSync(tempFilePath)) {
+          await fs.promises.unlink(tempFilePath).catch(() => { });
+        }
+        throw innerError;
+      }
 
     } catch (error: any) {
       console.error("Resume analysis error:", error);
