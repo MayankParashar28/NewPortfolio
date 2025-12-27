@@ -7,8 +7,7 @@ export const users = pgTable("users", {
   // Username might be optional for phone-only users initially, but let's keep it unique if present.
   username: text("username").unique(),
   password: text("password"),
-  firebaseUid: text("firebase_uid").unique(),
-  phoneNumber: text("phone_number").unique(),
+
 });
 
 export const projects = pgTable("projects", {

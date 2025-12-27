@@ -5,7 +5,7 @@ import session from "express-session";
 import { scrypt, randomBytes, timingSafeEqual } from "crypto";
 import { promisify } from "util";
 import { storage } from "./storage";
-import { verifyIdToken } from "./firebase";
+
 import { User } from "@shared/schema";
 
 const scryptAsync = promisify(scrypt);
@@ -87,54 +87,7 @@ export function setupAuth(app: Express) {
         res.status(200).json(req.user);
     });
 
-    app.post("/api/login/firebase", async (req, res, next) => {
-        try {
-            const { idToken } = req.body;
-            const decodedToken = await verifyIdToken(idToken);
 
-            if (!decodedToken) {
-                return res.status(401).send("Invalid Firebase Token");
-            }
-
-            const firebaseUid = decodedToken.uid;
-            const phoneNumber = decodedToken.phone_number;
-
-            let user = await storage.getUserByFirebaseUid(firebaseUid);
-
-            if (!user) {
-                // Determine a username. Phone numbers can be usernames if we strip special chars
-                // or we use a placeholder.
-                const generatedUsername = phoneNumber || `user_${firebaseUid.substring(0, 8)}`;
-
-                // Check if a user with this username already exists (e.g. from previous partial flow or manual seed)
-                // This prevents "duplicate key value violates unique constraint"
-                const existingUserByUsername = await storage.getUserByUsername(generatedUsername);
-
-                if (existingUserByUsername) {
-                    // If user exists by username but didn't have firebaseUid set (or we missed it), update it or just log them in
-                    // For safety/simplicity, we return this user. 
-                    // Ideally we should link the firebaseUid to this user if missing.
-                    user = existingUserByUsername;
-
-                    // Optional: Backfill firebaseUid if it's missing (requires storage update method, skipping for now to be safe)
-                } else {
-                    user = await storage.createUser({
-                        username: generatedUsername,
-                        password: "", // No password for phone users
-                        firebaseUid,
-                        phoneNumber,
-                    } as any);
-                }
-            }
-
-            req.login(user, (err) => {
-                if (err) return next(err);
-                res.status(200).json(user);
-            });
-        } catch (err) {
-            next(err);
-        }
-    });
 
     app.post("/api/logout", (req, res, next) => {
         req.logout((err) => {
