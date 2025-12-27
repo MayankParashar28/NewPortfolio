@@ -65,12 +65,12 @@ export default function Certificates() {
             >
               <Tilt options={defaultOptions} className="h-full">
                 <SpotlightCard
-                  className="h-full border border-white/10 bg-white/5 backdrop-blur-md rounded-xl hover:border-primary/30 transition-all duration-300 group"
+                  className="h-full border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 backdrop-blur-md rounded-xl hover:border-primary/30 transition-all duration-300 group"
                   spotlightColor={theme === "dark" ? "rgba(255, 255, 255, 0.15)" : "rgba(0, 0, 0, 0.05)"}
                 >
                   <div className="p-6 flex flex-col h-full relative z-10">
                     <div className="flex items-start gap-4 mb-4">
-                      <div className="flex-shrink-0 p-2 bg-background/50 rounded-lg border border-white/10">
+                      <div className="flex-shrink-0 p-2 bg-background/50 rounded-lg border border-black/10 dark:border-white/10">
                         <img
                           src={cert.image}
                           alt={cert.title}
@@ -107,7 +107,7 @@ export default function Certificates() {
                         <Button
                           variant="outline"
                           size="sm"
-                          className="w-full bg-transparent border-white/10 hover:bg-primary/10 hover:border-primary/50 hover:text-primary transition-all duration-300"
+                          className="w-full bg-transparent border-black/10 dark:border-white/10 hover:bg-primary/10 hover:border-primary/50 hover:text-primary transition-all duration-300"
                         >
                           <ExternalLink className="w-4 h-4 mr-2" />
                           View Credential

@@ -250,10 +250,10 @@ export default React.memo(function Skills() {
                     viewport={{ once: true }}
                   >
                     <Tilt options={defaultOptions} className="h-full">
-                      <div className="h-full p-2.5 rounded-xl bg-white/5 backdrop-blur-md border border-white/10 shadow-lg hover:shadow-primary/20 hover:border-primary/30 transition-all duration-300 group flex flex-col items-center justify-center gap-2 text-center">
+                      <div className="h-full p-2.5 rounded-xl bg-black/5 dark:bg-white/5 backdrop-blur-md border border-black/10 dark:border-white/10 shadow-lg hover:shadow-primary/20 hover:border-primary/30 transition-all duration-300 group flex flex-col items-center justify-center gap-2 text-center">
                         <div
-                          className="p-2 rounded-full bg-white/5 group-hover:bg-white/10 transition-colors duration-300"
-                          style={{ color: skill.color || "#ffffff" }}
+                          className="p-2 rounded-full bg-black/5 dark:bg-white/5 group-hover:bg-black/10 dark:group-hover:bg-white/10 transition-colors duration-300"
+                          style={{ color: skill.color || "currentColor" }}
                         // Animate logic here...
                         >
                           {React.createElement(getIcon(skill), { className: "w-5 h-5 sm:w-6 sm:h-6" })}

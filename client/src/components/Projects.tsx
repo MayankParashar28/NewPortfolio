@@ -88,7 +88,7 @@ export default React.memo(function Projects() {
               className="h-full"
             >
               <Tilt options={defaultOptions} className="h-full">
-                <SpotlightCard className="h-full rounded-xl bg-white/5 backdrop-blur-md border border-white/10 shadow-xl group hover:border-primary/30 transition-all duration-300 flex flex-col">
+                <SpotlightCard className="h-full rounded-xl bg-black/5 dark:bg-white/5 backdrop-blur-md border border-black/10 dark:border-white/10 shadow-xl group hover:border-primary/30 transition-all duration-300 flex flex-col">
                   <div className="relative overflow-hidden aspect-video">
                     <div className="absolute inset-0 bg-primary/10 mix-blend-overlay z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                     <img
@@ -116,7 +116,7 @@ export default React.memo(function Projects() {
                         <Badge
                           key={tagIndex}
                           variant="secondary"
-                          className="text-[10px] px-1.5 py-0.5 bg-white/5 hover:bg-white/10 border-white/5"
+                          className="text-[10px] px-1.5 py-0.5 bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 border-black/5 dark:border-white/5"
                           data-testid={`badge-project-${index}-tag-${tagIndex}`}
                         >
                           {tag}
@@ -128,7 +128,7 @@ export default React.memo(function Projects() {
                       <Button
                         variant="outline"
                         size="sm"
-                        className="flex-1 h-8 text-xs bg-transparent border-white/20 hover:bg-white/10 hover:text-primary"
+                        className="flex-1 h-8 text-xs bg-transparent border-black/20 dark:border-white/20 hover:bg-black/10 dark:hover:bg-white/10 hover:text-primary"
                         onClick={() => window.open(project.githubLink, "_blank")}
                         data-testid={`button-project-${index}-github`}
                       >
