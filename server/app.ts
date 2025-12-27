@@ -74,7 +74,8 @@ export default async function runApp(
     const status = err.status || err.statusCode || 500;
     const message = err.message || "Internal Server Error";
 
-    res.status(status).json({ message });
+    // DEBUG: Send full error details to client to diagnose Vercel 500 issue
+    res.status(status).json({ message, stack: err.stack, error: String(err) });
     throw err;
   });
 
