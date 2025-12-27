@@ -628,7 +628,7 @@ function SkillDialog({ trigger, onSubmit, isPending, defaultValues, title }: {
     // Watch for name changes to auto-fill
     const watchedName = form.watch("name");
     useEffect(() => {
- j        if (!watchedName) return;
+        if (!watchedName) return;
         const lowerName = watchedName.toLowerCase().trim();
         const match = knownSkills[lowerName];
 
