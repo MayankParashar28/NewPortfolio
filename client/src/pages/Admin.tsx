@@ -1238,7 +1238,7 @@ function ProfileForm({ defaultValues, onSubmit, isPending }: {
                                     <div className="space-y-4">
                                         <div className="p-3 bg-background rounded-lg border border-border">
                                             <h4 className="text-sm font-semibold mb-1 flex items-center gap-2">
-                                                <SiGo className="w-4 h-4 text-primary" /> Summary
+                                                <FileText className="w-4 h-4 text-primary" /> Summary
                                             </h4>
                                             <p className="text-sm text-muted-foreground leading-relaxed">{analysisFeedback.summary || "No summary provided."}</p>
                                         </div>
