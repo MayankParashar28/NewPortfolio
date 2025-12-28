@@ -1097,7 +1097,6 @@ function ProfileForm({ defaultValues, onSubmit, isPending }: {
                 resumeBase64: form.getValues("resumeUrl"),
             });
 
-            // Handle non-JSON responses (like Vercel 413s or 504s)
             let data;
             const contentType = res.headers.get("content-type");
             if (contentType && contentType.includes("application/json")) {
@@ -1108,13 +1107,13 @@ function ProfileForm({ defaultValues, onSubmit, isPending }: {
             }
 
             if (res.ok) {
-                setAnalysisFeedback(data.analysis);
-                toast({ title: "Analysis Complete", description: "See feedback below." });
+                setAnalysisFeedback(data); // Expecting full JSON object
+                toast({ title: "Analysis Complete", description: "Your resume score is ready." });
             } else {
                 throw new Error(data.message || "Failed to analyze");
             }
         } catch (error: any) {
-            console.error("Resume analysis failed:", error);
+            console.error("Analysis failed:", error);
             toast({ title: "Analysis Failed", description: error.message, variant: "destructive" });
         } finally {
             setIsAnalyzing(false);
@@ -1199,21 +1198,87 @@ function ProfileForm({ defaultValues, onSubmit, isPending }: {
                                 className="shrink-0"
                             >
                                 {isAnalyzing ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Sparkles className="w-4 h-4 mr-2" />}
-                                {isAnalyzing ? "Analyzing..." : "Analyze File"}
+                                {isAnalyzing ? "Analyzing..." : "Analyze Resume"}
                             </Button>
                         </div>
 
                         {analysisFeedback && (
-                            <motion.div
-                                initial={{ opacity: 0, height: 0 }}
-                                animate={{ opacity: 1, height: "auto" }}
-                                className="mt-4 pt-4 border-t border-primary/10"
-                            >
-                                <p className="font-medium text-primary mb-2">AI Feedback:</p>
-                                <div className="prose prose-sm dark:prose-invert max-w-none text-muted-foreground">
-                                    <ReactMarkdown>{analysisFeedback}</ReactMarkdown>
+                            <div className="mt-4 pt-4 border-t border-border/50 animate-in fade-in slide-in-from-top-2 duration-300">
+                                <div className="grid md:grid-cols-[160px_1fr] gap-6">
+                                    {/* Score Section */}
+                                    <div className="flex flex-col items-center justify-center space-y-2 p-4 bg-background rounded-xl border-2 border-border shadow-sm">
+                                        <div className="relative w-24 h-24 flex items-center justify-center">
+                                            {/* Simple SVG Radial Progress - reusing logic from Skills maybe, or clean SVG */}
+                                            <svg className="w-full h-full transform -rotate-90">
+                                                <circle className="text-muted/20" strokeWidth="8" stroke="currentColor" fill="transparent" r="40" cx="48" cy="48" />
+                                                <circle
+                                                    className="transition-all duration-1000 ease-out"
+                                                    strokeWidth="8"
+                                                    strokeDasharray={251.2}
+                                                    strokeDashoffset={251.2 - ((251.2 * (analysisFeedback as any).score) / 100)}
+                                                    strokeLinecap="round"
+                                                    stroke={(analysisFeedback as any).scoreColor || "#22c55e"}
+                                                    fill="transparent"
+                                                    r="40"
+                                                    cx="48"
+                                                    cy="48"
+                                                />
+                                            </svg>
+                                            <div className="absolute inset-0 flex flex-col items-center justify-center">
+                                                <span className="text-2xl font-bold">{(analysisFeedback as any).score}</span>
+                                                <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">ATS Score</span>
+                                            </div>
+                                        </div>
+                                        <p className="text-xs text-center text-muted-foreground font-medium px-2">
+                                            {(analysisFeedback as any).score >= 80 ? "Excellent" : (analysisFeedback as any).score >= 50 ? "Good Start" : "Needs Work"}
+                                        </p>
+                                    </div>
+
+                                    {/* Feedback Sections */}
+                                    <div className="space-y-4">
+                                        <div className="p-3 bg-background rounded-lg border border-border">
+                                            <h4 className="text-sm font-semibold mb-1 flex items-center gap-2">
+                                                <SiGo className="w-4 h-4 text-primary" /> Summary
+                                            </h4>
+                                            <p className="text-sm text-muted-foreground leading-relaxed">{(analysisFeedback as any).summary}</p>
+                                        </div>
+
+                                        <div className="grid grid-cols-1 gap-3">
+                                            {(analysisFeedback as any).strengths && (
+                                                <div className="p-3 bg-green-500/5 rounded-lg border border-green-500/10">
+                                                    <h4 className="text-xs font-bold uppercase tracking-wider text-green-600 mb-2 flex items-center gap-2">
+                                                        <Check className="w-3 h-3" /> Key Strengths
+                                                    </h4>
+                                                    <ul className="text-sm space-y-1 text-muted-foreground">
+                                                        {(analysisFeedback as any).strengths.map((s: string, i: number) => (
+                                                            <li key={i} className="flex items-start gap-2">
+                                                                <span className="w-1 h-1 rounded-full bg-green-500 mt-2 shrink-0" />
+                                                                {s}
+                                                            </li>
+                                                        ))}
+                                                    </ul>
+                                                </div>
+                                            )}
+
+                                            {(analysisFeedback as any).suggestions && (
+                                                <div className="p-3 bg-amber-500/5 rounded-lg border border-amber-500/10">
+                                                    <h4 className="text-xs font-bold uppercase tracking-wider text-amber-600 mb-2 flex items-center gap-2">
+                                                        <Sparkles className="w-3 h-3" /> Improvements
+                                                    </h4>
+                                                    <ul className="text-sm space-y-1 text-muted-foreground">
+                                                        {(analysisFeedback as any).suggestions.map((s: string, i: number) => (
+                                                            <li key={i} className="flex items-start gap-2">
+                                                                <span className="w-1 h-1 rounded-full bg-amber-500 mt-2 shrink-0" />
+                                                                {s}
+                                                            </li>
+                                                        ))}
+                                                    </ul>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
                                 </div>
-                            </motion.div>
+                            </div>
                         )}
                     </div>
                 </div>

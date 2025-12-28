@@ -171,7 +171,7 @@ export default function Login() {
                                         <div className="absolute -inset-0.5 bg-gradient-to-r from-green-500/30 to-emerald-500/30 rounded-xl blur opacity-0 group-focus-within:opacity-100 transition duration-700"></div>
                                         <Input
                                             type="text"
-                                            placeholder="ab"
+                                            placeholder="abc123"
                                             value={otp}
                                             onChange={(e) => setOtp(e.target.value)}
                                             className="relative bg-black/50 border-white/10 focus:border-green-500/50 text-white placeholder:text-white/20 h-12 rounded-xl text-center tracking-[0.5em] text-xl font-mono transition-all duration-300 hover:bg-black/60 focus:bg-black/70"

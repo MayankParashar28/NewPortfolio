@@ -168,15 +168,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
         const prompt = `
-        You are an expert technical recruiter and AI resume analyzer. 
-        Analyze the attached resume PDF.
+        You are an expert technical recruiter and ATS (Applicant Tracking System) optimization specialist. 
+        Analyze the attached resume PDF with high strictness.
         
-        Provide a concise 3-part review in Markdown format:
-        1. **Strengths**: 3-4 bullet points on what stands out (skills, impact, etc).
-        2. **Improvements**: 2-3 specific, actionable tips to make it better.
-        3. **ATS Score**: An estimated score out of 100 based on keyword density and formatting.
-        
-        Keep the tone professional yet encouraging.
+        Provide the output in the following JSON format ONLY (no markdown code blocks, just raw JSON):
+        {
+          "score": number, // 0-100, be strict. Average resumes should be 50-60. Great ones 80+.
+          "scoreColor": string, // Hex color code based on score (Red < 50, Orange < 70, Green > 70)
+          "summary": string, // 1-2 sentence professional summary of the resume's quality.
+          "strengths": string[], // List of 3-5 key strengths found.
+          "weaknesses": string[], // List of 3-5 critical missing keywords or formatting issues.
+          "suggestions": string[] // Concrete, actionable steps to improve the ATS score.
+        }
         `;
 
         const result = await model.generateContent([
@@ -189,12 +192,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
           },
         ]);
 
-        const text = result.response.text();
-
         // 4. Cleanup (Delete temp file)
         await fs.promises.unlink(tempFilePath);
 
-        res.json({ analysis: text });
+        const text = result.response.text();
+
+        // Clean up potential markdown formatting from the response
+        const jsonStr = text.replace(/```json/g, "").replace(/```/g, "").trim();
+        const analysis = JSON.parse(jsonStr);
+
+        res.json(analysis);
 
       } catch (innerError: any) {
         // Cleanup on error
