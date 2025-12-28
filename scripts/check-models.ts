@@ -25,6 +25,8 @@ const candidates = [
     "gemini-1.5-pro-001",
     "gemini-1.5-pro-002",
     "gemini-2.0-flash-exp",
+    "gemini-2.5-flash",
+    "gemini-1.5-flash-8b",
     "gemini-pro",
     "gemini-1.0-pro"
 ];
