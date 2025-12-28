@@ -7,6 +7,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import { GoogleAIFileManager } from "@google/generative-ai/server";
 import fs from "fs";
 import path from "path";
+import os from "os";
 
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -146,7 +147,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid PDF data provided" });
       }
 
-      import os from "os";
+
 
       // 1. Write PDF to temporary file (Gemini File Manager needs a file path)
       const base64Data = resumeBase64.split(",")[1];
