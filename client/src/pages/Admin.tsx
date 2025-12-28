@@ -1115,12 +1115,10 @@ function ProfileForm({ defaultValues, onSubmit, isPending }: {
 
             if (res.ok) {
                 setAnalysisFeedback(data); // Expecting full JSON object
-                // Auto-save the score and feedback to the profile form state
-                // Note: The user still needs to click "Update Resume" to save to DB, 
-                // but we could also auto-submit here if desired. For now, we just update the form state so it sends on submit.
                 form.setValue("atsScore", data.score || 0);
                 form.setValue("atsFeedback", data);
-                toast({ title: "Analysis Complete", description: "Your resume score is ready. Don't forget to save changes!" });
+                // toast({ title: "Analysis Complete", description: "Score updated. Save resume to persist." });
+                toast({ title: "Analysis Complete", description: "Your resume score is ready." });
             } else {
                 throw new Error(data.message || "Failed to analyze");
             }
@@ -1214,7 +1212,7 @@ function ProfileForm({ defaultValues, onSubmit, isPending }: {
                             </Button>
                         </div>
 
-                        {analysisFeedback && analysisFeedback.score !== undefined && (
+                        {(analysisFeedback && (analysisFeedback.score !== undefined || analysisFeedback.scoreColor)) && (
                             <div className="mt-12 pt-8 border-t border-border animate-in fade-in slide-in-from-top-6 duration-700">
 
                                 {/* Hero Score Card */}
