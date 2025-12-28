@@ -1202,7 +1202,7 @@ function ProfileForm({ defaultValues, onSubmit, isPending }: {
                             </Button>
                         </div>
 
-                        {analysisFeedback && (
+                        {analysisFeedback && analysisFeedback.score !== undefined && (
                             <div className="mt-4 pt-4 border-t border-border/50 animate-in fade-in slide-in-from-top-2 duration-300">
                                 <div className="grid md:grid-cols-[160px_1fr] gap-6">
                                     {/* Score Section */}
@@ -1215,9 +1215,9 @@ function ProfileForm({ defaultValues, onSubmit, isPending }: {
                                                     className="transition-all duration-1000 ease-out"
                                                     strokeWidth="8"
                                                     strokeDasharray={251.2}
-                                                    strokeDashoffset={251.2 - ((251.2 * (analysisFeedback as any).score) / 100)}
+                                                    strokeDashoffset={251.2 - ((251.2 * (analysisFeedback.score || 0)) / 100)}
                                                     strokeLinecap="round"
-                                                    stroke={(analysisFeedback as any).scoreColor || "#22c55e"}
+                                                    stroke={analysisFeedback.scoreColor || "#22c55e"}
                                                     fill="transparent"
                                                     r="40"
                                                     cx="48"
@@ -1225,12 +1225,12 @@ function ProfileForm({ defaultValues, onSubmit, isPending }: {
                                                 />
                                             </svg>
                                             <div className="absolute inset-0 flex flex-col items-center justify-center">
-                                                <span className="text-2xl font-bold">{(analysisFeedback as any).score}</span>
+                                                <span className="text-2xl font-bold">{analysisFeedback.score || 0}</span>
                                                 <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">ATS Score</span>
                                             </div>
                                         </div>
                                         <p className="text-xs text-center text-muted-foreground font-medium px-2">
-                                            {(analysisFeedback as any).score >= 80 ? "Excellent" : (analysisFeedback as any).score >= 50 ? "Good Start" : "Needs Work"}
+                                            {(analysisFeedback.score || 0) >= 80 ? "Excellent" : (analysisFeedback.score || 0) >= 50 ? "Good Start" : "Needs Work"}
                                         </p>
                                     </div>
 
@@ -1240,17 +1240,17 @@ function ProfileForm({ defaultValues, onSubmit, isPending }: {
                                             <h4 className="text-sm font-semibold mb-1 flex items-center gap-2">
                                                 <SiGo className="w-4 h-4 text-primary" /> Summary
                                             </h4>
-                                            <p className="text-sm text-muted-foreground leading-relaxed">{(analysisFeedback as any).summary}</p>
+                                            <p className="text-sm text-muted-foreground leading-relaxed">{analysisFeedback.summary || "No summary provided."}</p>
                                         </div>
 
                                         <div className="grid grid-cols-1 gap-3">
-                                            {(analysisFeedback as any).strengths && (
+                                            {analysisFeedback.strengths && Array.isArray(analysisFeedback.strengths) && (
                                                 <div className="p-3 bg-green-500/5 rounded-lg border border-green-500/10">
                                                     <h4 className="text-xs font-bold uppercase tracking-wider text-green-600 mb-2 flex items-center gap-2">
                                                         <Check className="w-3 h-3" /> Key Strengths
                                                     </h4>
                                                     <ul className="text-sm space-y-1 text-muted-foreground">
-                                                        {(analysisFeedback as any).strengths.map((s: string, i: number) => (
+                                                        {analysisFeedback.strengths.map((s: string, i: number) => (
                                                             <li key={i} className="flex items-start gap-2">
                                                                 <span className="w-1 h-1 rounded-full bg-green-500 mt-2 shrink-0" />
                                                                 {s}
@@ -1260,13 +1260,13 @@ function ProfileForm({ defaultValues, onSubmit, isPending }: {
                                                 </div>
                                             )}
 
-                                            {(analysisFeedback as any).suggestions && (
+                                            {analysisFeedback.suggestions && Array.isArray(analysisFeedback.suggestions) && (
                                                 <div className="p-3 bg-amber-500/5 rounded-lg border border-amber-500/10">
                                                     <h4 className="text-xs font-bold uppercase tracking-wider text-amber-600 mb-2 flex items-center gap-2">
                                                         <Sparkles className="w-3 h-3" /> Improvements
                                                     </h4>
                                                     <ul className="text-sm space-y-1 text-muted-foreground">
-                                                        {(analysisFeedback as any).suggestions.map((s: string, i: number) => (
+                                                        {analysisFeedback.suggestions.map((s: string, i: number) => (
                                                             <li key={i} className="flex items-start gap-2">
                                                                 <span className="w-1 h-1 rounded-full bg-amber-500 mt-2 shrink-0" />
                                                                 {s}
