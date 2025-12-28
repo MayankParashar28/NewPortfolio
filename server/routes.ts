@@ -146,10 +146,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid PDF data provided" });
       }
 
+      import os from "os";
+
       // 1. Write PDF to temporary file (Gemini File Manager needs a file path)
       const base64Data = resumeBase64.split(",")[1];
-      const tempFilePath = path.join(process.cwd(), `temp_${Date.now()}.pdf`);
+      const tempFilePath = path.join(os.tmpdir(), `temp_${Date.now()}.pdf`);
       await fs.promises.writeFile(tempFilePath, Buffer.from(base64Data, "base64"));
+
 
       try {
         // 2. Upload to Gemini
