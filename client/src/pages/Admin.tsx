@@ -1208,12 +1208,12 @@ function ProfileForm({ defaultValues, onSubmit, isPending }: {
                                 {/* Hero Score Card */}
                                 <div className="bg-gradient-to-br from-background to-muted/20 rounded-3xl p-8 border border-border/50 shadow-xl relative overflow-hidden mb-8">
                                     <div className="absolute top-0 right-0 p-8 opacity-10 blur-3xl rounded-full bg-primary w-64 h-64 -mr-20 -mt-20 pointer-events-none"></div>
-                                    <div className="flex flex-col md:flex-row items-center justify-between gap-8 relative z-10">
-                                        <div className="flex flex-col items-center md:items-start space-y-4 max-w-lg">
-                                            <h3 className="text-3xl md:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70">
+                                    <div className="flex flex-col lg:flex-row items-center justify-between gap-8 relative z-10 text-center lg:text-left">
+                                        <div className="flex flex-col items-center lg:items-start space-y-4 max-w-xl">
+                                            <h3 className="text-3xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70">
                                                 Resume Audit Report
                                             </h3>
-                                            <p className="text-muted-foreground text-lg leading-relaxed text-center md:text-left">
+                                            <p className="text-muted-foreground text-lg md:text-xl leading-relaxed">
                                                 {analysisFeedback.summary || "Analysis complete. Review the breakdown below."}
                                             </p>
                                         </div>
