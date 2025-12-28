@@ -111,6 +111,11 @@ export default React.memo(function Projects() {
                       {project.description}
                     </p>
 
+                    <div className="flex items-center gap-1.5 mb-2 text-[10px] text-muted-foreground/60">
+                      <span className="w-1.5 h-1.5 rounded-full bg-green-500/50 inline-block animate-pulse" />
+                      Updated: {project.updatedAt ? new Date(project.updatedAt).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) : "Recently"}
+                    </div>
+
                     <div className="flex flex-wrap gap-1.5 mb-4">
                       {project.tags.map((tag, tagIndex) => (
                         <Badge

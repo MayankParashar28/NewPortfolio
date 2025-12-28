@@ -20,6 +20,8 @@ export const projects = pgTable("projects", {
   githubLink: text("github_link").notNull(),
   demoLink: text("demo_link"),
   featured: boolean("featured").default(false),
+  createdAt: text("created_at").default(new Date().toISOString()),
+  updatedAt: text("updated_at").default(new Date().toISOString()),
 });
 
 export const skills = pgTable("skills", {
