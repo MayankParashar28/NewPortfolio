@@ -841,7 +841,11 @@ function CertificatesManager() {
                                 </div>
                                 <div>
                                     <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors">{cert.title}</h3>
-                                    <p className="text-sm text-muted-foreground">{cert.issuer} • {cert.date}</p>
+                                    <p className="text-sm text-muted-foreground line-clamp-1">{cert.issuer} • {cert.date}</p>
+                                    {/* Assuming 'cert' object has an 'updatedAt' property for this change */}
+                                    <p className="text-xs text-muted-foreground/60 mt-1">
+                                        Updated: {cert.updatedAt ? new Date(cert.updatedAt).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) : "Recently"}
+                                    </p>
                                 </div>
                             </div>
                             <div className="flex gap-2">
