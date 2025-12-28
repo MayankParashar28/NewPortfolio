@@ -52,6 +52,8 @@ export const profile = pgTable("profile", {
   linkedinUrl: text("linkedin_url").notNull(),
   email: text("email").notNull(),
   openaiApiKey: text("openai_api_key").notNull().default(""),
+  atsScore: integer("ats_score"),
+  atsFeedback: jsonb("ats_feedback"),
 });
 
 export const insertUserSchema = createInsertSchema(users).pick({

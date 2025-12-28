@@ -1067,11 +1067,13 @@ function ProfileForm({ defaultValues, onSubmit, isPending }: {
             linkedinUrl: defaultValues?.linkedinUrl || "",
             email: defaultValues?.email || "",
             openaiApiKey: defaultValues?.openaiApiKey || "",
+            atsScore: defaultValues?.atsScore || 0,
+            atsFeedback: defaultValues?.atsFeedback || null,
         }
     });
 
     const [isAnalyzing, setIsAnalyzing] = useState(false);
-    const [analysisFeedback, setAnalysisFeedback] = useState<any | null>(null);
+    const [analysisFeedback, setAnalysisFeedback] = useState<any | null>(defaultValues?.atsFeedback || null);
     const [fileName, setFileName] = useState<string | null>(null);
     const { toast } = useToast();
 
@@ -1113,7 +1115,12 @@ function ProfileForm({ defaultValues, onSubmit, isPending }: {
 
             if (res.ok) {
                 setAnalysisFeedback(data); // Expecting full JSON object
-                toast({ title: "Analysis Complete", description: "Your resume score is ready." });
+                // Auto-save the score and feedback to the profile form state
+                // Note: The user still needs to click "Update Resume" to save to DB, 
+                // but we could also auto-submit here if desired. For now, we just update the form state so it sends on submit.
+                form.setValue("atsScore", data.score || 0);
+                form.setValue("atsFeedback", data);
+                toast({ title: "Analysis Complete", description: "Your resume score is ready. Don't forget to save changes!" });
             } else {
                 throw new Error(data.message || "Failed to analyze");
             }
