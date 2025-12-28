@@ -1203,96 +1203,115 @@ function ProfileForm({ defaultValues, onSubmit, isPending }: {
                         </div>
 
                         {analysisFeedback && analysisFeedback.score !== undefined && (
-                            <div className="mt-8 pt-6 border-t border-border animate-in fade-in slide-in-from-top-4 duration-500">
-                                <div className="grid md:grid-cols-[200px_1fr] gap-8">
-                                    {/* Score Section */}
-                                    <div className="flex flex-col items-center space-y-4">
-                                        <div className="relative w-40 h-40 flex items-center justify-center">
-                                            {/* Glow Effect */}
-                                            <div className="absolute inset-0 bg-primary/20 rounded-full blur-2xl opacity-50"></div>
+                            <div className="mt-12 pt-8 border-t border-border animate-in fade-in slide-in-from-top-6 duration-700">
 
-                                            <svg className="w-full h-full transform -rotate-90 drop-shadow-lg">
-                                                <circle className="text-muted/10" strokeWidth="12" stroke="currentColor" fill="transparent" r="70" cx="80" cy="80" />
-                                                <circle
-                                                    className="transition-all duration-1500 ease-out"
-                                                    strokeWidth="12"
-                                                    strokeDasharray={439.8}
-                                                    strokeDashoffset={439.8 - ((439.8 * (analysisFeedback.score || 0)) / 100)}
-                                                    strokeLinecap="round"
-                                                    stroke={analysisFeedback.scoreColor || "#22c55e"}
-                                                    fill="transparent"
-                                                    r="70"
-                                                    cx="80"
-                                                    cy="80"
-                                                />
-                                            </svg>
-                                            <div className="absolute inset-0 flex flex-col items-center justify-center">
-                                                <span className="text-5xl font-bold tracking-tighter" style={{ color: analysisFeedback.scoreColor || "#22c55e" }}>
-                                                    {analysisFeedback.score || 0}
-                                                </span>
-                                                <span className="text-xs text-muted-foreground uppercase font-bold tracking-widest mt-1">ATS Score</span>
+                                {/* Hero Score Card */}
+                                <div className="bg-gradient-to-br from-background to-muted/20 rounded-3xl p-8 border border-border/50 shadow-xl relative overflow-hidden mb-8">
+                                    <div className="absolute top-0 right-0 p-8 opacity-10 blur-3xl rounded-full bg-primary w-64 h-64 -mr-20 -mt-20 pointer-events-none"></div>
+                                    <div className="flex flex-col md:flex-row items-center justify-between gap-8 relative z-10">
+                                        <div className="flex flex-col items-center md:items-start space-y-4 max-w-lg">
+                                            <h3 className="text-3xl md:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70">
+                                                Resume Audit Report
+                                            </h3>
+                                            <p className="text-muted-foreground text-lg leading-relaxed text-center md:text-left">
+                                                {analysisFeedback.summary || "Analysis complete. Review the breakdown below."}
+                                            </p>
+                                        </div>
+
+                                        <div className="flex flex-col items-center">
+                                            <div className="relative w-48 h-48 flex items-center justify-center">
+                                                <svg className="w-full h-full transform -rotate-90 drop-shadow-2xl">
+                                                    <circle className="text-muted/10" strokeWidth="12" stroke="currentColor" fill="transparent" r="88" cx="96" cy="96" />
+                                                    <circle
+                                                        className="transition-all duration-[2000ms] ease-out"
+                                                        strokeWidth="12"
+                                                        strokeDasharray={552.9}
+                                                        strokeDashoffset={552.9 - ((552.9 * (analysisFeedback.score || 0)) / 100)}
+                                                        strokeLinecap="round"
+                                                        stroke={analysisFeedback.scoreColor || "#22c55e"}
+                                                        fill="transparent"
+                                                        r="88"
+                                                        cx="96"
+                                                        cy="96"
+                                                    />
+                                                </svg>
+                                                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                                                    <span className="text-6xl font-black tracking-tighter" style={{ color: analysisFeedback.scoreColor || "#22c55e" }}>
+                                                        {analysisFeedback.score || 0}
+                                                    </span>
+                                                    <span className="text-sm text-muted-foreground uppercase font-bold tracking-widest mt-1">ATS Score</span>
+                                                </div>
                                             </div>
-                                        </div>
-
-                                        <div className="text-center space-y-1">
-                                            <p className="font-semibold text-lg">
-                                                {(analysisFeedback.score || 0) >= 80 ? "Outstanding!" : (analysisFeedback.score || 0) >= 60 ? "Solid Resume" : "Needs Improvement"}
-                                            </p>
-                                            <p className="text-xs text-muted-foreground max-w-[160px] mx-auto">
-                                                {(analysisFeedback.score || 0) >= 80 ? "Your resume is highly optimized." : "Follow the tips below to boost your score."}
-                                            </p>
-                                        </div>
-                                    </div>
-
-                                    {/* Feedback Sections */}
-                                    <div className="space-y-6">
-                                        <div className="p-5 bg-card rounded-xl border border-border shadow-sm">
-                                            <h4 className="text-base font-semibold mb-2 flex items-center gap-2 text-foreground">
-                                                <span className="p-1.5 rounded-md bg-primary/10 text-primary"><FileText className="w-4 h-4" /></span>
-                                                Executive Summary
-                                            </h4>
-                                            <p className="text-sm text-muted-foreground leading-relaxed pl-9">
-                                                {analysisFeedback.summary || "No summary provided."}
-                                            </p>
-                                        </div>
-
-                                        <div className="grid sm:grid-cols-2 gap-4">
-                                            {analysisFeedback.strengths && Array.isArray(analysisFeedback.strengths) && (
-                                                <div className="p-5 bg-green-500/5 rounded-xl border border-green-500/20">
-                                                    <h4 className="text-sm font-bold uppercase tracking-wider text-green-600 mb-4 flex items-center gap-2">
-                                                        <span className="p-1 rounded-full bg-green-500/10"><Check className="w-3 h-3" /></span>
-                                                        Key Strengths
-                                                    </h4>
-                                                    <ul className="space-y-3">
-                                                        {analysisFeedback.strengths.map((s: string, i: number) => (
-                                                            <li key={i} className="flex items-start gap-3 text-sm text-muted-foreground">
-                                                                <span className="w-1.5 h-1.5 rounded-full bg-green-500 mt-1.5 shrink-0 shadow-[0_0_8px_rgba(34,197,94,0.5)]" />
-                                                                <span className="leading-snug">{s}</span>
-                                                            </li>
-                                                        ))}
-                                                    </ul>
-                                                </div>
-                                            )}
-
-                                            {analysisFeedback.suggestions && Array.isArray(analysisFeedback.suggestions) && (
-                                                <div className="p-5 bg-amber-500/5 rounded-xl border border-amber-500/20">
-                                                    <h4 className="text-sm font-bold uppercase tracking-wider text-amber-600 mb-4 flex items-center gap-2">
-                                                        <span className="p-1 rounded-full bg-amber-500/10"><Sparkles className="w-3 h-3" /></span>
-                                                        Improvements
-                                                    </h4>
-                                                    <ul className="space-y-3">
-                                                        {analysisFeedback.suggestions.map((s: string, i: number) => (
-                                                            <li key={i} className="flex items-start gap-3 text-sm text-muted-foreground">
-                                                                <span className="w-1.5 h-1.5 rounded-full bg-amber-500 mt-1.5 shrink-0 shadow-[0_0_8px_rgba(245,158,11,0.5)]" />
-                                                                <span className="leading-snug">{s}</span>
-                                                            </li>
-                                                        ))}
-                                                    </ul>
-                                                </div>
-                                            )}
                                         </div>
                                     </div>
                                 </div>
+
+                                <div className="grid md:grid-cols-2 gap-8">
+                                    {/* Strengths Card */}
+                                    {analysisFeedback.strengths && Array.isArray(analysisFeedback.strengths) && (
+                                        <div className="group rounded-2xl p-6 bg-gradient-to-b from-green-500/5 to-transparent border border-green-500/10 hover:border-green-500/30 transition-all shadow-sm">
+                                            <div className="flex items-center gap-3 mb-6">
+                                                <div className="p-3 rounded-xl bg-green-500/10 text-green-600 group-hover:scale-110 transition-transform">
+                                                    <Check className="w-6 h-6" />
+                                                </div>
+                                                <h4 className="text-xl font-bold text-foreground">Top Strengths</h4>
+                                            </div>
+                                            <ul className="space-y-4">
+                                                {analysisFeedback.strengths.map((s: string, i: number) => (
+                                                    <li key={i} className="flex gap-4 items-start p-3 rounded-lg hover:bg-green-500/5 transition-colors">
+                                                        <div className="w-2 h-2 rounded-full bg-green-500 mt-2 shrink-0 shadow-[0_0_8px_rgba(34,197,94,0.6)]" />
+                                                        <span className="text-base text-muted-foreground font-medium">{s}</span>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                    )}
+
+                                    {/* Weaknesses Card (New) */}
+                                    {analysisFeedback.weaknesses && Array.isArray(analysisFeedback.weaknesses) && (
+                                        <div className="group rounded-2xl p-6 bg-gradient-to-b from-red-500/5 to-transparent border border-red-500/10 hover:border-red-500/30 transition-all shadow-sm">
+                                            <div className="flex items-center gap-3 mb-6">
+                                                <div className="p-3 rounded-xl bg-red-500/10 text-red-600 group-hover:scale-110 transition-transform">
+                                                    <AlertCircle className="w-6 h-6" />
+                                                </div>
+                                                <h4 className="text-xl font-bold text-foreground">Critical Issues</h4>
+                                            </div>
+                                            <ul className="space-y-4">
+                                                {analysisFeedback.weaknesses.map((s: string, i: number) => (
+                                                    <li key={i} className="flex gap-4 items-start p-3 rounded-lg hover:bg-red-500/5 transition-colors">
+                                                        <div className="w-2 h-2 rounded-full bg-red-500 mt-2 shrink-0 shadow-[0_0_8px_rgba(239,68,68,0.6)]" />
+                                                        <span className="text-base text-muted-foreground font-medium">{s}</span>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Action Plan Card */}
+                                {analysisFeedback.suggestions && Array.isArray(analysisFeedback.suggestions) && (
+                                    <div className="mt-8 rounded-2xl p-8 bg-gradient-to-r from-blue-500/5 via-indigo-500/5 to-purple-500/5 border border-indigo-500/10 shadow-lg">
+                                        <div className="flex items-center gap-4 mb-8">
+                                            <div className="p-3 rounded-xl bg-indigo-500/10 text-indigo-600">
+                                                <Sparkles className="w-6 h-6" />
+                                            </div>
+                                            <div>
+                                                <h4 className="text-2xl font-bold text-foreground">Improvement Plan</h4>
+                                                <p className="text-muted-foreground">Actionable steps to increase your ATS score</p>
+                                            </div>
+                                        </div>
+                                        <div className="grid md:grid-cols-2 gap-4">
+                                            {analysisFeedback.suggestions.map((s: string, i: number) => (
+                                                <div key={i} className="flex gap-4 p-4 rounded-xl bg-background/50 border border-border/50 hover:bg-background hover:shadow-md transition-all">
+                                                    <span className="flex items-center justify-center w-8 h-8 rounded-full bg-indigo-100 text-indigo-700 font-bold text-sm shrink-0 dark:bg-indigo-900 dark:text-indigo-300">
+                                                        {i + 1}
+                                                    </span>
+                                                    <span className="text-base text-muted-foreground font-medium mt-1">{s}</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         )}
                     </div>
