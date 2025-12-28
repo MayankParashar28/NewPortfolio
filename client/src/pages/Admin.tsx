@@ -1122,7 +1122,7 @@ function ProfileForm({ defaultValues, onSubmit, isPending }: {
 
     return (
         <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 max-w-xl mx-auto py-4">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 w-full mx-auto py-4">
                 <FormField control={form.control} name="resumeUrl" render={({ field }) => (
                     <FormItem className="space-y-4">
                         <FormLabel className="text-lg font-semibold">Upload Resume (PDF)</FormLabel>
