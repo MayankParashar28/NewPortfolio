@@ -1098,6 +1098,11 @@ function ProfileForm({ defaultValues, onSubmit, isPending }: {
     };
 
     const handleAnalyze = async () => {
+        if (!fileName) {
+            toast({ title: "No Resume Selected", description: "Please upload a new resume PDF to analyze.", variant: "destructive" });
+            return;
+        }
+
         setIsAnalyzing(true);
         try {
             const res = await apiRequest("POST", "/api/analyze-resume", {
@@ -1204,7 +1209,7 @@ function ProfileForm({ defaultValues, onSubmit, isPending }: {
                                 type="button"
                                 variant="secondary"
                                 onClick={handleAnalyze}
-                                disabled={!form.watch("resumeUrl")?.startsWith("data:") || isAnalyzing}
+                                disabled={isAnalyzing}
                                 className="shrink-0"
                             >
                                 {isAnalyzing ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Sparkles className="w-4 h-4 mr-2" />}

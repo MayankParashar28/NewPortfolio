@@ -201,6 +201,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const jsonStr = text.replace(/```json/g, "").replace(/```/g, "").trim();
         const analysis = JSON.parse(jsonStr);
 
+        // Save the analysis to the profile
+        await storage.updateProfile({
+          atsScore: analysis.score,
+          atsFeedback: analysis
+        });
+
         res.json(analysis);
 
       } catch (innerError: any) {

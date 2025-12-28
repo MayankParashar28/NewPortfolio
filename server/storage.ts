@@ -198,6 +198,8 @@ export class DatabaseStorage implements IStorage {
       .set(data)
       .where(eq(profile.id, existing.id))
       .returning();
+
+    this.setCache("profile", updated);
     return updated;
   }
 }
