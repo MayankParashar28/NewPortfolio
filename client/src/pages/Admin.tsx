@@ -1066,7 +1066,7 @@ function ProfileForm({ defaultValues, onSubmit, isPending }: {
     });
 
     const [isAnalyzing, setIsAnalyzing] = useState(false);
-    const [analysisFeedback, setAnalysisFeedback] = useState<string | null>(null);
+    const [analysisFeedback, setAnalysisFeedback] = useState<any | null>(null);
     const [fileName, setFileName] = useState<string | null>(null);
     const { toast } = useToast();
 
