@@ -1212,7 +1212,7 @@ function ProfileForm({ defaultValues, onSubmit, isPending }: {
                                 disabled={isAnalyzing}
                                 className="shrink-0"
                             >
-                                {isAnalyzing ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Sparkles className="w-4 h-4 mr-2" />}
+                                {isAnalyzing ? <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin mr-2" /> : <Sparkles className="w-4 h-4 mr-2" />}
                                 {isAnalyzing ? "Analyzing..." : "Analyze Resume"}
                             </Button>
                         </div>
