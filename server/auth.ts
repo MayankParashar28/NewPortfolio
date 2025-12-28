@@ -23,12 +23,19 @@ async function comparePasswords(supplied: string, stored: string) {
     return timingSafeEqual(hashedBuf, suppliedBuf);
 }
 
+import connectPgSimple from "connect-pg-simple";
+import { pool } from "./db";
+
 export function setupAuth(app: Express) {
+    const PgStore = connectPgSimple(session);
     const sessionSettings: session.SessionOptions = {
         secret: process.env.SESSION_SECRET || "r8q/+&1LM3)Cd*zAGpx1XM{NeQhc;#",
         resave: false,
         saveUninitialized: false,
-        store: undefined, // MemoryStore by default, perfect for this scale
+        store: new PgStore({
+            pool,
+            createTableIfMissing: true,
+        }),
         cookie: {
             secure: app.get("env") === "production",
         }
