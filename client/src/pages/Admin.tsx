@@ -1203,57 +1203,71 @@ function ProfileForm({ defaultValues, onSubmit, isPending }: {
                         </div>
 
                         {analysisFeedback && analysisFeedback.score !== undefined && (
-                            <div className="mt-4 pt-4 border-t border-border/50 animate-in fade-in slide-in-from-top-2 duration-300">
-                                <div className="grid md:grid-cols-[160px_1fr] gap-6">
+                            <div className="mt-8 pt-6 border-t border-border animate-in fade-in slide-in-from-top-4 duration-500">
+                                <div className="grid md:grid-cols-[200px_1fr] gap-8">
                                     {/* Score Section */}
-                                    <div className="flex flex-col items-center justify-center space-y-2 p-4 bg-background rounded-xl border-2 border-border shadow-sm">
-                                        <div className="relative w-24 h-24 flex items-center justify-center">
-                                            {/* Simple SVG Radial Progress - reusing logic from Skills maybe, or clean SVG */}
-                                            <svg className="w-full h-full transform -rotate-90">
-                                                <circle className="text-muted/20" strokeWidth="8" stroke="currentColor" fill="transparent" r="40" cx="48" cy="48" />
+                                    <div className="flex flex-col items-center space-y-4">
+                                        <div className="relative w-40 h-40 flex items-center justify-center">
+                                            {/* Glow Effect */}
+                                            <div className="absolute inset-0 bg-primary/20 rounded-full blur-2xl opacity-50"></div>
+
+                                            <svg className="w-full h-full transform -rotate-90 drop-shadow-lg">
+                                                <circle className="text-muted/10" strokeWidth="12" stroke="currentColor" fill="transparent" r="70" cx="80" cy="80" />
                                                 <circle
-                                                    className="transition-all duration-1000 ease-out"
-                                                    strokeWidth="8"
-                                                    strokeDasharray={251.2}
-                                                    strokeDashoffset={251.2 - ((251.2 * (analysisFeedback.score || 0)) / 100)}
+                                                    className="transition-all duration-1500 ease-out"
+                                                    strokeWidth="12"
+                                                    strokeDasharray={439.8}
+                                                    strokeDashoffset={439.8 - ((439.8 * (analysisFeedback.score || 0)) / 100)}
                                                     strokeLinecap="round"
                                                     stroke={analysisFeedback.scoreColor || "#22c55e"}
                                                     fill="transparent"
-                                                    r="40"
-                                                    cx="48"
-                                                    cy="48"
+                                                    r="70"
+                                                    cx="80"
+                                                    cy="80"
                                                 />
                                             </svg>
                                             <div className="absolute inset-0 flex flex-col items-center justify-center">
-                                                <span className="text-2xl font-bold">{analysisFeedback.score || 0}</span>
-                                                <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">ATS Score</span>
+                                                <span className="text-5xl font-bold tracking-tighter" style={{ color: analysisFeedback.scoreColor || "#22c55e" }}>
+                                                    {analysisFeedback.score || 0}
+                                                </span>
+                                                <span className="text-xs text-muted-foreground uppercase font-bold tracking-widest mt-1">ATS Score</span>
                                             </div>
                                         </div>
-                                        <p className="text-xs text-center text-muted-foreground font-medium px-2">
-                                            {(analysisFeedback.score || 0) >= 80 ? "Excellent" : (analysisFeedback.score || 0) >= 50 ? "Good Start" : "Needs Work"}
-                                        </p>
+
+                                        <div className="text-center space-y-1">
+                                            <p className="font-semibold text-lg">
+                                                {(analysisFeedback.score || 0) >= 80 ? "Outstanding!" : (analysisFeedback.score || 0) >= 60 ? "Solid Resume" : "Needs Improvement"}
+                                            </p>
+                                            <p className="text-xs text-muted-foreground max-w-[160px] mx-auto">
+                                                {(analysisFeedback.score || 0) >= 80 ? "Your resume is highly optimized." : "Follow the tips below to boost your score."}
+                                            </p>
+                                        </div>
                                     </div>
 
                                     {/* Feedback Sections */}
-                                    <div className="space-y-4">
-                                        <div className="p-3 bg-background rounded-lg border border-border">
-                                            <h4 className="text-sm font-semibold mb-1 flex items-center gap-2">
-                                                <FileText className="w-4 h-4 text-primary" /> Summary
+                                    <div className="space-y-6">
+                                        <div className="p-5 bg-card rounded-xl border border-border shadow-sm">
+                                            <h4 className="text-base font-semibold mb-2 flex items-center gap-2 text-foreground">
+                                                <span className="p-1.5 rounded-md bg-primary/10 text-primary"><FileText className="w-4 h-4" /></span>
+                                                Executive Summary
                                             </h4>
-                                            <p className="text-sm text-muted-foreground leading-relaxed">{analysisFeedback.summary || "No summary provided."}</p>
+                                            <p className="text-sm text-muted-foreground leading-relaxed pl-9">
+                                                {analysisFeedback.summary || "No summary provided."}
+                                            </p>
                                         </div>
 
-                                        <div className="grid grid-cols-1 gap-3">
+                                        <div className="grid sm:grid-cols-2 gap-4">
                                             {analysisFeedback.strengths && Array.isArray(analysisFeedback.strengths) && (
-                                                <div className="p-3 bg-green-500/5 rounded-lg border border-green-500/10">
-                                                    <h4 className="text-xs font-bold uppercase tracking-wider text-green-600 mb-2 flex items-center gap-2">
-                                                        <Check className="w-3 h-3" /> Key Strengths
+                                                <div className="p-5 bg-green-500/5 rounded-xl border border-green-500/20">
+                                                    <h4 className="text-sm font-bold uppercase tracking-wider text-green-600 mb-4 flex items-center gap-2">
+                                                        <span className="p-1 rounded-full bg-green-500/10"><Check className="w-3 h-3" /></span>
+                                                        Key Strengths
                                                     </h4>
-                                                    <ul className="text-sm space-y-1 text-muted-foreground">
+                                                    <ul className="space-y-3">
                                                         {analysisFeedback.strengths.map((s: string, i: number) => (
-                                                            <li key={i} className="flex items-start gap-2">
-                                                                <span className="w-1 h-1 rounded-full bg-green-500 mt-2 shrink-0" />
-                                                                {s}
+                                                            <li key={i} className="flex items-start gap-3 text-sm text-muted-foreground">
+                                                                <span className="w-1.5 h-1.5 rounded-full bg-green-500 mt-1.5 shrink-0 shadow-[0_0_8px_rgba(34,197,94,0.5)]" />
+                                                                <span className="leading-snug">{s}</span>
                                                             </li>
                                                         ))}
                                                     </ul>
@@ -1261,15 +1275,16 @@ function ProfileForm({ defaultValues, onSubmit, isPending }: {
                                             )}
 
                                             {analysisFeedback.suggestions && Array.isArray(analysisFeedback.suggestions) && (
-                                                <div className="p-3 bg-amber-500/5 rounded-lg border border-amber-500/10">
-                                                    <h4 className="text-xs font-bold uppercase tracking-wider text-amber-600 mb-2 flex items-center gap-2">
-                                                        <Sparkles className="w-3 h-3" /> Improvements
+                                                <div className="p-5 bg-amber-500/5 rounded-xl border border-amber-500/20">
+                                                    <h4 className="text-sm font-bold uppercase tracking-wider text-amber-600 mb-4 flex items-center gap-2">
+                                                        <span className="p-1 rounded-full bg-amber-500/10"><Sparkles className="w-3 h-3" /></span>
+                                                        Improvements
                                                     </h4>
-                                                    <ul className="text-sm space-y-1 text-muted-foreground">
+                                                    <ul className="space-y-3">
                                                         {analysisFeedback.suggestions.map((s: string, i: number) => (
-                                                            <li key={i} className="flex items-start gap-2">
-                                                                <span className="w-1 h-1 rounded-full bg-amber-500 mt-2 shrink-0" />
-                                                                {s}
+                                                            <li key={i} className="flex items-start gap-3 text-sm text-muted-foreground">
+                                                                <span className="w-1.5 h-1.5 rounded-full bg-amber-500 mt-1.5 shrink-0 shadow-[0_0_8px_rgba(245,158,11,0.5)]" />
+                                                                <span className="leading-snug">{s}</span>
                                                             </li>
                                                         ))}
                                                     </ul>
