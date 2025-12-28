@@ -223,9 +223,14 @@ function ProjectsManager() {
                                 <div>
                                     <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors">{project.title}</h3>
                                     <p className="text-sm text-muted-foreground line-clamp-1 max-w-md">{project.description}</p>
-                                    <div className="flex gap-2 mt-1">
-                                        {project.featured && <span className="text-[10px] px-2 py-0.5 rounded-full bg-yellow-500/10 text-yellow-500 font-medium border border-yellow-500/20">Featured</span>}
-                                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-muted text-muted-foreground border border-border">{project.category}</span>
+                                    <div className="flex flex-col gap-1.5 mt-1">
+                                        <p className="text-xs text-muted-foreground/60">
+                                            Updated: {project.updatedAt ? new Date(project.updatedAt).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) : "Recently"}
+                                        </p>
+                                        <div className="flex gap-2">
+                                            {project.featured && <span className="text-[10px] px-2 py-0.5 rounded-full bg-yellow-500/10 text-yellow-500 font-medium border border-yellow-500/20">Featured</span>}
+                                            <span className="text-[10px] px-2 py-0.5 rounded-full bg-muted text-muted-foreground border border-border">{project.category}</span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -841,11 +846,7 @@ function CertificatesManager() {
                                 </div>
                                 <div>
                                     <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors">{cert.title}</h3>
-                                    <p className="text-sm text-muted-foreground line-clamp-1">{cert.issuer} • {cert.date}</p>
-                                    {/* Assuming 'cert' object has an 'updatedAt' property for this change */}
-                                    <p className="text-xs text-muted-foreground/60 mt-1">
-                                        Updated: {cert.updatedAt ? new Date(cert.updatedAt).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) : "Recently"}
-                                    </p>
+                                    <p className="text-sm text-muted-foreground">{cert.issuer} • {cert.date}</p>
                                 </div>
                             </div>
                             <div className="flex gap-2">
