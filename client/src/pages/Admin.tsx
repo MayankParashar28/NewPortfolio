@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Project, Skill, Certificate, Profile, insertProjectSchema, insertSkillSchema, insertCertificateSchema, insertProfileSchema } from "@shared/schema";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { Plus, Trash2, LogOut, Loader2, Pencil, LayoutDashboard, Code2, GraduationCap, User as UserIcon, FileText, Github, Linkedin, Mail, Check, Sparkles } from "lucide-react";
+import { Plus, Trash2, LogOut, Loader2, Pencil, LayoutDashboard, Code2, GraduationCap, User as UserIcon, FileText, Github, Linkedin, Mail, Check, Sparkles, AlertCircle } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { useToast } from "@/hooks/use-toast";
 import {
