@@ -31,6 +31,7 @@ import {
     DialogHeader,
     DialogTitle,
     DialogTrigger,
+    DialogDescription,
 } from "@/components/ui/dialog";
 import {
     Select,
@@ -462,8 +463,27 @@ function ProjectDialog({ trigger, onSubmit, isPending, defaultValues, title }: {
             form.setValue("category", data.category);
             toast({ title: "Content Optimized", description: "AI has polished your project details." });
         },
-        onError: () => {
-            toast({ title: "Optimization failed", variant: "destructive" });
+        onError: (error: Error) => {
+            let message = error.message;
+            try {
+                // apiRequest throws "Status: Body", so we try to parse the body if it looks like JSON
+                const parts = message.split(": ");
+                if (parts.length > 1) {
+                    const jsonPart = parts.slice(1).join(": ");
+                    const data = JSON.parse(jsonPart);
+                    if (data.message) message = data.message;
+                }
+            } catch (e) {
+                // Fallback to raw message if parsing fails
+            }
+
+            console.error("Optimization Error Details:", { original: error, message });
+
+            toast({
+                title: "Optimization failed",
+                description: message || "Please check your internet connection or try again later.",
+                variant: "destructive"
+            });
         }
     });
 
@@ -498,7 +518,12 @@ function ProjectDialog({ trigger, onSubmit, isPending, defaultValues, title }: {
             </DialogTrigger>
             <DialogContent className="sm:max-w-[700px] max-h-[85vh] overflow-y-auto border-border/50 bg-background/95 backdrop-blur-xl">
                 <DialogHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <DialogTitle className="text-xl font-heading text-foreground">{title}</DialogTitle>
+                    <div className="flex flex-col gap-1">
+                        <DialogTitle className="text-xl font-heading text-foreground">{title}</DialogTitle>
+                        <DialogDescription className="text-sm text-muted-foreground">
+                            Fill in the details below to {defaultValues ? 'update' : 'create'} your project.
+                        </DialogDescription>
+                    </div>
                     <Button
                         type="button"
                         size="sm"

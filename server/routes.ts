@@ -258,7 +258,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       `;
 
       const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+      const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
       const result = await model.generateContent(prompt);
       const text = result.response.text();
@@ -269,8 +269,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const optimized = JSON.parse(jsonStr);
       res.json(optimized);
     } catch (error: any) {
-      console.error("AI Optimization failed:", error);
-      res.status(500).json({ message: error.message });
+      console.error("AI Optimization failed full error:", JSON.stringify(error, Object.getOwnPropertyNames(error), 2));
+      const errorMessage = error.message || "Unknown error occurred during AI optimization";
+      res.status(500).json({ message: errorMessage, details: error.toString() });
     }
   });
 
