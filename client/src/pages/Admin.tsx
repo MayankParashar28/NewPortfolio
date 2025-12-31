@@ -366,9 +366,61 @@ function ProjectDialog({ trigger, onSubmit, isPending, defaultValues, title }: {
 
                         <FormField control={form.control} name="image" render={({ field }) => (
                             <FormItem>
-                                <FormLabel>Cover Image URL</FormLabel>
+                                <FormLabel>Cover Image</FormLabel>
                                 <FormControl>
-                                    <Input placeholder="https://..." {...field} className="bg-muted/30 border-primary/20 focus:border-primary focus:ring-primary/20 transition-all" />
+                                    <div className="space-y-4">
+                                        <Tabs defaultValue="url" className="w-full">
+                                            <TabsList className="grid w-full grid-cols-2">
+                                                <TabsTrigger value="url">Image URL</TabsTrigger>
+                                                <TabsTrigger value="upload">Upload File</TabsTrigger>
+                                            </TabsList>
+                                            <TabsContent value="url" className="mt-4">
+                                                <Input
+                                                    placeholder="https://..."
+                                                    {...field}
+                                                    className="bg-muted/30 border-primary/20 focus:border-primary focus:ring-primary/20 transition-all"
+                                                />
+                                            </TabsContent>
+                                            <TabsContent value="upload" className="mt-4 space-y-4">
+                                                <div className="flex flex-col gap-4">
+                                                    <Input
+                                                        type="file"
+                                                        accept="image/*"
+                                                        className="bg-muted/30 border-primary/20 focus:border-primary focus:ring-primary/20 transition-all cursor-pointer file:cursor-pointer file:text-primary file:font-medium"
+                                                        onChange={(e) => {
+                                                            const file = e.target.files?.[0];
+                                                            if (file) {
+                                                                const reader = new FileReader();
+                                                                reader.onloadend = () => {
+                                                                    field.onChange(reader.result);
+                                                                };
+                                                                reader.readAsDataURL(file);
+                                                            }
+                                                        }}
+                                                    />
+                                                    <p className="text-xs text-muted-foreground">
+                                                        Image will be saved directly to the database. Max size recommended: 50MB.
+                                                    </p>
+                                                </div>
+                                            </TabsContent>
+                                        </Tabs>
+
+                                        {field.value && (
+                                            <div className="mt-4 rounded-lg overflow-hidden border border-border bg-muted/20 p-2">
+                                                <p className="text-xs text-muted-foreground mb-2 px-1">Preview:</p>
+                                                <div className="relative aspect-video w-full rounded-md overflow-hidden">
+                                                    <img
+                                                        src={field.value}
+                                                        alt="Preview"
+                                                        className="w-full h-full object-cover"
+                                                        onError={(e) => {
+                                                            (e.target as HTMLImageElement).style.display = 'none';
+                                                        }}
+                                                    />
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>

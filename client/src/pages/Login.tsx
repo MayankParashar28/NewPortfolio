@@ -147,7 +147,7 @@ export default function Login() {
                                     </div>
                                     <p className="text-xs text-muted-foreground/60 ml-1 flex items-center gap-1.5">
                                         <span className="w-1 h-1 rounded-full bg-primary/50" />
-                                        Enter your secret ID to verify identity
+                                        Enter the OTP sent to your mobile number
                                     </p>
                                 </div>
                                 <Button
