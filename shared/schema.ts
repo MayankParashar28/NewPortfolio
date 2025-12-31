@@ -22,6 +22,7 @@ export const projects = pgTable("projects", {
   featured: boolean("featured").default(false),
   createdAt: text("created_at").default(new Date().toISOString()),
   updatedAt: text("updated_at").default(new Date().toISOString()),
+  order: integer("order").notNull().default(0),
 });
 
 export const skills = pgTable("skills", {
@@ -30,6 +31,7 @@ export const skills = pgTable("skills", {
   category: text("category").notNull(), // Core ML/AI, Software Engineering, etc.
   icon: text("icon"), // Store icon name or SVG path
   color: text("color"),
+  order: integer("order").notNull().default(0),
 });
 
 export const certificates = pgTable("certificates", {
@@ -40,6 +42,7 @@ export const certificates = pgTable("certificates", {
   description: text("description").notNull(),
   image: text("image").notNull(),
   credentialUrl: text("credential_url"),
+  order: integer("order").notNull().default(0),
 });
 export const profile = pgTable("profile", {
   id: serial("id").primaryKey(),

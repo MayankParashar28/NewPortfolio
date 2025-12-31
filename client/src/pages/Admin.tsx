@@ -1,13 +1,28 @@
 import { useAuth } from "@/context/AuthProvider";
-import { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Redirect } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Project, Skill, Certificate, Profile, insertProjectSchema, insertSkillSchema, insertCertificateSchema, insertProfileSchema } from "@shared/schema";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { Plus, Trash2, LogOut, Loader2, Pencil, LayoutDashboard, Code2, GraduationCap, User as UserIcon, FileText, Github, Linkedin, Mail, Check, Sparkles, AlertCircle } from "lucide-react";
+import { motion, Reorder, useDragControls } from "framer-motion";
+import { Plus, Trash2, LogOut, Loader2, Pencil, LayoutDashboard, Code2, GraduationCap, User as UserIcon, FileText, Github, Linkedin, Mail, Check, Sparkles, AlertCircle, Upload, X, GripVertical } from "lucide-react";
+import { compressImage } from "@/lib/imageUtils";
+import { getIcon } from "@/lib/skillIcons";
+import { ImageUploadZone } from "@/components/ui/image-upload-zone";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import ReactMarkdown from "react-markdown";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -30,7 +45,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-import { motion } from "framer-motion";
+
 import ThemeToggle from "@/components/ThemeToggle";
 
 export default function Admin() {
@@ -147,6 +162,17 @@ function ProjectsManager() {
         queryKey: ["/api/projects"],
     });
 
+    const [localProjects, setLocalProjects] = useState<Project[]>([]);
+    const [isOrderChanged, setIsOrderChanged] = useState(false);
+    const [projectToDelete, setProjectToDelete] = useState<number | null>(null);
+
+    useEffect(() => {
+        if (projects) {
+            setLocalProjects(projects);
+            setIsOrderChanged(false);
+        }
+    }, [projects]);
+
     const createProjectMutation = useMutation({
         mutationFn: async (newProject: any) => {
             const res = await apiRequest("POST", "/api/projects", newProject);
@@ -167,6 +193,8 @@ function ProjectsManager() {
             return await res.json();
         },
         onSuccess: () => {
+            // Invalidate only if it's not part of a bulk reorder to avoid spam, 
+            // but here simple invalidation is fine as we will re-fetch sorted list.
             queryClient.invalidateQueries({ queryKey: ["/api/projects"] });
             toast({ title: "Project updated" });
         },
@@ -179,11 +207,34 @@ function ProjectsManager() {
         mutationFn: async (id: number) => {
             await apiRequest("DELETE", `/api/projects/${id}`);
         },
-        onSuccess: () => {
+        onSuccess: (data, id) => {
+            // Optimistically remove from local state
+            setLocalProjects(prev => prev.filter(p => p.id !== id));
             queryClient.invalidateQueries({ queryKey: ["/api/projects"] });
             toast({ title: "Project deleted" });
         },
     });
+
+    const saveOrder = async () => {
+        try {
+            // Sequential update to avoid potential race conditions or connection limits
+            for (let i = 0; i < localProjects.length; i++) {
+                const project = localProjects[i];
+                await apiRequest("PATCH", `/api/projects/${project.id}`, { order: i });
+            }
+            queryClient.invalidateQueries({ queryKey: ["/api/projects"] });
+            toast({ title: "Order saved", description: "Project order has been updated." });
+            setIsOrderChanged(false);
+        } catch (error: any) {
+            console.error("Failed to save order:", error);
+            toast({ title: "Failed to save order", description: error.message || "Unknown error occurred", variant: "destructive" });
+        }
+    };
+
+    const handleReorder = (newOrder: Project[]) => {
+        setLocalProjects(newOrder);
+        setIsOrderChanged(true);
+    };
 
     if (isLoading) return <Loader2 className="animate-spin h-8 w-8 mx-auto text-primary" />;
 
@@ -193,78 +244,155 @@ function ProjectsManager() {
                 <div className="flex flex-row items-center justify-between mb-6">
                     <div>
                         <h2 className="text-xl font-semibold text-foreground">Project List</h2>
-                        <p className="text-sm text-muted-foreground">Manage your portfolio projects</p>
+                        <p className="text-sm text-muted-foreground">
+                            {isOrderChanged ? "Unsaved changes to order!" : "Manage your portfolio projects"}
+                        </p>
                     </div>
-                    <ProjectDialog
-                        trigger={
-                            <Button className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20">
-                                <Plus className="mr-2 h-4 w-4" /> Add Project
+                    <div className="flex gap-2">
+                        {isOrderChanged && (
+                            <Button
+                                onClick={saveOrder}
+                                variant="outline"
+                                className="border-yellow-500/50 text-yellow-500 hover:bg-yellow-500/10"
+                            >
+                                Save Order
                             </Button>
-                        }
-                        onSubmit={(data) => createProjectMutation.mutateAsync(data)}
-                        isPending={createProjectMutation.isPending}
-                        title="Add New Project"
-                    />
+                        )}
+                        <ProjectDialog
+                            trigger={
+                                <Button className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20">
+                                    <Plus className="mr-2 h-4 w-4" /> Add Project
+                                </Button>
+                            }
+                            onSubmit={(data) => createProjectMutation.mutateAsync(data)}
+                            isPending={createProjectMutation.isPending}
+                            title="Add New Project"
+                        />
+                    </div>
                 </div>
 
                 <div className="grid gap-4">
-                    {projects?.map((project, index) => (
-                        <motion.div
-                            key={project.id}
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: index * 0.05 }}
-                            className="flex items-center justify-between p-4 border border-border/40 rounded-xl bg-card/40 hover:bg-muted/50 transition-all duration-300 group"
-                        >
-                            <div className="flex items-center gap-4">
-                                <div className="relative overflow-hidden rounded-lg w-16 h-16 group-hover:shadow-md transition-all">
-                                    <img src={project.image} alt={project.title} className="w-full h-full object-cover" />
-                                </div>
-                                <div>
-                                    <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors">{project.title}</h3>
-                                    <p className="text-sm text-muted-foreground line-clamp-1 max-w-md">{project.description}</p>
-                                    <div className="flex flex-col gap-1.5 mt-1">
-                                        <p className="text-xs text-muted-foreground/60">
-                                            Updated: {project.updatedAt ? new Date(project.updatedAt).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) : "Recently"}
-                                        </p>
-                                        <div className="flex gap-2">
-                                            {project.featured && <span className="text-[10px] px-2 py-0.5 rounded-full bg-yellow-500/10 text-yellow-500 font-medium border border-yellow-500/20">Featured</span>}
-                                            <span className="text-[10px] px-2 py-0.5 rounded-full bg-muted text-muted-foreground border border-border">{project.category}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="flex gap-2">
-                                <ProjectDialog
-                                    trigger={
-                                        <Button variant="ghost" size="icon" className="hover:bg-primary/10 hover:text-primary">
-                                            <Pencil className="h-4 w-4" />
-                                        </Button>
-                                    }
-                                    onSubmit={(data) => updateProjectMutation.mutateAsync({ id: project.id, data })}
-                                    isPending={updateProjectMutation.isPending}
-                                    defaultValues={project}
-                                    title="Edit Project"
-                                />
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="hover:bg-destructive/10 hover:text-destructive"
-                                    onClick={() => {
-                                        if (confirm("Are you sure?")) deleteProjectMutation.mutate(project.id);
-                                    }}
-                                >
-                                    <Trash2 className="h-4 w-4" />
-                                </Button>
-                            </div>
-                        </motion.div>
-                    ))}
+                    <Reorder.Group axis="y" values={localProjects} onReorder={handleReorder} className="flex flex-col gap-4">
+                        {localProjects.map((project) => (
+                            <SortableProjectItem
+                                key={project.id}
+                                project={project}
+                                index={localProjects.findIndex(p => p.id === project.id)}
+                                onUpdate={(data) => updateProjectMutation.mutateAsync({ id: project.id, data })}
+                                onDelete={() => setProjectToDelete(project.id)}
+                                isUpdatePending={updateProjectMutation.isPending}
+                            />
+                        ))}
+                    </Reorder.Group>
                     {projects?.length === 0 && <p className="text-center text-muted-foreground py-12 bg-muted/20 rounded-xl border border-border/20 border-dashed">No projects found. Add one to get started!</p>}
                 </div>
             </Card>
+
+            <AlertDialog open={!!projectToDelete} onOpenChange={(open) => !open && setProjectToDelete(null)}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            This project will be permanently deleted. This action cannot be undone.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={() => {
+                                if (projectToDelete) deleteProjectMutation.mutate(projectToDelete);
+                                setProjectToDelete(null);
+                            }}
+                            className="bg-destructive hover:bg-destructive/90"
+                        >
+                            Delete
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </motion.div>
     );
 }
+
+function SortableProjectItem({
+    project,
+    index,
+    onUpdate,
+    onDelete,
+    isUpdatePending
+}: {
+    project: Project,
+    index: number,
+    onUpdate: (data: any) => Promise<any>,
+    onDelete: () => void,
+    isUpdatePending: boolean
+}) {
+    const dragControls = useDragControls();
+
+    return (
+        <Reorder.Item
+            value={project}
+            dragListener={false}
+            dragControls={dragControls}
+        >
+            <div className="flex items-center justify-between p-4 border border-border/40 rounded-xl bg-card/40 hover:bg-muted/50 transition-all duration-300 group select-none relative">
+                <div className="flex items-center gap-4">
+                    <div
+                        className="cursor-grab active:cursor-grabbing text-muted-foreground/50 hover:text-foreground p-2 -ml-2 hover:bg-muted rounded-md touch-none"
+                        onPointerDown={(e) => dragControls.start(e)}
+                    >
+                        <GripVertical className="h-5 w-5" />
+                    </div>
+                    <div className="relative overflow-hidden rounded-lg w-16 h-16 group-hover:shadow-md transition-all pointer-events-none">
+                        <img src={project.image} alt={project.title} className="w-full h-full object-cover" />
+                    </div>
+                    <div>
+                        <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors">{project.title}</h3>
+                        <p className="text-sm text-muted-foreground line-clamp-1 max-w-md">{project.description}</p>
+                        <div className="flex flex-col gap-1.5 mt-1">
+                            <p className="text-xs text-muted-foreground/60">
+                                Order: {index + 1}
+                            </p>
+                            <div className="flex gap-2">
+                                {project.featured && <span className="text-[10px] px-2 py-0.5 rounded-full bg-yellow-500/10 text-yellow-500 font-medium border border-yellow-500/20">Featured</span>}
+                                <span className="text-[10px] px-2 py-0.5 rounded-full bg-muted text-muted-foreground border border-border">{project.category}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div className="flex gap-2">
+                    <ProjectDialog
+                        trigger={
+                            <Button type="button" variant="ghost" size="icon" className="hover:bg-primary/10 hover:text-primary">
+                                <Pencil className="h-4 w-4" />
+                            </Button>
+                        }
+                        onSubmit={onUpdate}
+                        isPending={isUpdatePending}
+                        defaultValues={project}
+                        title="Edit Project"
+                    />
+                    <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="hover:bg-destructive/10 hover:text-destructive z-10 relative"
+                        onClick={(e) => {
+                            console.log("Delete button clicked for project:", project.id);
+                            e.stopPropagation();
+                            e.preventDefault(); // Add preventDefault just in case
+                            onDelete();
+                        }}
+                    >
+                        <Trash2 className="h-4 w-4" />
+                    </Button>
+                </div>
+            </div>
+        </Reorder.Item>
+    );
+}
+
+
 
 function ProjectDialog({ trigger, onSubmit, isPending, defaultValues, title }: {
     trigger: React.ReactNode,
@@ -274,6 +402,7 @@ function ProjectDialog({ trigger, onSubmit, isPending, defaultValues, title }: {
     title: string
 }) {
     const [open, setOpen] = useState(false);
+    const { toast } = useToast();
     const form = useForm({
         resolver: zodResolver(insertProjectSchema),
         defaultValues: {
@@ -287,8 +416,27 @@ function ProjectDialog({ trigger, onSubmit, isPending, defaultValues, title }: {
             githubLink: defaultValues?.githubLink || "",
             demoLink: defaultValues?.demoLink || "",
             featured: defaultValues?.featured || false,
+            order: defaultValues?.order || 0,
         }
     });
+
+    useEffect(() => {
+        if (defaultValues) {
+            form.reset({
+                title: defaultValues.title || "",
+                description: defaultValues.description || "",
+                image: defaultValues.image || "",
+                tags: defaultValues.tags || [],
+                category: defaultValues.category ?
+                    (defaultValues.category.toLowerCase().includes("machine learning") && defaultValues.category.toLowerCase().includes("ai") ? "AI / Machine Learning" : defaultValues.category)
+                    : "Full Stack",
+                githubLink: defaultValues.githubLink || "",
+                demoLink: defaultValues.demoLink || "",
+                featured: defaultValues.featured || false,
+                order: defaultValues.order || 0,
+            });
+        }
+    }, [defaultValues, form]);
 
     const categoryTemplates = [
         "Full Stack Web App",
@@ -302,8 +450,38 @@ function ProjectDialog({ trigger, onSubmit, isPending, defaultValues, title }: {
         "Other"
     ];
 
+    const optimizeMutation = useMutation({
+        mutationFn: async (data: any) => {
+            const res = await apiRequest("POST", "/api/optimize-project", data);
+            return await res.json();
+        },
+        onSuccess: (data) => {
+            form.setValue("title", data.title);
+            form.setValue("description", data.description);
+            form.setValue("tags", data.tags);
+            form.setValue("category", data.category);
+            toast({ title: "Content Optimized", description: "AI has polished your project details." });
+        },
+        onError: () => {
+            toast({ title: "Optimization failed", variant: "destructive" });
+        }
+    });
+
+    const handleOptimize = (e: React.MouseEvent) => {
+        e.preventDefault();
+        const values = form.getValues();
+        optimizeMutation.mutate(values);
+    };
+
     const handleSubmit = async (values: any) => {
         try {
+            // Force strict normalization for AI/ML category
+            if (values.category &&
+                values.category.toLowerCase().includes("machine learning") &&
+                values.category.toLowerCase().includes("ai")) {
+                values.category = "AI / Machine Learning";
+            }
+
             await onSubmit(values);
             setOpen(false);
             if (!defaultValues) form.reset();
@@ -318,9 +496,20 @@ function ProjectDialog({ trigger, onSubmit, isPending, defaultValues, title }: {
             <DialogTrigger asChild>
                 {trigger}
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[600px] border-border/50 bg-background/95 backdrop-blur-xl">
-                <DialogHeader>
+            <DialogContent className="sm:max-w-[700px] max-h-[85vh] overflow-y-auto border-border/50 bg-background/95 backdrop-blur-xl">
+                <DialogHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <DialogTitle className="text-xl font-heading text-foreground">{title}</DialogTitle>
+                    <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        onClick={handleOptimize}
+                        disabled={optimizeMutation.isPending}
+                        className="bg-primary/5 border-primary/20 text-primary hover:bg-primary/10 transition-colors"
+                    >
+                        {optimizeMutation.isPending ? <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" /> : <Sparkles className="mr-2 h-3.5 w-3.5" />}
+                        Optimize with AI
+                    </Button>
                 </DialogHeader>
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-5 pt-4">
@@ -366,7 +555,7 @@ function ProjectDialog({ trigger, onSubmit, isPending, defaultValues, title }: {
 
                         <FormField control={form.control} name="image" render={({ field }) => (
                             <FormItem>
-                                <FormLabel>Cover Image</FormLabel>
+                                <FormLabel>Cover Image <span className="text-destructive">*</span></FormLabel>
                                 <FormControl>
                                     <div className="space-y-4">
                                         <Tabs defaultValue="url" className="w-full">
@@ -378,39 +567,40 @@ function ProjectDialog({ trigger, onSubmit, isPending, defaultValues, title }: {
                                                 <Input
                                                     placeholder="https://..."
                                                     {...field}
+                                                    value={field.value?.toString().startsWith('data:') ? '' : field.value}
                                                     className="bg-muted/30 border-primary/20 focus:border-primary focus:ring-primary/20 transition-all"
                                                 />
                                             </TabsContent>
-                                            <TabsContent value="upload" className="mt-4 space-y-4">
-                                                <div className="flex flex-col gap-4">
-                                                    <Input
-                                                        type="file"
-                                                        accept="image/*"
-                                                        className="bg-muted/30 border-primary/20 focus:border-primary focus:ring-primary/20 transition-all cursor-pointer file:cursor-pointer file:text-primary file:font-medium"
-                                                        onChange={(e) => {
-                                                            const file = e.target.files?.[0];
-                                                            if (file) {
-                                                                const reader = new FileReader();
-                                                                reader.onloadend = () => {
-                                                                    field.onChange(reader.result);
-                                                                };
-                                                                reader.readAsDataURL(file);
-                                                            }
-                                                        }}
-                                                    />
-                                                    <p className="text-xs text-muted-foreground">
-                                                        Image will be saved directly to the database. Max size recommended: 50MB.
-                                                    </p>
-                                                </div>
+                                            <TabsContent value="upload" className="mt-4">
+                                                <ImageUploadZone onImageSelected={async (file) => {
+                                                    try {
+                                                        const compressed = await compressImage(file);
+                                                        field.onChange(compressed);
+                                                    } catch (err) {
+                                                        console.error("Compression failed", err);
+                                                    }
+                                                }} />
                                             </TabsContent>
                                         </Tabs>
 
                                         {field.value && (
-                                            <div className="mt-4 rounded-lg overflow-hidden border border-border bg-muted/20 p-2">
-                                                <p className="text-xs text-muted-foreground mb-2 px-1">Preview:</p>
-                                                <div className="relative aspect-video w-full rounded-md overflow-hidden">
+                                            <div className="mt-4 rounded-lg overflow-hidden border border-border bg-muted/20 p-2 fade-in-20 animate-in">
+                                                <div className="flex justify-between items-center mb-2 px-1">
+                                                    <p className="text-xs text-muted-foreground">Preview:</p>
+                                                    <Button
+                                                        type="button"
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        onClick={() => field.onChange("")}
+                                                        className="h-6 w-6 p-0 text-destructive hover:bg-destructive/10"
+                                                    >
+                                                        <Trash2 className="h-3 w-3" />
+                                                    </Button>
+                                                </div>
+                                                <div className="relative aspect-video w-full rounded-md overflow-hidden bg-background/50">
                                                     <img
-                                                        src={field.value}
+                                                        key={field.value?.toString().substring(0, 50)}
+                                                        src={field.value?.toString()}
                                                         alt="Preview"
                                                         className="w-full h-full object-cover"
                                                         onError={(e) => {
@@ -422,7 +612,18 @@ function ProjectDialog({ trigger, onSubmit, isPending, defaultValues, title }: {
                                         )}
                                     </div>
                                 </FormControl>
-                                <FormMessage />
+                                <FormMessage className="text-destructive text-xs" />
+                            </FormItem>
+                        )} />
+
+                        <FormField control={form.control} name="featured" render={({ field }) => (
+                            <FormItem className="flex flex-row items-center space-x-3 space-y-0 p-4 border border-primary/10 rounded-lg bg-primary/5 hover:bg-primary/10 transition-colors">
+                                <FormControl>
+                                    <Checkbox checked={field.value ?? false} onCheckedChange={field.onChange} className="data-[state=checked]:bg-primary data-[state=checked]:border-primary" />
+                                </FormControl>
+                                <div className="space-y-1 leading-none">
+                                    <FormLabel className="cursor-pointer font-medium text-primary">Featured Project</FormLabel>
+                                </div>
                             </FormItem>
                         )} />
 
@@ -496,109 +697,7 @@ function ProjectDialog({ trigger, onSubmit, isPending, defaultValues, title }: {
     );
 }
 
-function SkillsManager() {
-    const { toast } = useToast();
-    const { data: skills, isLoading } = useQuery<Skill[]>({
-        queryKey: ["/api/skills"],
-    });
 
-    const createSkillMutation = useMutation({
-        mutationFn: async (newSkill: any) => {
-            const res = await apiRequest("POST", "/api/skills", newSkill);
-            return await res.json();
-        },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["/api/skills"] });
-            toast({ title: "Skill added" });
-        },
-        onError: (error: Error) => {
-            toast({ title: "Failed to add skill", description: error.message, variant: "destructive" });
-        }
-    });
-
-    const updateSkillMutation = useMutation({
-        mutationFn: async ({ id, data }: { id: number, data: any }) => {
-            const res = await apiRequest("PATCH", `/api/skills/${id}`, data);
-            return await res.json();
-        },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["/api/skills"] });
-            toast({ title: "Skill updated" });
-        },
-        onError: (error: Error) => {
-            toast({ title: "Failed to update skill", description: error.message, variant: "destructive" });
-        }
-    });
-
-    const deleteSkillMutation = useMutation({
-        mutationFn: async (id: number) => {
-            await apiRequest("DELETE", `/api/skills/${id}`);
-        },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["/api/skills"] });
-            toast({ title: "Skill deleted" });
-        },
-    });
-
-    if (isLoading) return <Loader2 className="animate-spin h-8 w-8 mx-auto text-primary" />;
-
-    return (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>
-            <Card className="bg-card/30 backdrop-blur-sm border-border/40 border-none shadow-none">
-                <div className="flex flex-row items-center justify-between mb-6">
-                    <div>
-                        <h2 className="text-xl font-semibold text-foreground">Skill Set</h2>
-                        <p className="text-sm text-muted-foreground">Manage your technical skills</p>
-                    </div>
-                    <SkillDialog
-                        trigger={
-                            <Button className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20">
-                                <Plus className="mr-2 h-4 w-4" /> Add Skill
-                            </Button>
-                        }
-                        onSubmit={(data) => createSkillMutation.mutateAsync(data)}
-                        isPending={createSkillMutation.isPending}
-                        title="Add New Skill"
-                    />
-                </div>
-
-                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                    {skills?.map((skill, index) => (
-                        <motion.div
-                            key={skill.id}
-                            initial={{ opacity: 0, scale: 0.9 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            transition={{ delay: index * 0.03 }}
-                            className="flex flex-col items-center justify-between p-4 border border-border/40 rounded-xl bg-card/40 hover:bg-muted/50 transition-all duration-300 group relative"
-                        >
-                            <div className="flex flex-col items-center gap-2 mb-3 w-full">
-                                <div className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg shadow-inner" style={{ backgroundColor: `${skill.color || "#000000"}20`, color: skill.color || "#000000" }}>
-                                    {skill.name[0]}
-                                </div>
-                                <div className="text-center">
-                                    <p className="font-medium text-sm text-foreground group-hover:text-primary transition-colors">{skill.name}</p>
-                                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider">{skill.category}</p>
-                                </div>
-                            </div>
-                            <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity absolute top-2 right-2">
-                                <SkillDialog
-                                    trigger={<Button variant="ghost" size="icon" className="h-6 w-6 hover:bg-primary/10 hover:text-primary"><Pencil className="h-3 w-3" /></Button>}
-                                    onSubmit={(data) => updateSkillMutation.mutateAsync({ id: skill.id, data })}
-                                    isPending={updateSkillMutation.isPending}
-                                    defaultValues={skill}
-                                    title="Edit Skill"
-                                />
-                                <Button variant="ghost" size="icon" className="h-6 w-6 hover:bg-destructive/10 text-destructive" onClick={() => deleteSkillMutation.mutate(skill.id)}>
-                                    <Trash2 className="h-3 w-3" />
-                                </Button>
-                            </div>
-                        </motion.div>
-                    ))}
-                </div>
-            </Card>
-        </motion.div>
-    );
-}
 
 function SkillDialog({ trigger, onSubmit, isPending, defaultValues, title }: {
     trigger: React.ReactNode,
@@ -607,7 +706,10 @@ function SkillDialog({ trigger, onSubmit, isPending, defaultValues, title }: {
     defaultValues?: Partial<Skill>,
     title: string
 }) {
+    const { toast } = useToast();
     const [open, setOpen] = useState(false);
+    const [suggestions, setSuggestions] = useState<any[]>([]);
+
     const form = useForm({
         resolver: zodResolver(insertSkillSchema),
         defaultValues: {
@@ -618,7 +720,18 @@ function SkillDialog({ trigger, onSubmit, isPending, defaultValues, title }: {
         }
     });
 
-    // Auto-detection map
+    useEffect(() => {
+        if (defaultValues) {
+            form.reset({
+                name: defaultValues.name || "",
+                category: defaultValues.category || "Languages",
+                icon: defaultValues.icon || "default",
+                color: defaultValues.color || "#000000",
+            });
+        }
+    }, [defaultValues, form]);
+
+    // Auto-detection map (kept for icon mapping)
     const knownSkills: Record<string, { icon: string, color: string, category: string }> = {
         "react": { icon: "SiReact", color: "#61DAFB", category: "Frontend" },
         "react.js": { icon: "SiReact", color: "#61DAFB", category: "Frontend" },
@@ -720,6 +833,7 @@ function SkillDialog({ trigger, onSubmit, isPending, defaultValues, title }: {
         "Tools & Utilities",
         "Soft Skills",
         "Frameworks",
+        "Core ML/AI",
         "Other"
     ];
 
@@ -739,9 +853,10 @@ function SkillDialog({ trigger, onSubmit, isPending, defaultValues, title }: {
                 {trigger}
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px] border-border/50 bg-background/95 backdrop-blur-xl">
-                <DialogHeader>
+                <DialogHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <DialogTitle className="text-xl font-heading text-foreground">{title}</DialogTitle>
                 </DialogHeader>
+
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4 pt-4">
                         <FormField control={form.control} name="name" render={({ field }) => (
@@ -813,11 +928,175 @@ function SkillDialog({ trigger, onSubmit, isPending, defaultValues, title }: {
     );
 }
 
+function SkillsManager() {
+    const { toast } = useToast();
+    const { data: skills, isLoading } = useQuery<Skill[]>({
+        queryKey: ["/api/skills"],
+    });
+
+    const [localSkills, setLocalSkills] = useState<Skill[]>([]);
+    const [isOrderChanged, setIsOrderChanged] = useState(false);
+    const [skillToDelete, setSkillToDelete] = useState<number | null>(null);
+
+    useEffect(() => {
+        if (skills) {
+            setLocalSkills(skills);
+            setIsOrderChanged(false);
+        }
+    }, [skills]);
+
+    const createSkillMutation = useMutation({
+        mutationFn: async (newSkill: any) => {
+            const res = await apiRequest("POST", "/api/skills", newSkill);
+            return await res.json();
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["/api/skills"] });
+            toast({ title: "Skill added" });
+        },
+        onError: (error: Error) => {
+            toast({ title: "Failed to add skill", description: error.message, variant: "destructive" });
+        }
+    });
+
+    const updateSkillMutation = useMutation({
+        mutationFn: async ({ id, data }: { id: number, data: any }) => {
+            const res = await apiRequest("PATCH", `/api/skills/${id}`, data);
+            return await res.json();
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["/api/skills"] });
+            toast({ title: "Skill updated" });
+        },
+        onError: (error: Error) => {
+            toast({ title: "Failed to update skill", description: error.message, variant: "destructive" });
+        }
+    });
+
+    const deleteSkillMutation = useMutation({
+        mutationFn: async (id: number) => {
+            await apiRequest("DELETE", `/api/skills/${id}`);
+        },
+        onSuccess: (data, id) => {
+            setLocalSkills(prev => prev.filter(s => s.id !== id));
+            queryClient.invalidateQueries({ queryKey: ["/api/skills"] });
+            toast({ title: "Skill deleted" });
+        },
+    });
+
+    const saveOrder = async () => {
+        try {
+            for (let i = 0; i < localSkills.length; i++) {
+                const skill = localSkills[i];
+                await apiRequest("PATCH", `/api/skills/${skill.id}`, { order: i });
+            }
+            queryClient.invalidateQueries({ queryKey: ["/api/skills"] });
+            toast({ title: "Order saved", description: "Skill order has been updated." });
+            setIsOrderChanged(false);
+        } catch (error: any) {
+            console.error("Failed to save order:", error);
+            toast({ title: "Failed to save order", description: error.message || "Unknown error occurred", variant: "destructive" });
+        }
+    };
+
+    const handleReorder = (newOrder: Skill[]) => {
+        setLocalSkills(newOrder);
+        setIsOrderChanged(true);
+    };
+
+    if (isLoading) return <Loader2 className="animate-spin h-8 w-8 mx-auto text-primary" />;
+
+    return (
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>
+            <Card className="bg-card/30 backdrop-blur-sm border-border/40 border-none shadow-none">
+                <div className="flex flex-row items-center justify-between mb-6">
+                    <div>
+                        <h2 className="text-xl font-semibold text-foreground">Skills</h2>
+                        <p className="text-sm text-muted-foreground">
+                            {isOrderChanged ? "Unsaved changes to order!" : "Manage your technical expertise"}
+                        </p>
+                    </div>
+                    <div className="flex gap-2">
+                        {isOrderChanged && (
+                            <Button
+                                onClick={saveOrder}
+                                variant="outline"
+                                className="border-yellow-500/50 text-yellow-500 hover:bg-yellow-500/10"
+                            >
+                                Save Order
+                            </Button>
+                        )}
+                        <SkillDialog
+                            trigger={
+                                <Button className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20">
+                                    <Plus className="mr-2 h-4 w-4" /> Add Skill
+                                </Button>
+                            }
+                            onSubmit={(data) => createSkillMutation.mutateAsync(data)}
+                            isPending={createSkillMutation.isPending}
+                            title="Add New Skill"
+                        />
+                    </div>
+                </div>
+
+                <div className="grid gap-4">
+                    <Reorder.Group axis="y" values={localSkills} onReorder={handleReorder} className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                        {localSkills.map((skill) => (
+                            <SortableSkillItem
+                                key={skill.id}
+                                skill={skill}
+                                onUpdate={(data) => updateSkillMutation.mutateAsync({ id: skill.id, data })}
+                                onDelete={() => setSkillToDelete(skill.id)}
+                                isUpdatePending={updateSkillMutation.isPending}
+                            />
+                        ))}
+                    </Reorder.Group>
+                    {skills?.length === 0 && <p className="text-center text-muted-foreground py-12 bg-muted/20 rounded-xl border border-border/20 border-dashed">No skills found. Add one to get started!</p>}
+                </div>
+            </Card>
+
+            <AlertDialog open={!!skillToDelete} onOpenChange={(open) => !open && setSkillToDelete(null)}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            This skill will be permanently deleted.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={() => {
+                                if (skillToDelete) deleteSkillMutation.mutate(skillToDelete);
+                                setSkillToDelete(null);
+                            }}
+                            className="bg-destructive hover:bg-destructive/90"
+                        >
+                            Delete
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+        </motion.div>
+    );
+}
+
 function CertificatesManager() {
     const { toast } = useToast();
     const { data: certificates, isLoading } = useQuery<Certificate[]>({
         queryKey: ["/api/certificates"],
     });
+
+    const [localCertificates, setLocalCertificates] = useState<Certificate[]>([]);
+    const [isOrderChanged, setIsOrderChanged] = useState(false);
+    const [certToDelete, setCertToDelete] = useState<number | null>(null);
+
+    useEffect(() => {
+        if (certificates) {
+            setLocalCertificates(certificates);
+            setIsOrderChanged(false);
+        }
+    }, [certificates]);
 
     const createCertificateMutation = useMutation({
         mutationFn: async (newCert: any) => {
@@ -851,11 +1130,32 @@ function CertificatesManager() {
         mutationFn: async (id: number) => {
             await apiRequest("DELETE", `/api/certificates/${id}`);
         },
-        onSuccess: () => {
+        onSuccess: (data, id) => {
+            setLocalCertificates(prev => prev.filter(c => c.id !== id));
             queryClient.invalidateQueries({ queryKey: ["/api/certificates"] });
             toast({ title: "Certificate deleted" });
         },
     });
+
+    const saveOrder = async () => {
+        try {
+            for (let i = 0; i < localCertificates.length; i++) {
+                const cert = localCertificates[i];
+                await apiRequest("PATCH", `/api/certificates/${cert.id}`, { order: i });
+            }
+            queryClient.invalidateQueries({ queryKey: ["/api/certificates"] });
+            toast({ title: "Order saved", description: "Certificate order has been updated." });
+            setIsOrderChanged(false);
+        } catch (error: any) {
+            console.error("Failed to save order:", error);
+            toast({ title: "Failed to save order", description: error.message || "Unknown error occurred", variant: "destructive" });
+        }
+    };
+
+    const handleReorder = (newOrder: Certificate[]) => {
+        setLocalCertificates(newOrder);
+        setIsOrderChanged(true);
+    };
 
     if (isLoading) return <Loader2 className="animate-spin h-8 w-8 mx-auto text-primary" />;
 
@@ -867,68 +1167,67 @@ function CertificatesManager() {
                         <h2 className="text-xl font-semibold text-foreground">Certificates</h2>
                         <p className="text-sm text-muted-foreground">Manage your certifications and achievements</p>
                     </div>
-                    <CertificateDialog
-                        trigger={
-                            <Button className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20">
-                                <Plus className="mr-2 h-4 w-4" /> Add Certificate
+                    <div className="flex gap-2">
+                        {isOrderChanged && (
+                            <Button
+                                onClick={saveOrder}
+                                variant="outline"
+                                className="border-yellow-500/50 text-yellow-500 hover:bg-yellow-500/10"
+                            >
+                                Save Order
                             </Button>
-                        }
-                        onSubmit={(data) => createCertificateMutation.mutateAsync(data)}
-                        isPending={createCertificateMutation.isPending}
-                        title="Add New Certificate"
-                    />
+                        )}
+                        <CertificateDialog
+                            trigger={
+                                <Button className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20">
+                                    <Plus className="mr-2 h-4 w-4" /> Add Certificate
+                                </Button>
+                            }
+                            onSubmit={(data) => createCertificateMutation.mutateAsync(data)}
+                            isPending={createCertificateMutation.isPending}
+                            title="Add New Certificate"
+                        />
+                    </div>
                 </div>
 
                 <div className="grid gap-4">
-                    {certificates?.map((cert, index) => (
-                        <motion.div
-                            key={cert.id}
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: index * 0.05 }}
-                            className="flex items-center justify-between p-4 border border-border/40 rounded-xl bg-card/40 hover:bg-muted/50 transition-all duration-300 group"
-                        >
-                            <div className="flex items-center gap-4">
-                                <div className="relative overflow-hidden rounded-lg w-16 h-16 group-hover:shadow-md transition-all flex items-center justify-center bg-muted/50">
-                                    {cert.image ? (
-                                        <img src={cert.image} alt={cert.title} className="w-full h-full object-cover" />
-                                    ) : (
-                                        <GraduationCap className="h-8 w-8 text-muted-foreground" />
-                                    )}
-                                </div>
-                                <div>
-                                    <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors">{cert.title}</h3>
-                                    <p className="text-sm text-muted-foreground">{cert.issuer} • {cert.date}</p>
-                                </div>
-                            </div>
-                            <div className="flex gap-2">
-                                <CertificateDialog
-                                    trigger={
-                                        <Button variant="ghost" size="icon" className="hover:bg-primary/10 hover:text-primary">
-                                            <Pencil className="h-4 w-4" />
-                                        </Button>
-                                    }
-                                    onSubmit={(data) => updateCertificateMutation.mutateAsync({ id: cert.id, data })}
-                                    isPending={updateCertificateMutation.isPending}
-                                    defaultValues={cert}
-                                    title="Edit Certificate"
-                                />
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="hover:bg-destructive/10 hover:text-destructive"
-                                    onClick={() => {
-                                        if (confirm("Are you sure?")) deleteCertificateMutation.mutate(cert.id);
-                                    }}
-                                >
-                                    <Trash2 className="h-4 w-4" />
-                                </Button>
-                            </div>
-                        </motion.div>
-                    ))}
+                    <Reorder.Group axis="y" values={localCertificates} onReorder={handleReorder} className="flex flex-col gap-4">
+                        {localCertificates.map((cert) => (
+                            <SortableCertificateItem
+                                key={cert.id}
+                                cert={cert}
+                                onUpdate={(data) => updateCertificateMutation.mutateAsync({ id: cert.id, data })}
+                                onDelete={() => setCertToDelete(cert.id)}
+                                isUpdatePending={updateCertificateMutation.isPending}
+                            />
+                        ))}
+                    </Reorder.Group>
                     {certificates?.length === 0 && <p className="text-center text-muted-foreground py-12 bg-muted/20 rounded-xl border border-border/20 border-dashed">No certificates found. Add one to get started!</p>}
                 </div>
             </Card>
+
+            <AlertDialog open={!!certToDelete} onOpenChange={(open) => !open && setCertToDelete(null)}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            This certificate will be permanently deleted.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={() => {
+                                if (certToDelete) deleteCertificateMutation.mutate(certToDelete);
+                                setCertToDelete(null);
+                            }}
+                            className="bg-destructive hover:bg-destructive/90"
+                        >
+                            Delete
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </motion.div>
     );
 }
@@ -940,6 +1239,7 @@ function CertificateDialog({ trigger, onSubmit, isPending, defaultValues, title 
     defaultValues?: Partial<Certificate>,
     title: string
 }) {
+    const { toast } = useToast();
     const [open, setOpen] = useState(false);
     const form = useForm({
         resolver: zodResolver(insertCertificateSchema),
@@ -952,6 +1252,44 @@ function CertificateDialog({ trigger, onSubmit, isPending, defaultValues, title 
             credentialUrl: defaultValues?.credentialUrl || "",
         }
     });
+
+    useEffect(() => {
+        if (defaultValues) {
+            form.reset({
+                title: defaultValues.title || "",
+                issuer: defaultValues.issuer || "",
+                date: defaultValues.date || "",
+                description: defaultValues.description || "",
+                image: defaultValues.image || "",
+                credentialUrl: defaultValues.credentialUrl || "",
+            });
+        }
+    }, [defaultValues, form]);
+
+    const optimizeMutation = useMutation({
+        mutationFn: async (data: any) => {
+            const res = await apiRequest("POST", "/api/optimize-certificate", data);
+            return await res.json();
+        },
+        onSuccess: (data) => {
+            if (data.description) form.setValue("description", data.description);
+            toast({ title: "Content Optimized", description: "AI has polished your certificate description." });
+        },
+        onError: () => {
+            toast({ title: "Optimization failed", variant: "destructive" });
+        }
+    });
+
+    const handleOptimize = (e: React.MouseEvent) => {
+        e.preventDefault();
+        e.stopPropagation(); // Stop propagation
+        const { title, issuer, date } = form.getValues();
+        if (!title || !issuer) {
+            toast({ title: "Missing Info", description: "Please fill in Title and Issuer first.", variant: "destructive" });
+            return;
+        }
+        optimizeMutation.mutate({ title, issuer, date });
+    };
 
     const handleSubmit = async (values: any) => {
         try {
@@ -969,8 +1307,19 @@ function CertificateDialog({ trigger, onSubmit, isPending, defaultValues, title 
                 {trigger}
             </DialogTrigger>
             <DialogContent className="sm:max-w-[550px] border-border/50 bg-background/95 backdrop-blur-xl">
-                <DialogHeader>
+                <DialogHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <DialogTitle className="text-xl font-heading text-foreground">{title}</DialogTitle>
+                    <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        onClick={handleOptimize}
+                        disabled={optimizeMutation.isPending}
+                        className="bg-primary/5 border-primary/20 text-primary hover:bg-primary/10 transition-colors"
+                    >
+                        {optimizeMutation.isPending ? <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" /> : <Sparkles className="mr-2 h-3.5 w-3.5" />}
+                        Optimize with AI
+                    </Button>
                 </DialogHeader>
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-5 pt-4">
@@ -1398,6 +1747,138 @@ function ProfileForm({ defaultValues, onSubmit, isPending }: {
                 </div>
             </form>
         </Form>
+    );
+}
+
+function SortableSkillItem({ skill, onUpdate, onDelete, isUpdatePending }: {
+    skill: Skill,
+    onUpdate: (data: any) => Promise<any>,
+    onDelete: () => void,
+    isUpdatePending: boolean
+}) {
+    const dragControls = useDragControls();
+
+    return (
+        <Reorder.Item
+            value={skill}
+            id={String(skill.id)}
+            dragListener={false}
+            dragControls={dragControls}
+            className="relative"
+        >
+            <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="flex flex-col items-center justify-center p-6 border border-border/40 rounded-xl bg-card/40 hover:bg-muted/50 transition-all duration-300 group select-none aspect-square relative"
+            >
+                <div className="absolute top-2 left-2 cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-50 hover:!opacity-100 transition-opacity p-1" onPointerDown={(e) => dragControls.start(e)}>
+                    <GripVertical className="h-4 w-4 text-muted-foreground" />
+                </div>
+
+                <div className="flex flex-col items-center gap-3 mb-2 w-full">
+                    <div className="w-12 h-12 rounded-lg flex items-center justify-center font-bold text-xl bg-primary/10 text-primary">
+                        {React.createElement(getIcon(skill), { className: "w-6 h-6" })}
+                    </div>
+                    <div className="text-center">
+                        <p className="font-semibold text-base text-foreground">{skill.name}</p>
+                        <p className="text-[10px] text-muted-foreground uppercase tracking-wider">{skill.category}</p>
+                    </div>
+                </div>
+                <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity absolute top-2 right-2">
+                    <SkillDialog
+                        trigger={
+                            <Button type="button" variant="ghost" size="icon" className="h-6 w-6 hover:bg-primary/10 hover:text-primary">
+                                <Pencil className="h-3 w-3" />
+                            </Button>
+                        }
+                        onSubmit={onUpdate}
+                        isPending={isUpdatePending}
+                        defaultValues={skill}
+                        title="Edit Skill"
+                    />
+                    <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6 hover:bg-destructive/10 text-destructive"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onDelete();
+                        }}
+                    >
+                        <Trash2 className="h-3 w-3" />
+                    </Button>
+                </div>
+            </motion.div>
+        </Reorder.Item>
+    );
+}
+
+function SortableCertificateItem({ cert, onUpdate, onDelete, isUpdatePending }: {
+    cert: Certificate,
+    onUpdate: (data: any) => Promise<any>,
+    onDelete: () => void,
+    isUpdatePending: boolean
+}) {
+    const dragControls = useDragControls();
+
+    return (
+        <Reorder.Item
+            value={cert}
+            id={String(cert.id)}
+            dragListener={false}
+            dragControls={dragControls}
+            className="relative"
+        >
+            <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="flex items-center justify-between p-4 border border-border/40 rounded-xl bg-card/40 hover:bg-muted/50 transition-all duration-300 group"
+            >
+                <div className="flex items-center gap-4">
+                    <div className="cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-50 hover:!opacity-100 transition-opacity p-1" onPointerDown={(e) => dragControls.start(e)}>
+                        <GripVertical className="h-4 w-4 text-muted-foreground" />
+                    </div>
+
+                    <div className="relative overflow-hidden rounded-lg w-16 h-16 group-hover:shadow-md transition-all flex items-center justify-center bg-muted/50">
+                        {cert.image ? (
+                            <img src={cert.image} alt={cert.title} className="w-full h-full object-cover" />
+                        ) : (
+                            <GraduationCap className="h-8 w-8 text-muted-foreground" />
+                        )}
+                    </div>
+                    <div>
+                        <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors">{cert.title}</h3>
+                        <p className="text-sm text-muted-foreground">{cert.issuer} • {cert.date}</p>
+                    </div>
+                </div>
+                <div className="flex gap-2">
+                    <CertificateDialog
+                        trigger={
+                            <Button type="button" variant="ghost" size="icon" className="hover:bg-primary/10 hover:text-primary">
+                                <Pencil className="h-4 w-4" />
+                            </Button>
+                        }
+                        onSubmit={onUpdate}
+                        isPending={isUpdatePending}
+                        defaultValues={cert}
+                        title="Edit Certificate"
+                    />
+                    <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="hover:bg-destructive/10 hover:text-destructive"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onDelete();
+                        }}
+                    >
+                        <Trash2 className="h-4 w-4" />
+                    </Button>
+                </div>
+            </motion.div>
+        </Reorder.Item>
     );
 }
 

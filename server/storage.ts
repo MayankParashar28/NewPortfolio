@@ -1,6 +1,6 @@
 import { users, projects, skills, certificates, profile, type User, type InsertUser, type Project, type InsertProject, type Skill, type InsertSkill, type Certificate, type InsertCertificate, type Profile, type InsertProfile } from "../shared/schema";
 import { db } from "./db";
-import { eq } from "drizzle-orm";
+import { eq, asc } from "drizzle-orm";
 
 export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
@@ -77,7 +77,7 @@ export class DatabaseStorage implements IStorage {
     const cached = this.getCached<Project[]>(key);
     if (cached) return cached;
 
-    const projectsList = await db.select().from(projects);
+    const projectsList = await db.select().from(projects).orderBy(asc(projects.order), asc(projects.id));
     this.setCache(key, projectsList);
     return projectsList;
   }
@@ -105,45 +105,34 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getSkills(): Promise<Skill[]> {
-    const key = "skills:all";
-    const cached = this.getCached<Skill[]>(key);
-    if (cached) return cached;
+    return await db.select().from(skills).orderBy(asc(skills.order), asc(skills.id));
+  }
 
-    const skillsList = await db.select().from(skills);
-    this.setCache(key, skillsList);
-    return skillsList;
+  async getSkill(id: number): Promise<Skill | undefined> {
+    const [skill] = await db.select().from(skills).where(eq(skills.id, id));
+    return skill;
   }
 
   async createSkill(insertSkill: InsertSkill): Promise<Skill> {
-    this.invalidate("skills");
-    const [skill] = await db.insert(skills).values(insertSkill).returning();
+    const [skill] = await db
+      .insert(skills)
+      .values(insertSkill)
+      .returning();
     return skill;
   }
 
-  async updateSkill(id: number, insertSkill: Partial<InsertSkill>): Promise<Skill> {
-    this.invalidate("skills");
-    const [skill] = await db
-      .update(skills)
-      .set(insertSkill)
-      .where(eq(skills.id, id))
-      .returning();
-    if (!skill) throw new Error("Skill not found");
-    return skill;
+  async updateSkill(id: number, updateData: Partial<InsertSkill>): Promise<Skill> {
+    const [updated] = await db.update(skills).set(updateData).where(eq(skills.id, id)).returning();
+    if (!updated) throw new Error("Skill not found");
+    return updated;
   }
 
   async deleteSkill(id: number): Promise<void> {
-    this.invalidate("skills");
     await db.delete(skills).where(eq(skills.id, id));
   }
 
   async getCertificates(): Promise<Certificate[]> {
-    const key = "certificates:all";
-    const cached = this.getCached<Certificate[]>(key);
-    if (cached) return cached;
-
-    const list = await db.select().from(certificates);
-    this.setCache(key, list);
-    return list;
+    return await db.select().from(certificates).orderBy(asc(certificates.order), asc(certificates.id));
   }
 
   async createCertificate(insertCert: InsertCertificate): Promise<Certificate> {

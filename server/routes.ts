@@ -224,6 +224,96 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
 
+  app.post("/api/optimize-project", isAuthenticated, async (req, res) => {
+    try {
+      if (!process.env.GEMINI_API_KEY) {
+        throw new Error("GEMINI_API_KEY is not configured");
+      }
+
+      const { title, description, tags, category } = req.body;
+
+      // Construct prompt
+      const prompt = `
+        You are a professional software portfolio consultant. Optimize the following project details to be more impactful, professional, and SEO-friendly.
+        
+        Current Details:
+        Title: ${title}
+        Category: ${category}
+        Tags: ${tags?.join(", ")}
+        Description: ${description}
+
+        Task:
+        1. Revise the Title to be catchy and professional.
+        2. Rewrite the Description (max 300 characters) to utilize active verbs and highlight technical achievements. Do NOT use Markdown formatting (no bolding). Use plain text only.
+        3. Suggest 3-5 high-relevance technical Tags.
+        4. Select the most appropriate Category from: "Full Stack Web App", "Frontend Application", "Backend API / Service", "AI / Machine Learning", "Mobile Application", "Data Visualization", "DevOps / Infrastructure", "Open Source Library".
+
+        Provide the output in the following JSON format ONLY (no markdown code blocks):
+        {
+          "title": "string",
+          "description": "string",
+          "tags": ["string", "string"],
+          "category": "string"
+        }
+      `;
+
+      const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+      const result = await model.generateContent(prompt);
+      const text = result.response.text();
+
+      // Clean up potential markdown formatting from the response
+      const jsonStr = text.replace(/```json\n?|\n?```/g, "").trim();
+
+      const optimized = JSON.parse(jsonStr);
+      res.json(optimized);
+    } catch (error: any) {
+      console.error("AI Optimization failed:", error);
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+
+
+
+  app.post("/api/optimize-certificate", isAuthenticated, async (req, res) => {
+    try {
+      if (!process.env.GEMINI_API_KEY) {
+        throw new Error("GEMINI_API_KEY is not configured");
+      }
+
+      const { title, issuer, date } = req.body; // Description might be empty
+
+      const prompt = `
+        You are a professional resume writer. Write a concise, impactful description (max 200 chars) for this certification:
+        Title: ${title}
+        Issuer: ${issuer}
+        Date: ${date}
+
+        Focus on what skills this certification validates.
+        Do NOT use Markdown. Plain text only.
+
+        Provide the output in the following JSON format ONLY (no markdown):
+        {
+          "description": "string"
+        }
+      `;
+
+      const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+      const result = await model.generateContent(prompt);
+      const text = result.response.text();
+      const jsonStr = text.replace(/```json\n?|\n?```/g, "").trim();
+
+      res.json(JSON.parse(jsonStr));
+    } catch (error: any) {
+      console.error("Certificate Optimization failed:", error);
+      res.status(500).json({ message: error.message });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
