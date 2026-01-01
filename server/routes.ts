@@ -14,7 +14,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // setup authentication routes and middleware
   setupAuth(app);
 
-  // Helper to check if user is authenticated
   const isAuthenticated = (req: any, res: any, next: any) => {
     if (req.isAuthenticated()) {
       return next();
@@ -53,6 +52,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete("/api/projects/:id", isAuthenticated, async (req, res) => {
     await storage.deleteProject(Number(req.params.id));
     res.sendStatus(204);
+  });
+
+  app.post("/api/projects/reorder", isAuthenticated, async (req, res) => {
+    const { items } = req.body;
+    if (!Array.isArray(items)) {
+      return res.status(400).send("Invalid items format");
+    }
+    await storage.reorderProjects(items);
+    res.sendStatus(200);
   });
 
   // Skills

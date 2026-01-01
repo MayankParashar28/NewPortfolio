@@ -92,7 +92,7 @@ export class DatabaseStorage implements IStorage {
     this.invalidate("projects");
     const [project] = await db
       .update(projects)
-      .set(insertProject)
+      .set({ ...insertProject, updatedAt: new Date().toISOString() })
       .where(eq(projects.id, id))
       .returning();
     if (!project) throw new Error("Project not found");
@@ -102,6 +102,18 @@ export class DatabaseStorage implements IStorage {
   async deleteProject(id: number): Promise<void> {
     this.invalidate("projects");
     await db.delete(projects).where(eq(projects.id, id));
+  }
+
+  async reorderProjects(items: { id: number; order: number }[]): Promise<void> {
+    this.invalidate("projects");
+    await db.transaction(async (tx) => {
+      for (const item of items) {
+        await tx
+          .update(projects)
+          .set({ order: item.order })
+          .where(eq(projects.id, item.id));
+      }
+    });
   }
 
   async getSkills(): Promise<Skill[]> {

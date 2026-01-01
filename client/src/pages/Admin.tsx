@@ -218,11 +218,10 @@ function ProjectsManager() {
 
     const saveOrder = async () => {
         try {
-            // Sequential update to avoid potential race conditions or connection limits
-            for (let i = 0; i < localProjects.length; i++) {
-                const project = localProjects[i];
-                await apiRequest("PATCH", `/api/projects/${project.id}`, { order: i });
-            }
+            const items = localProjects.map((p, i) => ({ id: p.id, order: i }));
+            console.log("Saving order:", items);
+            await apiRequest("POST", "/api/projects/reorder", { items });
+
             queryClient.invalidateQueries({ queryKey: ["/api/projects"] });
             toast({ title: "Order saved", description: "Project order has been updated." });
             setIsOrderChanged(false);
@@ -353,6 +352,9 @@ function SortableProjectItem({
                         <div className="flex flex-col gap-1.5 mt-1">
                             <p className="text-xs text-muted-foreground/60">
                                 Order: {index + 1}
+                                {project.updatedAt && (
+                                    <> • Updated: {new Date(project.updatedAt).toLocaleDateString()}</>
+                                )}
                             </p>
                             <div className="flex gap-2">
                                 {project.featured && <span className="text-[10px] px-2 py-0.5 rounded-full bg-yellow-500/10 text-yellow-500 font-medium border border-yellow-500/20">Featured</span>}
@@ -493,7 +495,11 @@ function ProjectDialog({ trigger, onSubmit, isPending, defaultValues, title }: {
         optimizeMutation.mutate(values);
     };
 
-    const handleSubmit = async (values: any) => {
+    const handleSubmit = async (values: any, e?: React.BaseSyntheticEvent) => {
+        if (e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
         try {
             // Force strict normalization for AI/ML category
             if (values.category &&
