@@ -1,4 +1,6 @@
 import { lazy, Suspense } from "react";
+
+
 import { Switch, Route, useLocation } from "wouter";
 import { AnimatePresence } from "framer-motion";
 import { queryClient } from "./lib/queryClient";
@@ -22,6 +24,7 @@ const NotFound = lazy(() => import("@/pages/not-found"));
 
 // Lazy load 3D components for performance
 const Cursor3D = lazy(() => import("@/components/Cursor3D"));
+
 
 function Router() {
   const [location] = useLocation();
@@ -50,6 +53,8 @@ function App() {
 
   return (
     <ThemeProvider defaultTheme="dark">
+
+
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
           <div className="min-h-screen text-foreground font-sans antialiased selection:bg-primary selection:text-primary-foreground">
@@ -80,7 +85,9 @@ function App() {
         </AuthProvider>
       </QueryClientProvider>
     </ThemeProvider>
+
   );
 }
+
 
 export default App;

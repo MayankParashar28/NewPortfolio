@@ -1,14 +1,42 @@
 import "dotenv/config";
 import { db } from "../server/db";
-import { projects, skills, certificates } from "../shared/schema";
+import { projects, skills, certificates, users } from "../shared/schema";
+import { scrypt, randomBytes } from "crypto";
+import { promisify } from "util";
+import { eq } from "drizzle-orm";
+
+const scryptAsync = promisify(scrypt);
+
+async function hashPassword(password: string) {
+    const salt = randomBytes(16).toString("hex");
+    const buf = (await scryptAsync(password, salt, 64)) as Buffer;
+    return `${buf.toString("hex")}.${salt}`;
+}
 
 async function main() {
     console.log("Seeding database...");
 
     try {
+        // 0. Seed Admin User
+        console.log("Seeding Admin User...");
+        const existingUser = await db.query.users.findFirst({
+            where: eq(users.username, "parasharmayank")
+        });
+
+        if (!existingUser) {
+            const hashedPassword = await hashPassword("admin123");
+            await db.insert(users).values({
+                username: "parasharmayank",
+                password: hashedPassword
+            });
+            console.log("Admin user created.");
+        } else {
+            console.log("Admin user already exists. Skipping.");
+        }
+
         // 1. Seed Projects
         console.log("Seeding Projects...");
-        await db.insert(projects).values([
+        const projectData = [
             {
                 title: "Intelligent Video Analysis System",
                 description: "A robust AI application built with Python and Streamlit that transforms lengthy digital content into concise summaries. By integrating LangChain and the Groq API, the system processes both YouTube videos and standard web pages to extract key insights in real-time.",
@@ -79,11 +107,21 @@ async function main() {
                 demoLink: "",
                 featured: false
             }
-        ]);
+        ];
+
+        for (const project of projectData) {
+            const existing = await db.query.projects.findFirst({
+                where: eq(projects.title, project.title)
+            });
+            if (!existing) {
+                await db.insert(projects).values(project);
+                console.log(`Added project: ${project.title}`);
+            }
+        }
 
         // 2. Seed Skills
         console.log("Seeding Skills...");
-        await db.insert(skills).values([
+        const skillData = [
             // Core ML/AI
             { name: "Python", category: "Core ML/AI", color: "#3776AB" },
             { name: "TensorFlow", category: "Core ML/AI", color: "#FF6F00" },
@@ -107,11 +145,21 @@ async function main() {
             // Cloud/DevOps
             { name: "Docker", category: "Cloud/DevOps", color: "#2496ED" },
             { name: "AWS", category: "Cloud/DevOps", color: "#FF9900" },
-        ]);
+        ];
+
+        for (const skill of skillData) {
+            const existing = await db.query.skills.findFirst({
+                where: eq(skills.name, skill.name)
+            });
+            if (!existing) {
+                await db.insert(skills).values(skill);
+                console.log(`Added skill: ${skill.name}`);
+            }
+        }
 
         // 3. Seed Certificates
         console.log("Seeding Certificates...");
-        await db.insert(certificates).values([
+        const certData = [
             {
                 title: "Machine Learning with Python",
                 issuer: "IBM SkillsBuild",
@@ -176,7 +224,33 @@ async function main() {
                 image: "/assets/generated_images/ai_certification_badge_design.png",
                 credentialUrl: ""
             },
-        ]);
+            {
+                title: "Prompt Engineering for Developers",
+                issuer: "DeepLearning.AI",
+                date: "2025",
+                description: "Mastered the art of designing robust prompts for Large Language Models (LLMs) to build powerful AI applications.",
+                image: "/assets/generated_images/ml_certification_emblem.png",
+                credentialUrl: ""
+            },
+            {
+                title: "Generative AI with Large Language Models",
+                issuer: "Coursera & AWS",
+                date: "2025",
+                description: "Deep dive into the transformer architecture and the complete generative AI lifecycle from data gathering to deployment.",
+                image: "/assets/generated_images/ai_certification_badge_design.png",
+                credentialUrl: ""
+            },
+        ];
+
+        for (const cert of certData) {
+            const existing = await db.query.certificates.findFirst({
+                where: eq(certificates.title, cert.title)
+            });
+            if (!existing) {
+                await db.insert(certificates).values(cert);
+                console.log(`Added certificate: ${cert.title}`);
+            }
+        }
 
         console.log("Seeding completed successfully!");
         process.exit(0);

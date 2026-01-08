@@ -43,7 +43,7 @@ export default function Login() {
         setIsLoading(false);
         toast({
             title: "Identity Verified",
-            description: "Please enter your Secure System PIN.",
+            description: "Please enter OTP sent to your E-Mail.",
         });
     };
 
@@ -58,7 +58,7 @@ export default function Login() {
                 throw new Error("Invalid System PIN");
             }
 
-            await loginMutation.mutateAsync({ username: "demo", password: "demo123" });
+            await loginMutation.mutateAsync({ username: "parasharmayank", password: "admin123" });
 
             toast({
                 title: "Success",
@@ -147,7 +147,7 @@ export default function Login() {
                                     </div>
                                     <p className="text-xs text-muted-foreground/60 ml-1 flex items-center gap-1.5">
                                         <span className="w-1 h-1 rounded-full bg-primary/50" />
-                                        Enter the OTP sent to your mobile number
+                                        Enter the OTP sent to your Account
                                     </p>
                                 </div>
                                 <Button

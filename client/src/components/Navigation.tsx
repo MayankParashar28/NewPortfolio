@@ -14,6 +14,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import ConnectModal from "@/components/ConnectModal";
 
 export default function Navigation() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -75,63 +76,79 @@ export default function Navigation() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center gap-2">
-            <button
-              onClick={() => scrollToSection("hero")}
-              className="text-xl font-heading font-bold hover-elevate active-elevate-2 px-3 py-2 rounded-md"
-              data-testid="button-logo"
-            >
-              {user.name}
-            </button>
+            <ConnectModal
+              trigger={
+                <Magnetic strength={0.3}>
+                  <button
+                    className="text-xl font-heading font-bold hover-elevate active-elevate-2 px-3 py-2 rounded-md transition-all duration-300 bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/70 hover:from-primary hover:to-primary"
+                    data-testid="button-logo"
+                  >
+                    let's connect
+                  </button>
+                </Magnetic>
+              }
+            />
           </div>
 
           <div className="hidden md:flex items-center gap-4">
             <div className="flex items-center gap-2">
               {navLinks.map((link) => (
-                <Button
-                  key={link.id}
-                  variant="ghost"
-                  onClick={() => scrollToSection(link.id)}
-                  data-testid={`button-nav-${link.id}`}
-                >
-                  {link.label}
-                </Button>
+                <Magnetic key={link.id} strength={0.2}>
+                  <Button
+                    variant="ghost"
+                    onClick={() => scrollToSection(link.id)}
+                    data-testid={`button-nav-${link.id}`}
+                  >
+                    {link.label}
+                  </Button>
+                </Magnetic>
               ))}
             </div>
-            <a href={resumeUrl} download="Mayank_Parashar_Resume.pdf">
-              <Button variant="default" className="gap-2" data-testid="button-resume-download">
-                <Download className="w-4 h-4" />
-                Resume
-              </Button>
-            </a>
-            <ThemeToggle />
+            <Magnetic strength={0.2}>
+              <a href={resumeUrl} download="Mayank_Parashar_Resume.pdf">
+                <Button variant="default" className="gap-2" data-testid="button-resume-download">
+                  <Download className="w-4 h-4" />
+                  Resume
+                </Button>
+              </a>
+            </Magnetic>
+            <Magnetic strength={0.2}>
+              <ThemeToggle />
+            </Magnetic>
           </div>
 
           <div className="flex md:hidden items-center gap-3">
-            <a href={resumeUrl} download="Mayank_Parashar_Resume.pdf">
+            <Magnetic strength={0.2}>
+              <a href={resumeUrl} download="Mayank_Parashar_Resume.pdf">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  data-testid="button-mobile-resume-icon"
+                  className="transition-transform hover:scale-110"
+                  aria-label="Download Resume"
+                >
+                  <Download className="w-5 h-5" />
+                </Button>
+              </a>
+            </Magnetic>
+            <Magnetic strength={0.2}>
+              <ThemeToggle />
+            </Magnetic>
+            <Magnetic strength={0.2}>
               <Button
                 variant="ghost"
                 size="icon"
-                data-testid="button-mobile-resume-icon"
-                className="transition-transform hover:scale-110"
-                aria-label="Download Resume"
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                data-testid="button-mobile-menu"
+                className="transition-transform duration-300"
               >
-                <Download className="w-5 h-5" />
+                {isMobileMenuOpen ? (
+                  <X className="transform rotate-180 transition-transform duration-300" />
+                ) : (
+                  <Menu className="transform rotate-0 transition-transform duration-300" />
+                )}
               </Button>
-            </a>
-            <ThemeToggle />
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              data-testid="button-mobile-menu"
-              className="transition-transform duration-300"
-            >
-              {isMobileMenuOpen ? (
-                <X className="transform rotate-180 transition-transform duration-300" />
-              ) : (
-                <Menu className="transform rotate-0 transition-transform duration-300" />
-              )}
-            </Button>
+            </Magnetic>
           </div>
         </div>
       </div>

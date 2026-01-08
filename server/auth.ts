@@ -24,18 +24,29 @@ async function comparePasswords(supplied: string, stored: string) {
 }
 
 import connectPgSimple from "connect-pg-simple";
+import memoryStore from "memorystore";
 import { pool } from "./db";
 
 export function setupAuth(app: Express) {
-    const PgStore = connectPgSimple(session);
+    let sessionStore;
+    if (app.get("env") === "production") {
+        const PgStore = connectPgSimple(session);
+        sessionStore = new PgStore({
+            pool,
+            createTableIfMissing: true,
+        });
+    } else {
+        const MemoryStore = memoryStore(session);
+        sessionStore = new MemoryStore({
+            checkPeriod: 86400000 // prune expired entries every 24h
+        });
+    }
+
     const sessionSettings: session.SessionOptions = {
         secret: process.env.SESSION_SECRET || "r8q/+&1LM3)Cd*zAGpx1XM{NeQhc;#",
         resave: false,
         saveUninitialized: false,
-        store: new PgStore({
-            pool,
-            createTableIfMissing: true,
-        }),
+        store: sessionStore,
         cookie: {
             secure: app.get("env") === "production",
         }
@@ -48,6 +59,7 @@ export function setupAuth(app: Express) {
     app.use(session(sessionSettings));
     app.use(passport.initialize());
     app.use(passport.session());
+
 
     passport.use(
         // we use "username" specifically, so we don't need to specify options

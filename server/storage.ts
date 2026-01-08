@@ -181,11 +181,11 @@ export class DatabaseStorage implements IStorage {
     }
     // Create default if missing
     const [created] = await db.insert(profile).values({
-      bio: "AI & ML Enthusiast",
-      resumeUrl: "https://example.com/resume.pdf",
-      githubUrl: "https://github.com",
-      linkedinUrl: "https://linkedin.com",
-      email: "email@example.com"
+      bio: "My journey began with a deep fascination for computer science and the potential of intelligent systems to solve meaningful problems. I specialize in Generative AI and Machine Learning, focusing on bridging the gap between theoretical models and production-ready applications.",
+      resumeUrl: "/MayankResume.pdf",
+      githubUrl: "https://github.com/MayankParashar28",
+      linkedinUrl: "https://www.linkedin.com/in/mayankparashar28/",
+      email: "mayankparashar2808@gmail.com"
     }).returning();
     this.setCache(key, created);
     return created;

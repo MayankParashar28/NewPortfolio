@@ -83,7 +83,7 @@ export default function Admin() {
                             transition={{ delay: 0.1 }}
                             className="text-muted-foreground mt-1"
                         >
-                            Welcome back, {user.username}
+                            Welcome back, Mahir
                         </motion.p>
                     </div>
                     <div className="flex items-center gap-4">
