@@ -173,7 +173,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
         // 3. Generate Content using the File URI
         const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+        const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
 
         const prompt = `
         You are an expert technical recruiter and ATS (Applicant Tracking System) optimization specialist. 
@@ -266,7 +266,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       `;
 
       const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-      const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+      const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
 
       const result = await model.generateContent(prompt);
       const text = result.response.text();
