@@ -6,7 +6,7 @@
  * @param quality The quality of the JPEG (0 to 1).
  * @returns A promise that resolves to the base64 string of the compressed image.
  */
-export async function compressImage(file: File, maxWidth = 1200, quality = 0.8): Promise<string> {
+export async function compressImage(file: File, maxWidth = 800, quality = 0.6): Promise<string> {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.readAsDataURL(file);

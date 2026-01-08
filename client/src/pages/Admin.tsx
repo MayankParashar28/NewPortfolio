@@ -718,7 +718,7 @@ function ProjectDialog({ trigger, onSubmit, isPending, defaultValues, title }: {
                             </DialogTrigger>
                             <Button type="submit" className="w-full bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/25" disabled={isPending}>
                                 {isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Plus className="mr-2 h-4 w-4" />}
-                                {defaultValues ? 'Save Changes' : 'Create Project'}
+                                {isPending ? 'Uploading & Saving...' : (defaultValues ? 'Save Changes' : 'Create Project')}
                             </Button>
                         </div>
                     </form>
@@ -949,7 +949,7 @@ function SkillDialog({ trigger, onSubmit, isPending, defaultValues, title }: {
                             </DialogTrigger>
                             <Button type="submit" className="w-full bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/25" disabled={isPending}>
                                 {isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Plus className="mr-2 h-4 w-4" />}
-                                {defaultValues ? 'Save Changes' : 'Add Skill'}
+                                {isPending ? 'Saving...' : (defaultValues ? 'Save Changes' : 'Add Skill')}
                             </Button>
                         </div>
                     </form>

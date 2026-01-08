@@ -82,11 +82,7 @@ export const iconMap: Record<string, any> = {
     "keras": SiKeras,
     "Pytorch": SiPytorch,
     "pytorch": SiPytorch,
-    "Machine Learning": SiScikitlearn,
-    "machine learning": SiScikitlearn,
-    "ml": SiScikitlearn,
-    "ML": SiScikitlearn,
-   
+    
 
     // Direct icon name mapping
     "SiPython": SiPython,
