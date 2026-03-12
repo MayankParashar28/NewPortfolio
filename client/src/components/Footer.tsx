@@ -1,12 +1,16 @@
 import { Github, Linkedin, Mail, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
-
+import { motion } from "framer-motion";
 
 import { user } from "@/data";
 
-export default function Footer() {
-    const currentYear = new Date().getFullYear();
+const socialLinks = [
+    { href: user.socials.github, icon: Github, label: "GitHub", testId: "footer-github", external: true },
+    { href: user.socials.linkedin, icon: Linkedin, label: "LinkedIn", testId: "footer-linkedin", external: true },
+    { href: user.socials.email, icon: Mail, label: "Email", testId: "footer-email", external: false },
+];
 
+export default function Footer() {
     return (
         <footer className="bg-card/95 backdrop-blur-sm border-t border-border py-2 rounded-t-lg shadow-md">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4">
@@ -17,38 +21,45 @@ export default function Footer() {
                         </p>
                         <span className="hidden md:inline text-xs text-muted-foreground/50">|</span>
                         <p className="text-xs text-muted-foreground/75">
-                            Last updated: December 2025
+                            Last updated: {new Date().toLocaleDateString("en-US", { month: "long", year: "numeric" })}
                         </p>
-
                     </div>
                 </div>
-                <div className="flex items-center gap-4">
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        className="hover:scale-110 transition-transform"
-                        onClick={() => window.dispatchEvent(new CustomEvent("trigger-easter-egg"))}
-                        aria-label="Trigger AI Magic"
+                <div className="flex items-center gap-3">
+                    <motion.div
+                        whileHover={{ scale: 1.15, rotate: 15 }}
+                        whileTap={{ scale: 0.9 }}
+                        transition={{ type: "spring", stiffness: 400, damping: 15 }}
                     >
-                        <Sparkles className="w-5 h-5" />
-                    </Button>
-                    <a href={user.socials.github} target="_blank" rel="noopener noreferrer" data-testid="footer-github">
-                        <Button variant="ghost" size="icon" className="hover:scale-110 transition-transform" aria-label="GitHub">
-                            <Github className="w-5 h-5" />
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="hover:text-primary transition-colors"
+                            onClick={() => window.dispatchEvent(new CustomEvent("trigger-easter-egg"))}
+                            aria-label="Trigger AI Magic"
+                        >
+                            <Sparkles className="w-5 h-5" />
                         </Button>
-                    </a>
-                    <a href={user.socials.linkedin} target="_blank" rel="noopener noreferrer" data-testid="footer-linkedin">
-                        <Button variant="ghost" size="icon" className="hover:scale-110 transition-transform" aria-label="LinkedIn">
-                            <Linkedin className="w-5 h-5" />
-                        </Button>
-                    </a>
-                    <a href={user.socials.email} target="_self" data-testid="footer-email">
-                        <Button variant="ghost" size="icon" className="hover:scale-110 transition-transform" aria-label="Email">
-                            <Mail className="w-5 h-5" />
-                        </Button>
-                    </a>
+                    </motion.div>
+                    {socialLinks.map((social) => (
+                        <motion.a
+                            key={social.label}
+                            href={social.href}
+                            target={social.external ? "_blank" : "_self"}
+                            rel={social.external ? "noopener noreferrer" : undefined}
+                            data-testid={social.testId}
+                            whileHover={{ scale: 1.2, rotate: 8 }}
+                            whileTap={{ scale: 0.9 }}
+                            transition={{ type: "spring", stiffness: 400, damping: 15 }}
+                        >
+                            <Button variant="ghost" size="icon" aria-label={social.label} className="hover:text-primary transition-colors">
+                                <social.icon className="w-5 h-5" />
+                            </Button>
+                        </motion.a>
+                    ))}
                 </div>
-            </div >
-        </footer >
+            </div>
+        </footer>
     );
 }
+

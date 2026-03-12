@@ -354,3 +354,19 @@ body {
     inset: -1px;
   }
 }
+
+/* Logo shimmer animation */
+@keyframes logo-shimmer {
+  0% {
+    background-position: -200% center;
+  }
+
+  100% {
+    background-position: 200% center;
+  }
+}
+
+.logo-shimmer {
+  background-size: 200% auto;
+  animation: logo-shimmer 3s ease-in-out infinite;
+}

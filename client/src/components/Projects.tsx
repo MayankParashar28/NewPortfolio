@@ -1,25 +1,151 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useCallback } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ExternalLink, Github, Loader2 } from "lucide-react";
-import { Tilt } from "react-tilt";
+import { motion, AnimatePresence, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 import { Project } from "@shared/schema";
 import ScrollReveal from "@/components/ScrollReveal";
-import SpotlightCard from "@/components/SpotlightCard";
 import TextScramble from "@/components/TextScramble";
 
-const defaultOptions = {
-  reverse: false,
-  max: 15,
-  perspective: 1000,
-  scale: 1.02,
-  speed: 1000,
-  transition: true,
-  axis: null,
-  reset: true,
-  easing: "cubic-bezier(.03,.98,.52,.99)",
-};
+/**
+ * Individual project card with mouse-tracking spotlight hover.
+ */
+function ProjectCard({ project, index }: { project: Project; index: number }) {
+  const cardRef = useRef<HTMLDivElement>(null);
+
+  const mouseX = useMotionValue(0.5);
+  const mouseY = useMotionValue(0.5);
+
+  const spotX = useSpring(mouseX, { stiffness: 250, damping: 30 });
+  const spotY = useSpring(mouseY, { stiffness: 250, damping: 30 });
+
+  const gradientX = useTransform(spotX, (v) => `${v * 100}%`);
+  const gradientY = useTransform(spotY, (v) => `${v * 100}%`);
+
+  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = cardRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    mouseX.set((e.clientX - rect.left) / rect.width);
+    mouseY.set((e.clientY - rect.top) / rect.height);
+  }, [mouseX, mouseY]);
+
+  const handleMouseLeave = useCallback(() => {
+    mouseX.set(0.5);
+    mouseY.set(0.5);
+  }, [mouseX, mouseY]);
+
+  return (
+    <motion.div
+      layout
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.9 }}
+      transition={{ duration: 0.35, delay: index * 0.05, ease: "easeOut" }}
+      className="h-full"
+    >
+      <motion.div
+        ref={cardRef}
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
+        className="relative h-full rounded-xl overflow-hidden cursor-default group"
+        whileHover={{ scale: 1.03 }}
+        transition={{ type: "spring", stiffness: 400, damping: 25 }}
+      >
+        {/* Mouse-tracking spotlight */}
+        <motion.div
+          className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none z-20"
+          style={{
+            background: useTransform(
+              [gradientX, gradientY],
+              ([x, y]) =>
+                `radial-gradient(ellipse 250px 180px at ${x} ${y}, hsl(var(--primary) / 0.1) 0%, transparent 70%)`
+            ),
+          }}
+        />
+
+        {/* Glowing border on hover */}
+        <motion.div
+          className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none z-20"
+          style={{
+            boxShadow: "inset 0 0 0 1px hsl(var(--primary) / 0.2), 0 0 25px hsl(var(--primary) / 0.06)",
+          }}
+        />
+
+        {/* Card content */}
+        <div className="relative z-10 h-full rounded-xl bg-black/5 dark:bg-white/[0.04] backdrop-blur-md border border-black/[0.06] dark:border-white/[0.08] shadow-xl flex flex-col transition-colors duration-300 group-hover:border-transparent">
+          <div className="relative overflow-hidden aspect-video">
+            <div className="absolute inset-0 bg-primary/10 mix-blend-overlay z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            <img
+              src={project.image}
+              alt={project.title}
+              loading="lazy"
+              decoding="async"
+              width={600}
+              height={338}
+              className="w-full h-full object-cover transition-all duration-500 group-hover:scale-110"
+              data-testid={`img-project-${index}`}
+            />
+          </div>
+
+          <div className="p-4 flex flex-col flex-grow relative z-10">
+            <h3 className="text-lg font-heading font-bold mb-2 text-foreground group-hover:text-primary transition-colors duration-300" data-testid={`text-project-title-${index}`}>
+              {project.title}
+            </h3>
+            <p className="text-muted-foreground mb-3 flex-grow text-xs leading-relaxed line-clamp-3" data-testid={`text-project-description-${index}`}>
+              {project.description}
+            </p>
+
+            <div className="flex flex-wrap gap-1.5 mb-4">
+              {project.tags.slice(0, 3).map((tag, tagIndex) => (
+                <Badge
+                  key={tagIndex}
+                  variant="secondary"
+                  className="text-[10px] px-1.5 py-0.5 bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 border-black/5 dark:border-white/5"
+                  data-testid={`badge-project-${index}-tag-${tagIndex}`}
+                >
+                  {tag}
+                </Badge>
+              ))}
+              {project.tags.length > 3 && (
+                <Badge
+                  variant="secondary"
+                  className="text-[10px] px-1.5 py-0.5 bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/5 opacity-60"
+                >
+                  +{project.tags.length - 3} more
+                </Badge>
+              )}
+            </div>
+
+            <div className="flex gap-2 mt-auto">
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex-1 h-8 text-xs bg-transparent border-black/20 dark:border-white/20 hover:bg-black/10 dark:hover:bg-white/10 hover:text-primary"
+                onClick={() => window.open(project.githubLink, "_blank")}
+                data-testid={`button-project-${index}-github`}
+              >
+                <Github className="w-3 h-3 mr-1.5" />
+                Code
+              </Button>
+              {project.demoLink && (
+                <Button
+                  size="sm"
+                  className="flex-1 h-8 text-xs"
+                  onClick={() => window.open(project.demoLink as string, "_blank")}
+                  data-testid={`button-project-${index}-demo`}
+                >
+                  <ExternalLink className="w-3 h-3 mr-1.5" />
+                  Demo
+                </Button>
+              )}
+            </div>
+          </div>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}
 
 export default React.memo(function Projects() {
   const [activeCategory, setActiveCategory] = useState("All");
@@ -38,7 +164,12 @@ export default React.memo(function Projects() {
 
   // Handle case where projects might be undefined or empty
   const safeProjects = projects || [];
-  const categories = ["All", ...Array.from(new Set(safeProjects.map((p) => p.category || "Other")))];
+  const categoryCounts = safeProjects.reduce((acc, p) => {
+    const cat = p.category || "Other";
+    acc[cat] = (acc[cat] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+  const categories = ["All", ...Object.keys(categoryCounts)];
 
   const filteredProjects = activeCategory === "All"
     ? safeProjects
@@ -73,88 +204,42 @@ export default React.memo(function Projects() {
                     }`}
                 >
                   {category}
+                  <span className="ml-1.5 text-[10px] opacity-60">
+                    {category === "All" ? safeProjects.length : categoryCounts[category] || 0}
+                  </span>
                 </Button>
               ))}
             </div>
           </ScrollReveal>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 min-h-[400px]">
-          {filteredProjects.map((project, index) => (
-            <ScrollReveal
-              key={`${project.title}-${index}`}
-              animation="fade-up"
-              delay={index * 0.1} // Simple stagger based on index in filtered view
-              className="h-full"
-            >
-              <Tilt options={defaultOptions} className="h-full">
-                <SpotlightCard className="h-full rounded-xl bg-black/5 dark:bg-white/5 backdrop-blur-md border border-black/10 dark:border-white/10 shadow-xl group hover:border-primary/30 transition-all duration-300 flex flex-col">
-                  <div className="relative overflow-hidden aspect-video">
-                    <div className="absolute inset-0 bg-primary/10 mix-blend-overlay z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                    <img
-                      src={project.image}
-                      alt={project.title}
-                      loading="lazy"
-                      decoding="async"
-                      width={600}
-                      height={338}
-                      className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500 group-hover:scale-110"
-                      data-testid={`img-project-${index}`}
-                    />
-                  </div>
-
-                  <div className="p-4 flex flex-col flex-grow relative z-10">
-                    <h3 className="text-lg font-heading font-bold mb-2 text-foreground group-hover:text-primary transition-colors" data-testid={`text-project-title-${index}`}>
-                      {project.title}
-                    </h3>
-                    <p className="text-muted-foreground mb-3 flex-grow text-xs leading-relaxed line-clamp-3" data-testid={`text-project-description-${index}`}>
-                      {project.description}
-                    </p>
-
-
-
-                    <div className="flex flex-wrap gap-1.5 mb-4">
-                      {project.tags.map((tag, tagIndex) => (
-                        <Badge
-                          key={tagIndex}
-                          variant="secondary"
-                          className="text-[10px] px-1.5 py-0.5 bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 border-black/5 dark:border-white/5"
-                          data-testid={`badge-project-${index}-tag-${tagIndex}`}
-                        >
-                          {tag}
-                        </Badge>
-                      ))}
-                    </div>
-
-                    <div className="flex gap-2 mt-auto">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="flex-1 h-8 text-xs bg-transparent border-black/20 dark:border-white/20 hover:bg-black/10 dark:hover:bg-white/10 hover:text-primary"
-                        onClick={() => window.open(project.githubLink, "_blank")}
-                        data-testid={`button-project-${index}-github`}
-                      >
-                        <Github className="w-3 h-3 mr-1.5" />
-                        Code
-                      </Button>
-                      {project.demoLink && (
-                        <Button
-                          size="sm"
-                          className="flex-1 h-8 text-xs"
-                          onClick={() => window.open(project.demoLink as string, "_blank")}
-                          data-testid={`button-project-${index}-demo`}
-                        >
-                          <ExternalLink className="w-3 h-3 mr-1.5" />
-                          Demo
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-                </SpotlightCard>
-              </Tilt>
-            </ScrollReveal>
-          ))}
-        </div>
+        <motion.div
+          layout
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 min-h-[400px]"
+        >
+          <AnimatePresence mode="popLayout">
+            {filteredProjects.length === 0 && (
+              <motion.div
+                key="empty-state"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.3 }}
+                className="col-span-full flex flex-col items-center justify-center py-16 text-center"
+              >
+                <p className="text-muted-foreground text-lg font-heading">No projects in this category yet.</p>
+                <p className="text-muted-foreground/60 text-sm mt-2">Check back soon or browse other categories!</p>
+              </motion.div>
+            )}
+            {filteredProjects.map((project, index) => (
+              <ProjectCard
+                key={project.title}
+                project={project}
+                index={index}
+              />
+            ))}
+          </AnimatePresence>
+        </motion.div>
       </div>
     </section>
   );

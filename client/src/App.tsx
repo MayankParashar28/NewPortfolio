@@ -58,6 +58,12 @@ function App() {
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
           <div className="min-h-screen text-foreground font-sans antialiased selection:bg-primary selection:text-primary-foreground">
+            <a
+              href="#about"
+              className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[200] focus:px-4 focus:py-2 focus:bg-primary focus:text-primary-foreground focus:rounded-md focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-ring"
+            >
+              Skip to main content
+            </a>
 
             {!isAdminRoute && (
               <>
