@@ -2,11 +2,13 @@ import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useTheme } from "@/components/ThemeProvider";
 import { useSound } from "@/hooks/useSound";
+import { useReducedMotion } from "framer-motion";
 
 export default function Cursor3D() {
     const cursorLensRef = useRef<HTMLDivElement>(null);
     const cursorDotRef = useRef<HTMLDivElement>(null);
 
+    const prefersReducedMotion = useReducedMotion();
 
     // State for rendering classes
     const [isHoveringState, setIsHoveringState] = useState(false);
@@ -31,6 +33,8 @@ export default function Cursor3D() {
     const scrollTimeoutRef = useRef<NodeJS.Timeout>();
 
     useEffect(() => {
+        if (prefersReducedMotion) return; // Disable event listeners if reduced motion is on
+
         const handleScroll = () => {
             isScrollingRef.current = true;
             if (scrollTimeoutRef.current) {
@@ -46,9 +50,11 @@ export default function Cursor3D() {
             window.removeEventListener("scroll", handleScroll);
             if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
         };
-    }, []);
+    }, [prefersReducedMotion]);
 
     useEffect(() => {
+        if (prefersReducedMotion) return; // Don't run animation loop or bindings
+
         const handleMouseMove = (e: MouseEvent) => {
             mouseRef.current = { x: e.clientX, y: e.clientY };
 
@@ -169,18 +175,20 @@ export default function Cursor3D() {
             window.removeEventListener("touchend", handleTouchEnd);
             if (requestRef.current) cancelAnimationFrame(requestRef.current);
         };
-    }, []);
+    }, [prefersReducedMotion, playClick, playHover]);
 
-    if (!document.body) return null;
+    // Fast exit if we shouldn't show it at all
+    if (!document.body || prefersReducedMotion) return null;
 
     return createPortal(
         <>
             <style>{`
-        * {
+        /* Hide default cursor only when NOT using keyboard navigation */
+        body:not(:focus-visible) * {
           cursor: none !important;
         }
 
-        html, body, a, button, input, select, textarea {
+        html, body, a:not(:focus-visible), button:not(:focus-visible), input:not(:focus-visible), select:not(:focus-visible), textarea:not(:focus-visible) {
           cursor: none !important;
         }
 

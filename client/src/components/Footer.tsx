@@ -26,36 +26,43 @@ export default function Footer() {
                     </div>
                 </div>
                 <div className="flex items-center gap-3">
-                    <motion.div
-                        whileHover={{ scale: 1.15, rotate: 15 }}
-                        whileTap={{ scale: 0.9 }}
-                        transition={{ type: "spring", stiffness: 400, damping: 15 }}
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        className="rounded-full hover:text-primary transition-transform will-change-transform"
+                        onClick={() => window.dispatchEvent(new CustomEvent("trigger-easter-egg"))}
+                        aria-label="Trigger AI Magic"
+                        asChild
                     >
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            className="hover:text-primary transition-colors"
-                            onClick={() => window.dispatchEvent(new CustomEvent("trigger-easter-egg"))}
-                            aria-label="Trigger AI Magic"
-                        >
-                            <Sparkles className="w-5 h-5" />
-                        </Button>
-                    </motion.div>
-                    {socialLinks.map((social) => (
-                        <motion.a
-                            key={social.label}
-                            href={social.href}
-                            target={social.external ? "_blank" : "_self"}
-                            rel={social.external ? "noopener noreferrer" : undefined}
-                            data-testid={social.testId}
-                            whileHover={{ scale: 1.2, rotate: 8 }}
+                        <motion.button
+                            whileHover={{ scale: 1.15, rotate: 15 }}
                             whileTap={{ scale: 0.9 }}
                             transition={{ type: "spring", stiffness: 400, damping: 15 }}
                         >
-                            <Button variant="ghost" size="icon" aria-label={social.label} className="hover:text-primary transition-colors">
+                            <Sparkles className="w-5 h-5" />
+                        </motion.button>
+                    </Button>
+                    {socialLinks.map((social) => (
+                        <Button 
+                            key={social.label} 
+                            variant="ghost" 
+                            size="icon" 
+                            aria-label={social.label} 
+                            className="rounded-full hover:text-primary transition-transform will-change-transform" 
+                            asChild
+                        >
+                            <motion.a
+                                href={social.href}
+                                target={social.external ? "_blank" : "_self"}
+                                rel={social.external ? "noopener noreferrer" : undefined}
+                                data-testid={social.testId}
+                                whileHover={{ scale: 1.2, rotate: 8 }}
+                                whileTap={{ scale: 0.9 }}
+                                transition={{ type: "spring", stiffness: 400, damping: 15 }}
+                            >
                                 <social.icon className="w-5 h-5" />
-                            </Button>
-                        </motion.a>
+                            </motion.a>
+                        </Button>
                     ))}
                 </div>
             </div>

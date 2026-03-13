@@ -3,6 +3,7 @@ import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Points, PointMaterial, Line } from "@react-three/drei";
 import { useTheme } from "@/components/ThemeProvider";
 import * as THREE from "three";
+import { useReducedMotion } from "framer-motion";
 
 
 // Manual random point generator to avoid NaN issues
@@ -28,19 +29,21 @@ const generateSpherePoints = (count: number, radius: number) => {
 
 function Stars(props: any) {
   const ref = useRef<any>();
+  const prefersReducedMotion = useReducedMotion();
   const [sphere] = useMemo(() => {
     return [generateSpherePoints(10000, 10)];
   }, []);
 
   useFrame((state, delta) => {
     if (ref.current) {
-      ref.current.rotation.x -= delta / 10;
-      ref.current.rotation.y -= delta / 15;
+      const speedMultiplier = prefersReducedMotion ? 0.1 : 1;
+      ref.current.rotation.x -= (delta / 10) * speedMultiplier;
+      ref.current.rotation.y -= (delta / 15) * speedMultiplier;
 
       // Mouse interaction
       const { mouse } = state;
-      ref.current.rotation.x += mouse.y * 0.0005;
-      ref.current.rotation.y += mouse.x * 0.0005;
+      ref.current.rotation.x += mouse.y * 0.0005 * speedMultiplier;
+      ref.current.rotation.y += mouse.x * 0.0005 * speedMultiplier;
     }
   });
 
@@ -157,15 +160,19 @@ function Connections({ color }: { color: string }) {
     tempColor: new THREE.Color()
   }), []);
 
+  const prefersReducedMotion = useReducedMotion();
+
   useFrame((state, delta) => {
     if (groupRef.current && geometryRef.current) {
+      const speedMultiplier = prefersReducedMotion ? 0.1 : 1;
+      
       // Rotation
-      groupRef.current.rotation.x -= delta / 15;
-      groupRef.current.rotation.y -= delta / 20;
+      groupRef.current.rotation.x -= (delta / 15) * speedMultiplier;
+      groupRef.current.rotation.y -= (delta / 20) * speedMultiplier;
 
       // Use global mouse for rotation
-      groupRef.current.rotation.x += mouseRef.current.y * 0.0005;
-      groupRef.current.rotation.y += mouseRef.current.x * 0.0005;
+      groupRef.current.rotation.x += mouseRef.current.y * 0.0005 * speedMultiplier;
+      groupRef.current.rotation.y += mouseRef.current.x * 0.0005 * speedMultiplier;
 
       // IMPORTANT: Update matrix world before using it for raycasting
       groupRef.current.updateMatrixWorld();

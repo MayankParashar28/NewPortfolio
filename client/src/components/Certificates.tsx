@@ -69,7 +69,7 @@ function CertificateCard({ cert, index }: { cert: Certificate; index: number }) 
         />
 
         {/* Card content */}
-        <div className="relative z-10 h-full p-6 rounded-xl bg-black/[0.03] dark:bg-white/[0.04] backdrop-blur-md border border-black/[0.06] dark:border-white/[0.08] flex flex-col transition-colors duration-300 group-hover:border-transparent">
+        <div className="relative z-10 h-full p-5 sm:p-6 rounded-xl bg-black/[0.03] dark:bg-white/[0.04] backdrop-blur-md border border-black/[0.06] dark:border-white/[0.08] flex flex-col transition-colors duration-300 group-hover:border-transparent">
           <div className="flex items-start gap-4 mb-4">
             <motion.div
               className="flex-shrink-0 p-2 bg-background/50 rounded-lg border border-black/10 dark:border-white/10"
@@ -79,12 +79,12 @@ function CertificateCard({ cert, index }: { cert: Certificate; index: number }) 
               <img
                 src={cert.image}
                 alt={cert.title}
-                className="w-16 h-16 object-cover transition-all duration-300 group-hover:scale-105"
+                className="w-12 h-12 sm:w-16 sm:h-16 object-cover transition-all duration-300 group-hover:scale-105"
               />
             </motion.div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-1">
-                <h3 className="text-lg font-heading font-semibold truncate pr-2 group-hover:text-primary transition-colors duration-300">
+                <h3 className="text-base sm:text-lg font-heading font-semibold line-clamp-2 pr-2 group-hover:text-primary transition-colors duration-300 leading-tight">
                   {cert.title}
                 </h3>
                 <motion.div
@@ -96,11 +96,11 @@ function CertificateCard({ cert, index }: { cert: Certificate; index: number }) 
                   <BadgeCheck className="w-4 h-4 text-primary flex-shrink-0" />
                 </motion.div>
               </div>
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <Award className="w-3 h-3" />
-                <span>{cert.issuer}</span>
-                <span>•</span>
-                <span>{cert.date}</span>
+              <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground mt-1">
+                <Award className="w-3 h-3 flex-shrink-0" />
+                <span className="truncate max-w-[120px] sm:max-w-none">{cert.issuer}</span>
+                <span className="hidden sm:inline">•</span>
+                <span className="flex-shrink-0">{cert.date}</span>
               </div>
             </div>
           </div>
@@ -148,14 +148,14 @@ export default function Certificates() {
   const safeCertificates = certificates || [];
 
   return (
-    <section id="certificates" className="py-20 px-4 sm:px-6 lg:px-8 border-t border-border bg-muted/30 relative overflow-hidden">
-      <div className="max-w-7xl mx-auto relative z-10">
+    <section id="certificates" className="py-20 border-t border-border bg-muted/30 relative overflow-hidden">
+      <div className="w-[90%] lg:w-[95%] max-w-7xl mx-auto relative z-10">
         <div className="text-center mb-16">
           <ScrollReveal animation="fade-up">
             <TextScramble
               text="Certifications & Achievements"
               as="h2"
-              className="text-4xl sm:text-5xl font-heading font-bold mb-4 inline-block"
+              className="text-3xl sm:text-4xl md:text-5xl font-heading font-bold mb-4 block break-words max-w-full"
             />
             <div className="w-20 h-1 bg-foreground mx-auto"></div>
             <p className="text-muted-foreground mt-6 max-w-2xl mx-auto">
@@ -164,7 +164,7 @@ export default function Certificates() {
           </ScrollReveal>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-8">
+        <div className={`grid gap-8 ${safeCertificates.length === 1 ? 'max-w-2xl mx-auto w-full' : 'md:grid-cols-2'}`}>
           {safeCertificates.map((cert, index) => (
             <CertificateCard key={cert.title + index} cert={cert} index={index} />
           ))}

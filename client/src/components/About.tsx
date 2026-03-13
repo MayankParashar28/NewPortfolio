@@ -1,7 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { Brain, Code2, Cpu, Sparkles, Target, Workflow, Zap } from "lucide-react";
-import { useRef } from "react";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { useRef, useCallback } from "react";
+import { motion, useScroll, useTransform, useMotionValue, useSpring } from "framer-motion";
 import ScrollReveal from "@/components/ScrollReveal";
 import SpotlightCard from "@/components/SpotlightCard";
 import TextScramble from "@/components/TextScramble";
@@ -45,9 +45,40 @@ export default function About() {
     }
   ];
 
+  const FLOATING_ICONS = [Brain, Code2, Cpu, Zap, Target, Workflow];
+
   return (
-    <section id="about" className="pt-10 pb-20 md:pt-16 md:pb-32 px-4 sm:px-6 lg:px-8 border-t border-border min-h-[calc(100vh-4rem)] flex items-center">
-      <div className="max-w-7xl mx-auto w-full">
+    <section id="about" className="pt-10 pb-20 md:pt-16 md:pb-32 px-4 sm:px-6 lg:px-8 border-t border-border min-h-[calc(100vh-4rem)] flex items-center relative overflow-hidden">
+      {/* Floating Tech Particles Background */}
+      <div className="absolute inset-0 pointer-events-none z-0 opacity-20 dark:opacity-10">
+        {FLOATING_ICONS.map((Icon, idx) => (
+          <motion.div
+            key={idx}
+            className="absolute text-primary"
+            initial={{ 
+              y: "-20vh", 
+              x: `${(idx * 100) / FLOATING_ICONS.length}vw`,
+              rotate: 0,
+              scale: Math.random() * 0.5 + 0.5
+            }}
+            animate={{
+              y: "120vh",
+              x: `${(idx * 100) / FLOATING_ICONS.length + (Math.random() * 10 - 5)}vw`,
+              rotate: 360,
+            }}
+            transition={{
+              duration: Math.random() * 20 + 25,
+              repeat: Infinity,
+              ease: "linear",
+              delay: Math.random() * -30 // Start at different times
+            }}
+          >
+            <Icon className="w-16 h-16 sm:w-24 sm:h-24" />
+          </motion.div>
+        ))}
+      </div>
+
+      <div className="max-w-7xl mx-auto w-full relative z-10">
         <div className="text-center mb-16">
           <TextScramble
             text="About Me"
@@ -60,13 +91,41 @@ export default function About() {
         <div className="grid lg:grid-cols-2 gap-16 items-center">
           <div className="order-2 lg:order-1">
 
-
-            <ScrollReveal animation="fade-up" delay={0.1}>
-              <p className="text-sm sm:text-base text-muted-foreground mb-8 leading-relaxed" data-testid="text-about-paragraph-1">
-                {bio}
-              </p>
-            </ScrollReveal>
-
+            <motion.div
+              variants={{
+                hidden: { opacity: 0 },
+                show: {
+                  opacity: 1,
+                  transition: {
+                    staggerChildren: 0.02,
+                    delayChildren: 0.1,
+                  },
+                },
+              }}
+              initial="hidden"
+              whileInView="show"
+              viewport={{ once: true, margin: "-100px" }}
+              className="text-sm sm:text-base text-muted-foreground mb-8 leading-relaxed flex flex-wrap gap-x-1"
+              data-testid="text-about-paragraph-1"
+            >
+              {bio.split(" ").map((word, i) => (
+                <motion.span
+                  key={i}
+                  variants={{
+                    hidden: { opacity: 0, y: 10, filter: "blur(4px)" },
+                    show: {
+                      opacity: 1,
+                      y: 0,
+                      filter: "blur(0px)",
+                      transition: { duration: 0.4, ease: "easeOut" },
+                    },
+                  }}
+                  className="inline-block"
+                >
+                  {word}
+                </motion.span>
+              ))}
+            </motion.div>
 
             <ScrollReveal animation="fade-up" delay={0.25}>
               <div className="flex items-center gap-2 mb-8 text-xs sm:text-sm font-medium text-foreground bg-primary/10 p-1.5 rounded-md border border-primary/20 inline-block">
@@ -77,15 +136,7 @@ export default function About() {
 
             <div className="grid sm:grid-cols-3 gap-6 mt-12">
               {highlights.map((item, index) => (
-                <ScrollReveal key={index} animation="fade-up" delay={0.3 + index * 0.1} className="h-full">
-                  <SpotlightCard className="h-full">
-                    <Card className="p-3 border border-border hover-elevate transition-all h-full bg-transparent" data-testid={`card-highlight-${index}`}>
-                      <item.icon className="w-6 h-6 mb-2" />
-                      <h4 className="font-heading font-semibold mb-1 text-xs sm:text-sm">{item.title}</h4>
-                      <p className="text-[10px] sm:text-xs text-muted-foreground">{item.description}</p>
-                    </Card>
-                  </SpotlightCard>
-                </ScrollReveal>
+                <MagneticHighlightCard key={index} item={item} index={index} />
               ))}
             </div>
           </div>
@@ -108,5 +159,61 @@ export default function About() {
         </div>
       </div>
     </section>
+  );
+}
+
+function MagneticHighlightCard({ item, index }: { item: any; index: number }) {
+  const cardRef = useRef<HTMLDivElement>(null);
+  const mouseX = useMotionValue(0.5);
+  const mouseY = useMotionValue(0.5);
+  const springX = useSpring(mouseX, { stiffness: 300, damping: 30 });
+  const springY = useSpring(mouseY, { stiffness: 300, damping: 30 });
+  const tx = useTransform(springX, [0, 1], [-6, 6]);
+  const ty = useTransform(springY, [0, 1], [-4, 4]);
+
+  const handleMouseMove = useCallback(
+    (e: React.MouseEvent) => {
+      const rect = cardRef.current?.getBoundingClientRect();
+      if (!rect) return;
+      mouseX.set((e.clientX - rect.left) / rect.width);
+      mouseY.set((e.clientY - rect.top) / rect.height);
+    },
+    [mouseX, mouseY]
+  );
+
+  const handleMouseLeave = useCallback(() => {
+    mouseX.set(0.5);
+    mouseY.set(0.5);
+  }, [mouseX, mouseY]);
+
+  return (
+    <ScrollReveal animation="fade-up" delay={0.3 + index * 0.1} className="h-full">
+      <motion.div
+        ref={cardRef}
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
+        style={{ x: tx, y: ty }}
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        transition={{ type: "spring", stiffness: 400, damping: 25 }}
+        className="h-full cursor-pointer"
+      >
+        <SpotlightCard className="h-full">
+          <Card className="p-3 border border-border hover:border-primary/40 hover:shadow-[0_0_20px_hsl(var(--primary)/0.08)] transition-all h-full bg-transparent group" data-testid={`card-highlight-${index}`}>
+            <motion.div
+              whileHover={{ rotate: [0, -12, 12, 0] }}
+              transition={{ type: "spring", stiffness: 400, damping: 15 }}
+              className="inline-block"
+            >
+              <item.icon className="w-6 h-6 mb-2 group-hover:text-primary transition-colors duration-300" />
+            </motion.div>
+            <h4 className="font-heading font-semibold mb-1 text-xs sm:text-sm group-hover:text-primary transition-colors duration-300">
+              {item.title}
+            </h4>
+            <p className="text-[10px] sm:text-xs text-muted-foreground">{item.description}</p>
+          </Card>
+        </SpotlightCard>
+      </motion.div>
+    </ScrollReveal>
   );
 }

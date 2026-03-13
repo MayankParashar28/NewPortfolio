@@ -24,6 +24,10 @@ function SkillCard({ skill, index, categoryIndex }: { skill: Skill; index: numbe
   // Convert to percentage strings for the radial gradient
   const gradientX = useTransform(spotX, (v) => `${v * 100}%`);
   const gradientY = useTransform(spotY, (v) => `${v * 100}%`);
+  
+  // Map mouse percentage to a physical pixel translation for the magnetic effect
+  const translateX = useTransform(spotX, [0, 1], [-15, 15]);
+  const translateY = useTransform(spotY, [0, 1], [-15, 15]);
 
   const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     const rect = cardRef.current?.getBoundingClientRect();
@@ -46,15 +50,20 @@ function SkillCard({ skill, index, categoryIndex }: { skill: Skill; index: numbe
       transition={{ duration: 0.45, delay: categoryIndex * 0.08 + index * 0.04, ease: "easeOut" }}
       viewport={{ once: true, margin: "-40px" }}
       className="h-full"
+      ref={cardRef}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
     >
-      <motion.div
-        ref={cardRef}
-        onMouseMove={handleMouseMove}
-        onMouseLeave={handleMouseLeave}
-        className="relative h-full rounded-xl overflow-hidden cursor-default group"
-        whileHover={{ scale: 1.05 }}
-        transition={{ type: "spring", stiffness: 400, damping: 25 }}
-      >
+      <motion.div style={{ x: translateX, y: translateY }} className="h-full">
+        <motion.div
+          drag
+          dragConstraints={{ top: 0, left: 0, right: 0, bottom: 0 }}
+          dragElastic={0.2}
+          whileDrag={{ scale: 1.1, zIndex: 50, cursor: "grabbing" }}
+          className="relative h-full rounded-xl overflow-hidden cursor-grab group bg-background"
+          whileHover={{ scale: 1.05 }}
+          transition={{ type: "spring", stiffness: 400, damping: 25 }}
+        >
         {/* Animated spotlight overlay */}
         <motion.div
           className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none z-0"
@@ -103,6 +112,7 @@ function SkillCard({ skill, index, categoryIndex }: { skill: Skill; index: numbe
             {skill.name}
           </h3>
         </div>
+        </motion.div>
       </motion.div>
     </motion.div>
   );

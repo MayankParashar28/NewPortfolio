@@ -7,12 +7,19 @@ import { useQuery } from "@tanstack/react-query";
 import { Project } from "@shared/schema";
 import ScrollReveal from "@/components/ScrollReveal";
 import TextScramble from "@/components/TextScramble";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 /**
  * Individual project card with mouse-tracking spotlight hover.
  */
 function ProjectCard({ project, index }: { project: Project; index: number }) {
   const cardRef = useRef<HTMLDivElement>(null);
+  const [isExpandedTags, setIsExpandedTags] = useState(false);
 
   const mouseX = useMotionValue(0.5);
   const mouseY = useMotionValue(0.5);
@@ -96,47 +103,62 @@ function ProjectCard({ project, index }: { project: Project; index: number }) {
               {project.description}
             </p>
 
-            <div className="flex flex-wrap gap-1.5 mb-4">
-              {project.tags.slice(0, 3).map((tag, tagIndex) => (
-                <Badge
-                  key={tagIndex}
-                  variant="secondary"
-                  className="text-[10px] px-1.5 py-0.5 bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 border-black/5 dark:border-white/5"
-                  data-testid={`badge-project-${index}-tag-${tagIndex}`}
-                >
-                  {tag}
-                </Badge>
-              ))}
-              {project.tags.length > 3 && (
-                <Badge
-                  variant="secondary"
-                  className="text-[10px] px-1.5 py-0.5 bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/5 opacity-60"
-                >
-                  +{project.tags.length - 3} more
-                </Badge>
-              )}
-            </div>
+            <motion.div layout className="flex flex-wrap gap-1.5 mb-4">
+              <AnimatePresence>
+                {(isExpandedTags ? project.tags : project.tags.slice(0, 3)).map((tag, tagIndex) => (
+                  <motion.div
+                    key={tag}
+                    layout // Add layout prop for smooth repositioning
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.8 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <Badge
+                      variant="secondary"
+                      className="text-[10px] px-1.5 py-0.5 bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 border-black/5 dark:border-white/5"
+                      data-testid={`badge-project-${index}-tag-${tagIndex}`}
+                    >
+                      {tag}
+                    </Badge>
+                  </motion.div>
+                ))}
+                {project.tags.length > 3 && (
+                  <motion.div layout key="expand-button">
+                    <Badge
+                      variant="secondary"
+                      className="text-[10px] px-1.5 py-0.5 bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/5 opacity-60 cursor-pointer hover:opacity-100 transition-opacity select-none"
+                      onClick={() => setIsExpandedTags(!isExpandedTags)}
+                    >
+                      {isExpandedTags ? "Show less" : `+${project.tags.length - 3} more`}
+                    </Badge>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.div>
 
             <div className="flex gap-2 mt-auto">
               <Button
                 variant="outline"
                 size="sm"
                 className="flex-1 h-8 text-xs bg-transparent border-black/20 dark:border-white/20 hover:bg-black/10 dark:hover:bg-white/10 hover:text-primary"
-                onClick={() => window.open(project.githubLink, "_blank")}
-                data-testid={`button-project-${index}-github`}
+                asChild
               >
-                <Github className="w-3 h-3 mr-1.5" />
-                Code
+                <a href={project.githubLink} target="_blank" rel="noopener noreferrer" data-testid={`button-project-${index}-github`}>
+                  <Github className="w-3 h-3 mr-1.5" />
+                  Code
+                </a>
               </Button>
               {project.demoLink && (
                 <Button
                   size="sm"
                   className="flex-1 h-8 text-xs"
-                  onClick={() => window.open(project.demoLink as string, "_blank")}
-                  data-testid={`button-project-${index}-demo`}
+                  asChild
                 >
-                  <ExternalLink className="w-3 h-3 mr-1.5" />
-                  Demo
+                  <a href={project.demoLink as string} target="_blank" rel="noopener noreferrer" data-testid={`button-project-${index}-demo`}>
+                    <ExternalLink className="w-3 h-3 mr-1.5" />
+                    Demo
+                  </a>
                 </Button>
               )}
             </div>
@@ -176,8 +198,8 @@ export default React.memo(function Projects() {
     : safeProjects.filter((p) => (p.category || "Other") === activeCategory);
 
   return (
-    <section id="projects" className="py-20 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
-      <div className="max-w-7xl mx-auto relative z-10">
+    <section id="projects" className="py-20 relative overflow-hidden">
+      <div className="w-[90%] lg:w-[95%] max-w-7xl mx-auto relative z-10">
         <div className="text-center mb-12">
           <ScrollReveal animation="fade-up">
             <TextScramble

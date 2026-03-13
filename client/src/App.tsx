@@ -1,8 +1,8 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useState } from "react";
 
 
 import { Switch, Route, useLocation } from "wouter";
-import { AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -14,6 +14,7 @@ import Footer from "@/components/Footer";
 import BackToTop from "@/components/BackToTop";
 import ScrollProgress from "@/components/ScrollProgress";
 import SmoothScroll from "@/components/SmoothScroll";
+import Preloader from "@/components/Preloader";
 import { AuthProvider } from "@/context/AuthProvider";
 
 // Lazy load pages for better initial bundle size
@@ -50,6 +51,7 @@ function Router() {
 function App() {
   const [location] = useLocation();
   const isAdminRoute = location.startsWith("/admin") || location === "/login";
+  const [isLoading, setIsLoading] = useState(true);
 
   return (
     <ThemeProvider defaultTheme="dark">
@@ -57,36 +59,48 @@ function App() {
 
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
-          <div className="min-h-screen text-foreground font-sans antialiased selection:bg-primary selection:text-primary-foreground">
-            <a
-              href="#about"
-              className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[200] focus:px-4 focus:py-2 focus:bg-primary focus:text-primary-foreground focus:rounded-md focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-ring"
-            >
-              Skip to main content
-            </a>
+          <AnimatePresence mode="wait">
+            {isLoading && !isAdminRoute ? (
+              <Preloader key="preloader" onComplete={() => setIsLoading(false)} />
+            ) : (
+              <motion.div
+                key="app-content"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.8 }}
+                className="min-h-screen text-foreground font-sans antialiased selection:bg-primary selection:text-primary-foreground"
+              >
+                <a
+                  href="#about"
+                  className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[200] focus:px-4 focus:py-2 focus:bg-primary focus:text-primary-foreground focus:rounded-md focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-ring"
+                >
+                  Skip to main content
+                </a>
 
-            {!isAdminRoute && (
-              <>
-                <SmoothScroll />
-                <ScrollProgress />
-                <Suspense fallback={null}>
-                  <Cursor3D />
-                </Suspense>
-                <InteractiveSelection />
-                <EasterEgg />
-                <Navigation />
-              </>
+                {!isAdminRoute && (
+                  <>
+                    <SmoothScroll />
+                    <ScrollProgress />
+                    <Suspense fallback={null}>
+                      <Cursor3D />
+                    </Suspense>
+                    <InteractiveSelection />
+                    <EasterEgg />
+                    <Navigation />
+                  </>
+                )}
+
+                <Router />
+
+                {!isAdminRoute && (
+                  <>
+                    <BackToTop />
+                    <Footer />
+                  </>
+                )}
+              </motion.div>
             )}
-
-            <Router />
-
-            {!isAdminRoute && (
-              <>
-                <BackToTop />
-                <Footer />
-              </>
-            )}
-          </div>
+          </AnimatePresence>
           <Toaster />
         </AuthProvider>
       </QueryClientProvider>

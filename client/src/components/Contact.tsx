@@ -3,9 +3,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Send, Mail, Github, Linkedin, Loader2, CheckCircle2 } from "lucide-react";
-import { useState } from "react";
+import { useState, useRef, useCallback } from "react";
 import { user } from "@/data";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useMotionValue, useSpring, useTransform } from "framer-motion";
 import TextScramble from "@/components/TextScramble";
 import { useToast } from "@/hooks/use-toast";
 import { useForm } from "react-hook-form";
@@ -48,10 +48,82 @@ function fireConfetti() {
   }, 150);
 }
 
+/**
+ * Magnetic contact info card that subtly shifts toward the mouse cursor.
+ */
+function MagneticContactCard({
+  icon: Icon,
+  label,
+  value,
+  link,
+  index,
+}: {
+  icon: React.ElementType;
+  label: string;
+  value: string;
+  link: string;
+  index: number;
+}) {
+  const cardRef = useRef<HTMLAnchorElement>(null);
+  const mouseX = useMotionValue(0.5);
+  const mouseY = useMotionValue(0.5);
+  const springX = useSpring(mouseX, { stiffness: 300, damping: 30 });
+  const springY = useSpring(mouseY, { stiffness: 300, damping: 30 });
+  const tx = useTransform(springX, [0, 1], [-8, 8]);
+  const ty = useTransform(springY, [0, 1], [-6, 6]);
+
+  const handleMouseMove = useCallback(
+    (e: React.MouseEvent) => {
+      const rect = cardRef.current?.getBoundingClientRect();
+      if (!rect) return;
+      mouseX.set((e.clientX - rect.left) / rect.width);
+      mouseY.set((e.clientY - rect.top) / rect.height);
+    },
+    [mouseX, mouseY]
+  );
+
+  const handleMouseLeave = useCallback(() => {
+    mouseX.set(0.5);
+    mouseY.set(0.5);
+  }, [mouseX, mouseY]);
+
+  return (
+    <motion.a
+      ref={cardRef}
+      href={link}
+      target="_blank"
+      rel="noopener noreferrer"
+      data-testid={`link-contact-${index}`}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      style={{ x: tx, y: ty }}
+      whileHover={{ scale: 1.03 }}
+      whileTap={{ scale: 0.97 }}
+      transition={{ type: "spring", stiffness: 400, damping: 25 }}
+      className="flex items-start gap-3 p-3 border border-border rounded-md hover:border-primary/40 hover:shadow-[0_0_20px_hsl(var(--primary)/0.08)] transition-all duration-300 group cursor-pointer"
+    >
+      <motion.div
+        className="mt-0.5 flex-shrink-0"
+        whileHover={{ rotate: [0, -12, 12, 0] }}
+        transition={{ type: "spring", stiffness: 400, damping: 15 }}
+      >
+        <Icon className="w-5 h-5 group-hover:text-primary transition-colors duration-300" />
+      </motion.div>
+      <div className="flex-1 min-w-0">
+        <div className="text-sm font-medium group-hover:text-primary transition-colors duration-300">
+          {label}
+        </div>
+        <div className="text-xs text-muted-foreground truncate">{value}</div>
+      </div>
+    </motion.a>
+  );
+}
+
 export default function Contact() {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [buttonPhase, setButtonPhase] = useState<"idle" | "sending" | "flying" | "done">("idle");
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -64,8 +136,13 @@ export default function Contact() {
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setIsSubmitting(true);
+    setButtonPhase("sending");
 
     try {
+      // Show "sending" spinner briefly
+      await new Promise((r) => setTimeout(r, 600));
+      setButtonPhase("flying");
+
       const response = await fetch("https://formspree.io/f/xqavoekj", {
         method: "POST",
         headers: {
@@ -74,19 +151,24 @@ export default function Contact() {
         body: JSON.stringify(values),
       });
 
+      // Let the fly animation play out
+      await new Promise((r) => setTimeout(r, 800));
+
       if (response.ok) {
+        setButtonPhase("done");
         setIsSuccess(true);
         fireConfetti();
         form.reset();
 
-        // Reset success state after 4 seconds
         setTimeout(() => {
           setIsSuccess(false);
+          setButtonPhase("idle");
         }, 4000);
       } else {
         throw new Error("Failed to send message");
       }
     } catch (error) {
+      setButtonPhase("idle");
       toast({
         title: "Error",
         description: "Something went wrong. Please try again later.",
@@ -185,7 +267,7 @@ export default function Contact() {
                                 <FormItem>
                                   <FormLabel>Name</FormLabel>
                                   <FormControl>
-                                    <Input placeholder="Your name" {...field} disabled={isSubmitting} data-testid="input-name" />
+                                    <Input placeholder="Your name" {...field} disabled={isSubmitting} data-testid="input-name" className="focus:ring-2 focus:ring-primary/30 transition-shadow" />
                                   </FormControl>
                                   <FormMessage />
                                 </FormItem>
@@ -198,7 +280,7 @@ export default function Contact() {
                                 <FormItem>
                                   <FormLabel>Email</FormLabel>
                                   <FormControl>
-                                    <Input placeholder="your.email@example.com" {...field} disabled={isSubmitting} data-testid="input-email" />
+                                    <Input placeholder="your.email@example.com" {...field} disabled={isSubmitting} data-testid="input-email" className="focus:ring-2 focus:ring-primary/30 transition-shadow" />
                                   </FormControl>
                                   <FormMessage />
                                 </FormItem>
@@ -244,6 +326,7 @@ export default function Contact() {
                                     {...field}
                                     disabled={isSubmitting}
                                     data-testid="input-message"
+                                    className="focus:ring-2 focus:ring-primary/30 transition-shadow"
                                   />
                                 </FormControl>
                                 <FormMessage />
@@ -251,24 +334,70 @@ export default function Contact() {
                             )}
                           />
 
+                          {/* ✨ Morphing Submit Button */}
                           <Button
                             type="submit"
                             size="lg"
-                            className="w-full"
+                            className="w-full relative overflow-hidden group"
                             disabled={isSubmitting}
                             data-testid="button-submit"
                           >
-                            {isSubmitting ? (
-                              <>
-                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                Sending...
-                              </>
-                            ) : (
-                              <>
-                                <Send className="w-4 h-4 mr-2" />
-                                Send Message
-                              </>
-                            )}
+                            <AnimatePresence mode="wait">
+                              {buttonPhase === "idle" && (
+                                <motion.span
+                                  key="idle"
+                                  initial={{ opacity: 0, y: 20 }}
+                                  animate={{ opacity: 1, y: 0 }}
+                                  exit={{ opacity: 0, y: -20 }}
+                                  transition={{ duration: 0.2 }}
+                                  className="flex items-center justify-center"
+                                >
+                                  <Send className="w-4 h-4 mr-2 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform duration-300" />
+                                  Send Message
+                                </motion.span>
+                              )}
+
+                              {buttonPhase === "sending" && (
+                                <motion.span
+                                  key="sending"
+                                  initial={{ opacity: 0, y: 20 }}
+                                  animate={{ opacity: 1, y: 0 }}
+                                  exit={{ opacity: 0, y: -20 }}
+                                  transition={{ duration: 0.2 }}
+                                  className="flex items-center justify-center"
+                                >
+                                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                  Preparing...
+                                </motion.span>
+                              )}
+
+                              {buttonPhase === "flying" && (
+                                <motion.span
+                                  key="flying"
+                                  initial={{ opacity: 0, x: -30 }}
+                                  animate={{ opacity: [0, 1, 1, 1, 0], x: [-30, 0, 0, 20, 80], y: [0, 0, 0, -5, -25] }}
+                                  transition={{ duration: 1.2, times: [0, 0.15, 0.5, 0.75, 1], ease: "easeInOut" }}
+                                  className="flex items-center justify-center"
+                                >
+                                  <Send className="w-5 h-5 mr-2 -rotate-45" />
+                                  Sending...
+                                </motion.span>
+                              )}
+
+                              {buttonPhase === "done" && (
+                                <motion.span
+                                  key="done"
+                                  initial={{ opacity: 0, scale: 0.5 }}
+                                  animate={{ opacity: 1, scale: 1 }}
+                                  exit={{ opacity: 0, scale: 0.5 }}
+                                  transition={{ type: "spring", stiffness: 400, damping: 15 }}
+                                  className="flex items-center justify-center"
+                                >
+                                  <CheckCircle2 className="w-5 h-5 mr-2" />
+                                  Delivered!
+                                </motion.span>
+                              )}
+                            </AnimatePresence>
                           </Button>
                         </form>
                       </Form>
@@ -291,7 +420,7 @@ export default function Contact() {
                 <CardTitle className="text-xl font-heading">Contact Info</CardTitle>
                 <CardDescription>Connect with me through these channels</CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-3">
                 {[
                   {
                     icon: Mail,
@@ -312,24 +441,17 @@ export default function Contact() {
                     link: user.socials.linkedin
                   }
                 ].map((method, index) => (
-                  <a
+                  <MagneticContactCard
                     key={index}
-                    href={method.link}
-                    className="flex items-start gap-3 p-3 border border-border rounded-md hover-elevate active-elevate-2 transition-all group"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    data-testid={`link-contact-${index}`}
-                  >
-                    <method.icon className="w-5 h-5 mt-0.5 flex-shrink-0" />
-                    <div className="flex-1 min-w-0">
-                      <div className="text-sm font-medium">{method.label}</div>
-                      <div className="text-xs text-muted-foreground truncate">{method.value}</div>
-                    </div>
-                  </a>
+                    icon={method.icon}
+                    label={method.label}
+                    value={method.value}
+                    link={method.link}
+                    index={index}
+                  />
                 ))}
               </CardContent>
             </Card>
-
 
             <Card className="border border-border">
               <CardContent className="p-6">
