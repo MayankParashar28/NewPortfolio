@@ -57,6 +57,7 @@ export const profile = pgTable("profile", {
   openaiApiKey: text("openai_api_key").notNull().default(""),
   atsScore: integer("ats_score"),
   atsFeedback: jsonb("ats_feedback"),
+  views: integer("views").notNull().default(0),
 });
 
 export const insertUserSchema = createInsertSchema(users).pick({

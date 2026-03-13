@@ -143,6 +143,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const profile = await storage.updateProfile(parsed.data);
     res.json(profile);
   });
+
+  app.post("/api/profile/views", async (req, res) => {
+    try {
+      const result = await storage.incrementProfileViews();
+      res.json(result);
+    } catch (e) {
+      res.status(500).json({ message: "Failed to increment profile views" });
+    }
+  });
+
   // AI Resume Analysis
   app.post("/api/analyze-resume", isAuthenticated, async (req, res) => {
     try {

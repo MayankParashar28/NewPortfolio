@@ -1,6 +1,7 @@
-import { Github, Linkedin, Mail, Sparkles } from "lucide-react";
+import { Github, Linkedin, Mail, Sparkles, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
 
 import { user } from "@/data";
 
@@ -10,12 +11,61 @@ const socialLinks = [
     { href: user.socials.email, icon: Mail, label: "Email", testId: "footer-email", external: false },
 ];
 
+function ViewCounter() {
+    const [views, setViews] = useState<number | null>(null);
+
+    useEffect(() => {
+        // Only fetch views once per session to prevent spamming
+        const hasViewed = sessionStorage.getItem("portfolio_viewed");
+        
+        const fetchViews = async () => {
+            try {
+                if (!hasViewed) {
+                    const res = await fetch("/api/profile/views", { method: "POST" });
+                    const data = await res.json();
+                    if (data.views) {
+                        setViews(data.views);
+                        sessionStorage.setItem("portfolio_viewed", "true");
+                    }
+                } else {
+                    // Optional: fetch without incrementing if we had a GET route, 
+                    // but for now we'll just show the counter if it's already there
+                    // Alternatively, we could just hide it if they already viewed,
+                    // but let's just do a POST to keep it simple, or only do it once.
+                }
+            } catch (e) {
+                console.error("Failed to fetch views", e);
+            }
+        };
+
+        // For simplicity, let's just always POST to get the latest count, 
+        // but it'll increment each reload. If you want strict unique views, 
+        // see the logic above. We'll stick to incrementing for demonstration.
+        fetch("/api/profile/views", { method: "POST" })
+            .then(res => res.json())
+            .then(data => {
+               if (data.views) setViews(data.views);
+            })
+            .catch(console.error);
+
+    }, []);
+
+    if (views === null) return null;
+
+    return (
+        <div className="flex items-center gap-1.5 text-xs text-muted-foreground bg-muted/50 px-2 py-1 rounded-full">
+            <Eye className="w-3.5 h-3.5" />
+            <span>{views.toLocaleString()} views</span>
+        </div>
+    );
+}
+
 export default function Footer() {
     return (
         <footer className="bg-card/95 backdrop-blur-sm border-t border-border py-2 rounded-t-lg shadow-md">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4">
-                <div className="flex flex-col items-center md:items-start">
-                    <div className="flex items-center gap-2">
+                <div className="flex flex-col items-center md:items-start gap-2">
+                    <div className="flex flex-wrap justify-center md:justify-start items-center gap-2">
                         <p className="text-xs text-muted-foreground">
                             © {new Date().getFullYear()} {user.name}. All rights reserved.
                         </p>
@@ -23,6 +73,8 @@ export default function Footer() {
                         <p className="text-xs text-muted-foreground/75">
                             Last updated: {new Date().toLocaleDateString("en-US", { month: "long", year: "numeric" })}
                         </p>
+                        <span className="hidden md:inline text-xs text-muted-foreground/50">|</span>
+                        <ViewCounter />
                     </div>
                 </div>
                 <div className="flex items-center gap-3">
@@ -43,12 +95,12 @@ export default function Footer() {
                         </motion.button>
                     </Button>
                     {socialLinks.map((social) => (
-                        <Button 
-                            key={social.label} 
-                            variant="ghost" 
-                            size="icon" 
-                            aria-label={social.label} 
-                            className="rounded-full hover:text-primary transition-transform will-change-transform" 
+                        <Button
+                            key={social.label}
+                            variant="ghost"
+                            size="icon"
+                            aria-label={social.label}
+                            className="rounded-full hover:text-primary transition-transform will-change-transform"
                             asChild
                         >
                             <motion.a
