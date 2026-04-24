@@ -9,6 +9,37 @@ import fs from "fs";
 import path from "path";
 import os from "os";
 
+// Models to try in order. Falls back automatically on 503 overload.
+const MODEL_CHAIN = ["gemini-2.5-flash", "gemini-2.0-flash"];
+
+/**
+ * Calls generateContent with automatic retry + model fallback.
+ * Retries up to 2 times on 503, then falls through to the next model.
+ */
+async function generateWithFallback(apiKey: string, prompt: string | object[]): Promise<string> {
+  for (const modelName of MODEL_CHAIN) {
+    const genAI = new GoogleGenerativeAI(apiKey);
+    const model = genAI.getGenerativeModel({ model: modelName });
+    let lastError: any;
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try {
+        const result = await model.generateContent(prompt as any);
+        return result.response.text();
+      } catch (err: any) {
+        lastError = err;
+        if (err?.status === 503) {
+          // Wait before retrying: 2s, then 5s
+          await new Promise(r => setTimeout(r, attempt === 0 ? 2000 : 5000));
+        } else {
+          break; // Non-503 errors fall through to next model immediately
+        }
+      }
+    }
+    console.warn(`Model ${modelName} unavailable, trying next fallback. Error: ${lastError?.message}`);
+  }
+  throw new Error("All AI models are currently unavailable. Please try again in a moment.");
+}
+
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // setup authentication routes and middleware
@@ -183,7 +214,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
         // 3. Generate Content using the File URI
         const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-        const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
+        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
         const prompt = `
         You are an expert technical recruiter and ATS (Applicant Tracking System) optimization specialist. 
@@ -275,16 +306,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       `;
 
-      const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-      const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
+      const text = await generateWithFallback(process.env.GEMINI_API_KEY!, prompt);
 
-      const result = await model.generateContent(prompt);
-      const text = result.response.text();
+      // Robustly extract the JSON object from the response.
+      // Gemini 2.5 Flash may include thinking/reasoning text before the JSON.
+      const jsonMatch = text.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) {
+        throw new Error("AI response did not contain a valid JSON object.");
+      }
 
-      // Clean up potential markdown formatting from the response
-      const jsonStr = text.replace(/```json\n?|\n?```/g, "").trim();
-
-      const optimized = JSON.parse(jsonStr);
+      const optimized = JSON.parse(jsonMatch[0]);
       res.json(optimized);
     } catch (error: any) {
       console.error("AI Optimization failed full error:", JSON.stringify(error, Object.getOwnPropertyNames(error), 2));
@@ -319,11 +350,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       `;
 
-      const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-
-      const result = await model.generateContent(prompt);
-      const text = result.response.text();
+      const text = await generateWithFallback(process.env.GEMINI_API_KEY!, prompt);
       const jsonStr = text.replace(/```json\n?|\n?```/g, "").trim();
 
       res.json(JSON.parse(jsonStr));

@@ -23,31 +23,24 @@ function ViewCounter() {
                 if (!hasViewed) {
                     const res = await fetch("/api/profile/views", { method: "POST" });
                     const data = await res.json();
-                    if (data.views) {
+                    if (data.views !== undefined) {
                         setViews(data.views);
                         sessionStorage.setItem("portfolio_viewed", "true");
                     }
                 } else {
-                    // Optional: fetch without incrementing if we had a GET route, 
-                    // but for now we'll just show the counter if it's already there
-                    // Alternatively, we could just hide it if they already viewed,
-                    // but let's just do a POST to keep it simple, or only do it once.
+                    // Fetch without incrementing if they already viewed
+                    const res = await fetch("/api/profile");
+                    const data = await res.json();
+                    if (data.views !== undefined) {
+                        setViews(data.views);
+                    }
                 }
             } catch (e) {
                 console.error("Failed to fetch views", e);
             }
         };
 
-        // For simplicity, let's just always POST to get the latest count, 
-        // but it'll increment each reload. If you want strict unique views, 
-        // see the logic above. We'll stick to incrementing for demonstration.
-        fetch("/api/profile/views", { method: "POST" })
-            .then(res => res.json())
-            .then(data => {
-               if (data.views) setViews(data.views);
-            })
-            .catch(console.error);
-
+        fetchViews();
     }, []);
 
     if (views === null) return null;

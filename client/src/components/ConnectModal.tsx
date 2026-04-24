@@ -40,18 +40,13 @@ export default function ConnectModal({ trigger }: { trigger: React.ReactNode }) 
                     {isOpen && (
                         <motion.div
                             key="overlay"
-                            initial={{ opacity: 0, clipPath: "circle(0% at 50% 50%)", filter: "brightness(100%) blur(10px)" }}
-                            animate={{ opacity: 1, clipPath: "circle(150% at 50% 50%)", filter: "brightness(100%) blur(0px)" }}
-                            exit={{
-                                opacity: 0,
-                                clipPath: "circle(0% at 50% 50%)",
-                                scale: 0.9,
-                                filter: "brightness(50%) sepia(100%) saturate(500%) hue-rotate(-30deg) blur(5px) contrast(200%)"
-                            }}
+                            initial={{ opacity: 0, clipPath: "circle(0% at 50% 50%)", filter: "blur(10px)" }}
+                            animate={{ opacity: 1, clipPath: "circle(150% at 50% 50%)", filter: "blur(0px)" }}
+                            exit={{ opacity: 0, clipPath: "circle(0% at 50% 50%)", filter: "blur(10px)" }}
                             transition={{
                                 type: "tween",
-                                ease: "circIn",
-                                duration: 0.8
+                                ease: "circInOut",
+                                duration: 0.6
                             }}
                             style={{
                                 transformPerspective: 1000,

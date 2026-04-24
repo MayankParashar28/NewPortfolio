@@ -59,7 +59,7 @@ export default function Admin() {
     const { data: certificates } = useQuery<Certificate[]>({ queryKey: ["/api/certificates"], enabled: !!user });
 
     if (!user) {
-        return <Redirect to="/" />;
+        return <Redirect to="/login" />;
     }
 
     return (
@@ -83,7 +83,7 @@ export default function Admin() {
                             transition={{ delay: 0.1 }}
                             className="text-muted-foreground mt-1"
                         >
-                            Welcome back, Mahir
+                            Welcome back, Mayank
                         </motion.p>
                     </div>
                     <div className="flex items-center gap-4">
@@ -219,7 +219,6 @@ function ProjectsManager() {
     const saveOrder = async () => {
         try {
             const items = localProjects.map((p, i) => ({ id: p.id, order: i }));
-            console.log("Saving order:", items);
             await apiRequest("POST", "/api/projects/reorder", { items });
 
             queryClient.invalidateQueries({ queryKey: ["/api/projects"] });
@@ -381,9 +380,8 @@ function SortableProjectItem({
                         size="icon"
                         className="hover:bg-destructive/10 hover:text-destructive z-10 relative"
                         onClick={(e) => {
-                            console.log("Delete button clicked for project:", project.id);
                             e.stopPropagation();
-                            e.preventDefault(); // Add preventDefault just in case
+                            e.preventDefault();
                             onDelete();
                         }}
                     >
@@ -647,16 +645,7 @@ function ProjectDialog({ trigger, onSubmit, isPending, defaultValues, title }: {
                             </FormItem>
                         )} />
 
-                        <FormField control={form.control} name="featured" render={({ field }) => (
-                            <FormItem className="flex flex-row items-center space-x-3 space-y-0 p-4 border border-primary/10 rounded-lg bg-primary/5 hover:bg-primary/10 transition-colors">
-                                <FormControl>
-                                    <Checkbox checked={field.value ?? false} onCheckedChange={field.onChange} className="data-[state=checked]:bg-primary data-[state=checked]:border-primary" />
-                                </FormControl>
-                                <div className="space-y-1 leading-none">
-                                    <FormLabel className="cursor-pointer font-medium text-primary">Featured Project</FormLabel>
-                                </div>
-                            </FormItem>
-                        )} />
+
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                             <FormField control={form.control} name="githubLink" render={({ field }) => (
@@ -1456,7 +1445,11 @@ function ProfileManager() {
         }
     });
 
-    if (isLoading) return <div>Loading...</div>;
+    if (isLoading) return (
+        <div className="flex items-center justify-center py-16">
+            <Loader2 className="animate-spin h-8 w-8 text-primary" />
+        </div>
+    );
 
     return (
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>

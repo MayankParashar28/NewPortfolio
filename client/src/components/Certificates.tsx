@@ -1,7 +1,7 @@
 import React, { useRef, useCallback } from "react";
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { ExternalLink, Award, BadgeCheck, Loader2 } from "lucide-react";
+import { ExternalLink, Award, BadgeCheck } from "lucide-react";
 import ScrollReveal from "@/components/ScrollReveal";
 import TextScramble from "@/components/TextScramble";
 import { useQuery } from "@tanstack/react-query";
@@ -139,8 +139,18 @@ export default function Certificates() {
 
   if (isLoading) {
     return (
-      <section id="certificates" className="py-20 flex justify-center">
-        <Loader2 className="w-10 h-10 animate-spin text-primary" />
+      <section id="certificates" className="py-20 border-t border-border bg-muted/30 relative overflow-hidden">
+        <div className="w-[90%] lg:w-[95%] max-w-7xl mx-auto">
+          <div className="text-center mb-16">
+            <div className="h-12 w-72 bg-muted rounded-lg animate-pulse mx-auto mb-4" />
+            <div className="h-1 w-20 bg-muted rounded animate-pulse mx-auto" />
+          </div>
+          <div className="grid gap-8 md:grid-cols-2">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="rounded-xl bg-muted animate-pulse" style={{ height: 160 }} />
+            ))}
+          </div>
+        </div>
       </section>
     );
   }

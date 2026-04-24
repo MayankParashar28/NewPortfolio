@@ -1,7 +1,7 @@
 import React, { useState, useRef, useCallback } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ExternalLink, Github, Loader2 } from "lucide-react";
+import { ExternalLink, Github } from "lucide-react";
 import { motion, AnimatePresence, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 import { Project } from "@shared/schema";
@@ -178,8 +178,18 @@ export default React.memo(function Projects() {
 
   if (isLoading) {
     return (
-      <section id="projects" className="py-20 flex justify-center">
-        <Loader2 className="w-10 h-10 animate-spin text-primary" />
+      <section id="projects" className="py-20 relative overflow-hidden">
+        <div className="w-[90%] lg:w-[95%] max-w-7xl mx-auto">
+          <div className="text-center mb-12">
+            <div className="h-12 w-56 bg-muted rounded-lg animate-pulse mx-auto mb-4" />
+            <div className="h-1 w-20 bg-muted rounded animate-pulse mx-auto" />
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="rounded-xl bg-muted animate-pulse" style={{ height: 320 }} />
+            ))}
+          </div>
+        </div>
       </section>
     );
   }

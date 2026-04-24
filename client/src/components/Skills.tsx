@@ -4,7 +4,6 @@ import TextScramble from "@/components/TextScramble";
 import { useQuery } from "@tanstack/react-query";
 import { Skill } from "@shared/schema";
 import { getIcon } from "@/lib/skillIcons";
-import { Loader2 } from "lucide-react";
 
 /**
  * Individual skill card with a premium mouse-tracking spotlight effect.
@@ -125,8 +124,18 @@ export default React.memo(function Skills() {
 
   if (isLoading) {
     return (
-      <section id="skills" className="py-20 flex justify-center min-h-screen">
-        <Loader2 className="w-10 h-10 animate-spin text-primary" />
+      <section id="skills" className="py-20 px-4 sm:px-6 lg:px-8 relative overflow-hidden min-h-screen flex flex-col justify-center">
+        <div className="max-w-6xl mx-auto w-full">
+          <div className="text-center mb-6">
+            <div className="h-10 w-48 bg-muted rounded-lg animate-pulse mx-auto mb-3" />
+            <div className="h-4 w-64 bg-muted rounded animate-pulse mx-auto" />
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+            {Array.from({ length: 12 }).map((_, i) => (
+              <div key={i} className="h-20 rounded-xl bg-muted animate-pulse" />
+            ))}
+          </div>
+        </div>
       </section>
     );
   }

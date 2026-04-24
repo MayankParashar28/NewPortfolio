@@ -28,8 +28,8 @@ export default function Login() {
 
         if (phoneNumber.trim().toLowerCase() !== SECRET_ID) {
             toast({
-                title: "Access Denied - Go away",
-                description: "Rey badhwe, nikal yahan te… yo kaam tere baski konya se.",
+                title: "Access Denied",
+                description: "Unauthorized identity. Access is restricted.",
                 variant: "destructive"
             });
             return;
@@ -82,23 +82,8 @@ export default function Login() {
 
     return (
         <div className="min-h-screen w-full flex items-center justify-center bg-background relative overflow-hidden font-sans selection:bg-primary/30">
-            {/* Ambient Background Effects */}
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/10 via-background to-background" />
-
-            {/* Street Light / Spotlight Effect */}
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-[1000px] h-[60vh] pointer-events-none z-0">
-                {/* The Beam */}
-                <div
-                    className="absolute inset-0 bg-gradient-to-b from-primary/20 via-primary/5 to-transparent blur-3xl opacity-60"
-                    style={{ clipPath: 'polygon(20% 0%, 80% 0%, 100% 100%, 0% 100%)' }}
-                />
-                {/* The Bulb / Source Glow */}
-                <div className="absolute top-[-50px] left-1/2 -translate-x-1/2 w-[300px] h-[100px] bg-primary/40 blur-[80px] rounded-[100%]" />
-            </div>
-
-            {/* Existing blobs */}
-            <div className="absolute top-[-10%] right-[-5%] w-[500px] h-[500px] rounded-full bg-primary/10 blur-[100px] animate-pulse" />
-            <div className="absolute bottom-[-10%] left-[-5%] w-[500px] h-[500px] rounded-full bg-blue-500/10 blur-[100px] animate-pulse" style={{ animationDelay: "2s" }} />
+            {/* Subtle ambient gradient */}
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/8 via-background to-background pointer-events-none" />
 
             <motion.div
                 initial={{ opacity: 0, y: 30, scale: 0.95 }}
@@ -134,12 +119,12 @@ export default function Login() {
                                 className="space-y-4"
                             >
                                 <div className="space-y-2">
-                                    <label className="text-sm font-medium text-white/80 ml-1">Enter the Mobile Number</label>
+                                    <label className="text-sm font-medium text-white/80 ml-1">Secret Identity Key</label>
                                     <div className="relative group">
                                         <div className="absolute -inset-0.5 bg-gradient-to-r from-primary/30 to-blue-600/30 rounded-xl blur opacity-0 group-focus-within:opacity-100 transition duration-700"></div>
                                         <Input
                                             type="text"
-                                            placeholder="Enter the Mobile Number"
+                                            placeholder="Enter your identity key"
                                             value={phoneNumber}
                                             onChange={(e) => setPhoneNumber(e.target.value)}
                                             className="relative bg-black/50 border-white/10 focus:border-primary/50 text-white placeholder:text-white/20 h-12 rounded-xl transition-all duration-300 pl-4 text-lg tracking-wide hover:bg-black/60 focus:bg-black/70"
@@ -147,7 +132,7 @@ export default function Login() {
                                     </div>
                                     <p className="text-xs text-muted-foreground/60 ml-1 flex items-center gap-1.5">
                                         <span className="w-1 h-1 rounded-full bg-primary/50" />
-                                        Enter the OTP sent to your Account
+                                        Restricted access — authorised personnel only
                                     </p>
                                 </div>
                                 <Button

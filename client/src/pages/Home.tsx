@@ -8,9 +8,7 @@ import Projects from "@/components/Projects";
 
 import Certificates from "@/components/Certificates";
 import Contact from "@/components/Contact";
-import BackToTop from "@/components/BackToTop";
-import PageLoader from "@/components/PageLoader";
-import PageTransition from "@/components/PageTransition"; // Import
+import PageTransition from "@/components/PageTransition";
 
 import { Helmet } from "react-helmet-async";
 import { user } from "@/data";
@@ -42,8 +40,6 @@ export default function Home() {
             <Contact />
           </main>
         </div>
-        <BackToTop />
-        <PageLoader />
       </div>
     </PageTransition >
   );
