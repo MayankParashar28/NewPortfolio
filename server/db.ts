@@ -1,8 +1,8 @@
 import dotenv from "dotenv";
 dotenv.config();
 
-import { Pool, neonConfig } from '@neondatabase/serverless';
-import { drizzle } from 'drizzle-orm/neon-serverless';
+import { Pool, neonConfig, neon } from '@neondatabase/serverless';
+import { drizzle } from 'drizzle-orm/neon-http';
 import ws from "ws";
 import * as schema from "../shared/schema";
 
@@ -14,6 +14,11 @@ if (!process.env.DATABASE_URL) {
     );
 }
 
+// Keep pool exported for production PgStore session storage
 export const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-export const db = drizzle(pool, { schema });
+
+// Use Neon HTTP connection for fast, non-blocking queries
+const sql = neon(process.env.DATABASE_URL);
+export const db = drizzle(sql, { schema });
+
 

@@ -3,6 +3,7 @@ import { lazy, Suspense } from "react";
 const Background3D = lazy(() => import("@/components/Background3D"));
 import Hero from "@/components/Hero";
 import About from "@/components/About";
+import Internships from "@/components/Internships";
 import Skills from "@/components/Skills";
 import Projects from "@/components/Projects";
 
@@ -33,6 +34,7 @@ export default function Home() {
           <main id="main-content" className="relative">
             <Hero />
             <About />
+            <Internships />
             <Skills />
             <Projects />
 

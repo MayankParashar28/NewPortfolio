@@ -36,8 +36,10 @@ app.use(express.json({
 app.use(express.urlencoded({ extended: false, limit: '50mb' }));
 
 app.use((req, res, next) => {
+  log(`Received request: ${req.method} ${req.path}`);
   const start = Date.now();
   const path = req.path;
+
   let capturedJsonResponse: Record<string, any> | undefined = undefined;
 
   const originalResJson = res.json;

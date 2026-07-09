@@ -3,7 +3,7 @@ import { ReactNode } from "react";
 
 interface ScrollRevealProps {
     children: ReactNode;
-    animation?: "fade-up" | "fade-in" | "slide-left" | "slide-right";
+    animation?: "fade-up" | "fade-in" | "slide-left" | "slide-right" | "fade-left" | "fade-right";
     duration?: number;
     delay?: number;
     className?: string;
@@ -24,6 +24,14 @@ const variants = {
         visible: { opacity: 1, x: 0 },
     },
     "slide-right": {
+        hidden: { opacity: 0, x: 50 },
+        visible: { opacity: 1, x: 0 },
+    },
+    "fade-left": {
+        hidden: { opacity: 0, x: -50 },
+        visible: { opacity: 1, x: 0 },
+    },
+    "fade-right": {
         hidden: { opacity: 0, x: 50 },
         visible: { opacity: 1, x: 0 },
     },

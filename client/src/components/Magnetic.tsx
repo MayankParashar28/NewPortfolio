@@ -1,8 +1,18 @@
-import { useRef, ReactNode } from "react";
+import { useRef, ReactNode, useState, useEffect } from "react";
 import { motion, useMotionValue, useSpring } from "framer-motion";
 
 export default function Magnetic({ children, strength = 1 }: { children: ReactNode; strength?: number }) {
     const ref = useRef<HTMLDivElement>(null);
+    const [isMobile, setIsMobile] = useState(false);
+
+    useEffect(() => {
+        const checkMobile = () => {
+            setIsMobile(window.innerWidth < 768);
+        };
+        checkMobile();
+        window.addEventListener("resize", checkMobile);
+        return () => window.removeEventListener("resize", checkMobile);
+    }, []);
 
     // 1. Use MotionValues to trigger animations without triggering React re-renders (Performance)
     const x = useMotionValue(0);
@@ -14,7 +24,7 @@ export default function Magnetic({ children, strength = 1 }: { children: ReactNo
     const springY = useSpring(y, springConfig);
 
     const handleMouseMove = (e: React.MouseEvent) => {
-        if (!ref.current) return;
+        if (isMobile || !ref.current) return;
         const { clientX, clientY } = e;
         const { left, top, width, height } = ref.current.getBoundingClientRect();
 
@@ -26,9 +36,14 @@ export default function Magnetic({ children, strength = 1 }: { children: ReactNo
     };
 
     const handleMouseLeave = () => {
+        if (isMobile) return;
         x.set(0);
         y.set(0);
     };
+
+    if (isMobile) {
+        return <>{children}</>;
+    }
 
     return (
         <motion.div

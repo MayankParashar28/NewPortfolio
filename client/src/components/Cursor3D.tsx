@@ -80,6 +80,7 @@ export default function Cursor3D() {
             if (isScrollingRef.current) return;
 
             const target = e.target as HTMLElement;
+            if (!target || typeof target.closest !== "function") return;
 
             // Check for hidden cursor
             const shouldHide = !!target.closest('[data-cursor-hidden="true"]');
@@ -94,7 +95,7 @@ export default function Cursor3D() {
                 target.tagName === 'BUTTON' ||
                 target.closest('a') ||
                 target.closest('button') ||
-                target.classList.contains('hover-elevate') ||
+                (target.classList && target.classList.contains('hover-elevate')) ||
                 window.getComputedStyle(target).cursor === 'pointer';
 
             if (isClickable && !isHoveringRef.current) {

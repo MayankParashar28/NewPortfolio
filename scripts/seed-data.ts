@@ -1,6 +1,6 @@
 import "dotenv/config";
 import { db } from "../server/db";
-import { projects, skills, certificates, users } from "../shared/schema";
+import { projects, skills, certificates, users, internships } from "../shared/schema";
 import { scrypt, randomBytes } from "crypto";
 import { promisify } from "util";
 import { eq } from "drizzle-orm";
@@ -249,6 +249,45 @@ async function main() {
             if (!existing) {
                 await db.insert(certificates).values(cert);
                 console.log(`Added certificate: ${cert.title}`);
+            }
+        }
+
+        // 4. Seed Internships
+        console.log("Seeding Internships...");
+        const internshipData = [
+            {
+                role: "Artificial Intelligence ML Engineer Intern",
+                company: "DRDO — Defence Research & Development Organisation, Ministry of Defence, GoI",
+                duration: "Oct 2025 – Nov 2025",
+                description: "• Developed a deep learning-based malnutrition detection system for children using BMI metrics and computer vision image analysis (Python, OpenCV, CNN), under the guidance of Dr. Sanjay Pal (Associate Director, DRDO).\n• Trained and evaluated CNN-based image classification models in PyTorch on a dataset of 500+ pediatric samples, achieving 91% classification accuracy for nutritional status assessment.\n• Designed and validated production-ready ML pipelines using Python, OpenCV, and scikit-learn, reducing preprocessing time by ~40% through automated BMI extraction and image segmentation.",
+                image: "",
+                order: 0
+            },
+            {
+                role: "Software Engineering Virtual Experience",
+                company: "JPMorgan Chase & Co.",
+                duration: "2025",
+                description: "Completed practical tasks in software engineering simulation. Handled repository configuration, resolved code errors, and utilized Perspective to visualize live data feeds for trader dashboards.",
+                image: "/assets/jpmorgan_logo_2.jpg",
+                order: 1
+            },
+            {
+                role: "Data Labeling Virtual Experience",
+                company: "Forage",
+                duration: "2025",
+                description: "Completed simulated workflows for Batch Labeling and PII Awareness. Practiced quality control, data review processes, and iteration loops.",
+                image: "/assets/forage_logo.png",
+                order: 2
+            }
+        ];
+
+        for (const item of internshipData) {
+            const existing = await db.query.internships.findFirst({
+                where: eq(internships.role, item.role)
+            });
+            if (!existing) {
+                await db.insert(internships).values(item);
+                console.log(`Added internship: ${item.role} at ${item.company}`);
             }
         }
 

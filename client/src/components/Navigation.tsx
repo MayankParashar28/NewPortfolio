@@ -21,6 +21,7 @@ export default function Navigation() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [hidden, setHidden] = useState(false);
   const [logoTextIndex, setLogoTextIndex] = useState(0);
+  const [hoveredTab, setHoveredTab] = useState<string | null>(null);
   const { scrollY } = useScroll();
 
   useEffect(() => {
@@ -38,6 +39,10 @@ export default function Navigation() {
   const resumeUrl = profile?.resumeUrl || user.resumeUrl;
 
   useMotionValueEvent(scrollY, "change", (latest) => {
+    if (isMobileMenuOpen) {
+      setHidden(false);
+      return;
+    }
     const previous = scrollY.getPrevious() || 0;
     if (latest > previous && latest > 150) {
       setHidden(true);
@@ -63,6 +68,7 @@ export default function Navigation() {
   const navLinks = [
     { label: "Home", id: "hero" },
     { label: "About", id: "about" },
+    { label: "Experience", id: "experience" },
     { label: "Skills", id: "skills" },
     { label: "Projects", id: "projects" },
 
@@ -88,7 +94,7 @@ export default function Navigation() {
               trigger={
                 <Magnetic strength={0.3}>
                   <button
-                    className="group/logo text-xl font-heading font-bold hover-elevate active-elevate-2 px-3 py-2 rounded-md transition-all duration-300 flex items-center justify-center min-w-[110px]"
+                    className="group/logo text-xl font-heading font-bold hover-elevate active-elevate-2 px-3 py-2 rounded-md transition-all duration-300 flex items-center justify-center w-32 min-w-[128px]"
                     data-testid="button-logo"
                   >
                     <AnimatePresence mode="wait">
@@ -125,15 +131,35 @@ export default function Navigation() {
           </div>
 
           <div className="hidden md:flex items-center gap-4">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2" onMouseLeave={() => setHoveredTab(null)}>
               {navLinks.map((link) => (
                 <Magnetic key={link.id} strength={0.2}>
                   <Button
                     variant="ghost"
                     onClick={() => scrollToSection(link.id)}
                     data-testid={`button-nav-${link.id}`}
+                    className="relative group cursor-pointer hover:bg-transparent"
+                    onMouseEnter={() => setHoveredTab(link.id)}
                   >
-                    {link.label}
+                    <AnimatePresence>
+                      {hoveredTab === link.id && (
+                        <motion.div
+                          layoutId="nav-hover-pill"
+                          className="absolute inset-0 bg-black/[0.04] dark:bg-white/[0.06] rounded-full -z-10"
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                          transition={{
+                            type: "spring",
+                            stiffness: 350,
+                            damping: 30
+                          }}
+                        />
+                      )}
+                    </AnimatePresence>
+                    <span className="inline-block text-foreground group-hover:font-bold transition-all duration-300 font-medium">
+                      {link.label}
+                    </span>
                   </Button>
                 </Magnetic>
               ))}
@@ -141,7 +167,7 @@ export default function Navigation() {
             <Magnetic strength={0.2}>
               <a href={resumeUrl} download="Mayank_Parashar_Resume.pdf">
                 <Button variant="default" className="gap-2" data-testid="button-resume-download">
-                  <Download className="w-4 h-4" />
+                  <Download className="w-5 h-5" />
                   Resume
                 </Button>
               </a>
@@ -161,7 +187,7 @@ export default function Navigation() {
                   className="transition-transform hover:scale-110"
                   aria-label="Download Resume"
                 >
-                  <Download className="w-5 h-5" />
+                  <Download className="w-6 h-6" />
                 </Button>
               </a>
             </Magnetic>
@@ -225,11 +251,13 @@ export default function Navigation() {
                 >
                   <Button
                     variant="ghost"
-                    className="w-full justify-start"
+                    className="w-full justify-start relative group cursor-pointer"
                     onClick={() => scrollToSection(link.id)}
                     data-testid={`button-mobile-nav-${link.id}`}
                   >
-                    {link.label}
+                    <span className="inline-block text-foreground group-hover:font-bold transition-all duration-300 font-medium">
+                      {link.label}
+                    </span>
                   </Button>
                 </motion.div>
               ))}
@@ -240,7 +268,7 @@ export default function Navigation() {
               >
                 <a href={resumeUrl} download="Mayank_Parashar_Resume.pdf" className="block">
                   <Button variant="default" className="w-full gap-2" data-testid="button-mobile-resume-download">
-                    <Download className="w-4 h-4" />
+                    <Download className="w-5 h-5" />
                     Download Resume
                   </Button>
                 </a>

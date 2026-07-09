@@ -60,6 +60,16 @@ export const profile = pgTable("profile", {
   views: integer("views").notNull().default(0),
 });
 
+export const internships = pgTable("internships", {
+  id: serial("id").primaryKey(),
+  role: text("role").notNull(),
+  company: text("company").notNull(),
+  duration: text("duration").notNull(),
+  description: text("description").notNull(),
+  image: text("image"),
+  order: integer("order").notNull().default(0),
+});
+
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
   password: true,
@@ -69,6 +79,7 @@ export const insertProjectSchema = createInsertSchema(projects);
 export const insertSkillSchema = createInsertSchema(skills);
 export const insertCertificateSchema = createInsertSchema(certificates);
 export const insertProfileSchema = createInsertSchema(profile);
+export const insertInternshipSchema = createInsertSchema(internships);
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
@@ -80,4 +91,6 @@ export type Certificate = typeof certificates.$inferSelect;
 export type InsertCertificate = z.infer<typeof insertCertificateSchema>;
 export type Profile = typeof profile.$inferSelect;
 export type InsertProfile = z.infer<typeof insertProfileSchema>;
+export type Internship = typeof internships.$inferSelect;
+export type InsertInternship = z.infer<typeof insertInternshipSchema>;
 

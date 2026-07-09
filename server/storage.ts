@@ -1,4 +1,4 @@
-import { users, projects, skills, certificates, profile, type User, type InsertUser, type Project, type InsertProject, type Skill, type InsertSkill, type Certificate, type InsertCertificate, type Profile, type InsertProfile } from "../shared/schema";
+import { users, projects, skills, certificates, profile, internships, type User, type InsertUser, type Project, type InsertProject, type Skill, type InsertSkill, type Certificate, type InsertCertificate, type Profile, type InsertProfile, type Internship, type InsertInternship } from "../shared/schema";
 import { db } from "./db";
 import { eq, asc } from "drizzle-orm";
 
@@ -25,6 +25,12 @@ export interface IStorage {
   getProfile(): Promise<Profile>;
   updateProfile(data: Partial<InsertProfile>): Promise<Profile>;
   incrementProfileViews(): Promise<{ views: number }>;
+
+  getInternships(): Promise<Internship[]>;
+  createInternship(internship: InsertInternship): Promise<Internship>;
+  updateInternship(id: number, internship: Partial<InsertInternship>): Promise<Internship>;
+  deleteInternship(id: number): Promise<void>;
+  reorderInternships(items: { id: number; order: number }[]): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -218,6 +224,50 @@ export class DatabaseStorage implements IStorage {
       
     this.setCache("profile", updated);
     return { views: updated.views };
+  }
+
+  async getInternships(): Promise<Internship[]> {
+    const key = "internships:all";
+    const cached = this.getCached<Internship[]>(key);
+    if (cached) return cached;
+
+    const list = await db.select().from(internships).orderBy(asc(internships.order), asc(internships.id));
+    this.setCache(key, list);
+    return list;
+  }
+
+  async createInternship(insertInternship: InsertInternship): Promise<Internship> {
+    this.invalidate("internships");
+    const [item] = await db.insert(internships).values(insertInternship).returning();
+    return item;
+  }
+
+  async updateInternship(id: number, insertInternship: Partial<InsertInternship>): Promise<Internship> {
+    this.invalidate("internships");
+    const [item] = await db
+      .update(internships)
+      .set(insertInternship)
+      .where(eq(internships.id, id))
+      .returning();
+    if (!item) throw new Error("Internship not found");
+    return item;
+  }
+
+  async deleteInternship(id: number): Promise<void> {
+    this.invalidate("internships");
+    await db.delete(internships).where(eq(internships.id, id));
+  }
+
+  async reorderInternships(items: { id: number; order: number }[]): Promise<void> {
+    this.invalidate("internships");
+    await db.transaction(async (tx) => {
+      for (const item of items) {
+        await tx
+          .update(internships)
+          .set({ order: item.order })
+          .where(eq(internships.id, item.id));
+      }
+    });
   }
 }
 

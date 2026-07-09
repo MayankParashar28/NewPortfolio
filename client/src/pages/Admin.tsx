@@ -6,10 +6,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Project, Skill, Certificate, Profile, insertProjectSchema, insertSkillSchema, insertCertificateSchema, insertProfileSchema } from "@shared/schema";
+import { Project, Skill, Certificate, Profile, Internship, insertProjectSchema, insertSkillSchema, insertCertificateSchema, insertProfileSchema, insertInternshipSchema } from "@shared/schema";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { motion, Reorder, useDragControls } from "framer-motion";
-import { Plus, Trash2, LogOut, Loader2, Pencil, LayoutDashboard, Code2, GraduationCap, User as UserIcon, FileText, Github, Linkedin, Mail, Check, Sparkles, AlertCircle, Upload, X, GripVertical } from "lucide-react";
+import { Plus, Trash2, LogOut, Loader2, Pencil, LayoutDashboard, Code2, GraduationCap, User as UserIcon, FileText, Github, Linkedin, Mail, Check, Sparkles, AlertCircle, Upload, X, GripVertical, Briefcase } from "lucide-react";
 import { compressImage } from "@/lib/imageUtils";
 import { getIcon } from "@/lib/skillIcons";
 import { ImageUploadZone } from "@/components/ui/image-upload-zone";
@@ -57,6 +57,7 @@ export default function Admin() {
     const { data: projects } = useQuery<Project[]>({ queryKey: ["/api/projects"], enabled: !!user });
     const { data: skills } = useQuery<Skill[]>({ queryKey: ["/api/skills"], enabled: !!user });
     const { data: certificates } = useQuery<Certificate[]>({ queryKey: ["/api/certificates"], enabled: !!user });
+    const { data: internships } = useQuery<Internship[]>({ queryKey: ["/api/internships"], enabled: !!user });
 
     if (!user) {
         return <Redirect to="/login" />;
@@ -73,7 +74,7 @@ export default function Admin() {
                         <motion.h1
                             initial={{ opacity: 0, x: -20 }}
                             animate={{ opacity: 1, x: 0 }}
-                            className="text-4xl font-heading font-bold bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/60"
+                            className="text-4xl font-heading font-bold text-foreground"
                         >
                             Admin Dashboard
                         </motion.h1>
@@ -100,16 +101,18 @@ export default function Admin() {
                 </header>
 
                 {/* Stats Overview */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-10">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
                     <StatCard title="Total Projects" value={projects?.length || 0} icon={LayoutDashboard} delay={0.2} />
-                    <StatCard title="Total Skills" value={skills?.length || 0} icon={Code2} delay={0.3} />
-                    <StatCard title="Certificates" value={certificates?.length || 0} icon={GraduationCap} delay={0.4} />
+                    <StatCard title="Total Skills" value={skills?.length || 0} icon={Code2} delay={0.25} />
+                    <StatCard title="Experience Records" value={internships?.length || 0} icon={Briefcase} delay={0.3} />
+                    <StatCard title="Certificates" value={certificates?.length || 0} icon={GraduationCap} delay={0.35} />
                 </div>
 
                 <Tabs defaultValue="projects" className="w-full space-y-8">
                     <TabsList className="bg-muted/50 backdrop-blur-sm border border-border p-1 rounded-xl w-full sm:w-auto inline-flex overflow-x-auto justify-start [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
                         <TabsTrigger value="projects" className="data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm rounded-lg px-6 py-2 transition-all">Projects</TabsTrigger>
                         <TabsTrigger value="skills" className="data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm rounded-lg px-6 py-2 transition-all">Skills</TabsTrigger>
+                        <TabsTrigger value="internships" className="data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm rounded-lg px-6 py-2 transition-all">Experience</TabsTrigger>
                         <TabsTrigger value="certificates" className="data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm rounded-lg px-6 py-2 transition-all">Certificates</TabsTrigger>
                         <TabsTrigger value="profile" className="data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm rounded-lg px-6 py-2 transition-all">Profile</TabsTrigger>
                     </TabsList>
@@ -120,6 +123,10 @@ export default function Admin() {
 
                     <TabsContent value="skills" className="focus-visible:outline-none">
                         <SkillsManager />
+                    </TabsContent>
+
+                    <TabsContent value="internships" className="focus-visible:outline-none">
+                        <InternshipsManager />
                     </TabsContent>
 
                     <TabsContent value="certificates" className="focus-visible:outline-none">
@@ -1423,6 +1430,294 @@ function CertificateDialog({ trigger, onSubmit, isPending, defaultValues, title 
     );
 }
 
+function InternshipsManager() {
+    const { toast } = useToast();
+    const { data: internshipsList, isLoading } = useQuery<Internship[]>({
+        queryKey: ["/api/internships"],
+    });
+
+    const [localInternships, setLocalInternships] = useState<Internship[]>([]);
+    const [isOrderChanged, setIsOrderChanged] = useState(false);
+    const [internshipToDelete, setInternshipToDelete] = useState<number | null>(null);
+
+    useEffect(() => {
+        if (internshipsList) {
+            setLocalInternships(internshipsList);
+            setIsOrderChanged(false);
+        }
+    }, [internshipsList]);
+
+    const createInternshipMutation = useMutation({
+        mutationFn: async (newInternship: any) => {
+            const res = await apiRequest("POST", "/api/internships", newInternship);
+            return await res.json();
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["/api/internships"] });
+            toast({ title: "Internship added" });
+        },
+        onError: (error: Error) => {
+            toast({ title: "Failed to add internship", description: error.message, variant: "destructive" });
+        }
+    });
+
+    const updateInternshipMutation = useMutation({
+        mutationFn: async ({ id, data }: { id: number, data: any }) => {
+            const res = await apiRequest("PATCH", `/api/internships/${id}`, data);
+            return await res.json();
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["/api/internships"] });
+            toast({ title: "Internship updated" });
+        },
+        onError: (error: Error) => {
+            toast({ title: "Failed to update internship", description: error.message, variant: "destructive" });
+        }
+    });
+
+    const deleteInternshipMutation = useMutation({
+        mutationFn: async (id: number) => {
+            await apiRequest("DELETE", `/api/internships/${id}`);
+        },
+        onSuccess: (data, id) => {
+            setLocalInternships(prev => prev.filter(item => item.id !== id));
+            queryClient.invalidateQueries({ queryKey: ["/api/internships"] });
+            toast({ title: "Internship deleted" });
+        },
+    });
+
+    const saveOrder = async () => {
+        try {
+            const items = localInternships.map((item, idx) => ({ id: item.id, order: idx }));
+            await apiRequest("POST", "/api/internships/reorder", { items });
+            queryClient.invalidateQueries({ queryKey: ["/api/internships"] });
+            toast({ title: "Order saved", description: "Internship order has been updated." });
+            setIsOrderChanged(false);
+        } catch (error: any) {
+            console.error("Failed to save order:", error);
+            toast({ title: "Failed to save order", description: error.message || "Unknown error occurred", variant: "destructive" });
+        }
+    };
+
+    const handleReorder = (newOrder: Internship[]) => {
+        setLocalInternships(newOrder);
+        setIsOrderChanged(true);
+    };
+
+    if (isLoading) return <Loader2 className="animate-spin h-8 w-8 mx-auto text-primary" />;
+
+    return (
+        <Card className="border border-border/40 bg-card/30 backdrop-blur-md rounded-2xl overflow-hidden shadow-xl shadow-black/5">
+            <CardHeader className="flex flex-row items-center justify-between border-b border-border/20 bg-muted/20 px-6 py-4">
+                <div>
+                    <CardTitle className="text-xl font-semibold text-foreground">Internships & Experience</CardTitle>
+                    <CardDescription className="text-sm text-muted-foreground mt-1">Manage, reorder, and update your work experience and internships.</CardDescription>
+                </div>
+                <div className="flex gap-3">
+                    {isOrderChanged && (
+                        <Button onClick={saveOrder} variant="outline" className="border-primary/30 hover:bg-primary/5 text-primary">
+                            Save Order
+                        </Button>
+                    )}
+                    <InternshipFormDialog onSubmit={(data) => createInternshipMutation.mutateAsync(data)} isPending={createInternshipMutation.isPending} title="Add Internship" />
+                </div>
+            </CardHeader>
+            <CardContent className="p-6">
+                <div className="relative">
+                    <Reorder.Group axis="y" values={localInternships} onReorder={handleReorder} className="flex flex-col gap-4">
+                        {localInternships.map((item) => (
+                            <Reorder.Item
+                                key={item.id}
+                                value={item}
+                                className="flex items-center justify-between p-4 bg-muted/20 hover:bg-muted/30 border border-border/40 rounded-xl transition-all group"
+                            >
+                                <div className="flex items-center gap-4">
+                                    <div className="cursor-grab active:cursor-grabbing text-muted-foreground/40 hover:text-muted-foreground/80 transition-colors p-1">
+                                        <GripVertical className="h-5 w-5" />
+                                    </div>
+                                    <div>
+                                        <h4 className="font-semibold text-foreground group-hover:text-primary transition-colors">{item.role}</h4>
+                                        <p className="text-sm text-muted-foreground">{item.company} • {item.duration}</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-2 opacity-80 group-hover:opacity-100 transition-opacity">
+                                    <InternshipFormDialog
+                                        defaultValues={item}
+                                        onSubmit={(data) => updateInternshipMutation.mutateAsync({ id: item.id, data })}
+                                        isPending={updateInternshipMutation.isPending}
+                                        title="Edit Internship"
+                                    />
+                                    <Button variant="ghost" size="icon" className="hover:bg-destructive/10 hover:text-destructive" onClick={() => setInternshipToDelete(item.id)}>
+                                        <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                </div>
+                            </Reorder.Item>
+                        ))}
+                    </Reorder.Group>
+                    {localInternships.length === 0 && <p className="text-center text-muted-foreground py-12 bg-muted/20 rounded-xl border border-border/20 border-dashed">No internships found. Add one to get started!</p>}
+                </div>
+            </CardContent>
+
+            <AlertDialog open={!!internshipToDelete} onOpenChange={(open) => !open && setInternshipToDelete(null)}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            This experience record will be permanently deleted.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={() => {
+                                if (internshipToDelete) deleteInternshipMutation.mutate(internshipToDelete);
+                                setInternshipToDelete(null);
+                            }}
+                            className="bg-destructive hover:bg-destructive/90"
+                        >
+                            Delete
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+        </Card>
+    );
+}
+
+function InternshipFormDialog({
+    defaultValues,
+    onSubmit,
+    isPending,
+    title
+}: {
+    defaultValues?: Internship
+    onSubmit: (data: any) => Promise<any>
+    isPending: boolean
+    title: string
+}) {
+    const { toast } = useToast();
+    const [open, setOpen] = useState(false);
+    const form = useForm({
+        resolver: zodResolver(insertInternshipSchema),
+        defaultValues: {
+            role: defaultValues?.role || "",
+            company: defaultValues?.company || "",
+            duration: defaultValues?.duration || "",
+            description: defaultValues?.description || "",
+            image: defaultValues?.image || "",
+        }
+    });
+
+    const handleSubmit = async (data: any) => {
+        try {
+            await onSubmit(data);
+            setOpen(false);
+            if (!defaultValues) form.reset();
+        } catch (e: any) {
+            toast({ title: "Operation failed", description: e.message || "Something went wrong", variant: "destructive" });
+        }
+    };
+
+    return (
+        <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild>
+                {defaultValues ? (
+                    <Button variant="ghost" size="icon" className="hover:bg-muted">
+                        <Pencil className="h-4 w-4" />
+                    </Button>
+                ) : (
+                    <Button className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all duration-300">
+                        <Plus className="mr-2 h-4 w-4" /> Add Experience
+                    </Button>
+                )}
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[500px]">
+                <DialogHeader>
+                    <DialogTitle>{title}</DialogTitle>
+                </DialogHeader>
+                <Form {...form}>
+                    <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4 pt-4">
+                        <FormField
+                            control={form.control}
+                            name="role"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Role / Title</FormLabel>
+                                    <FormControl>
+                                        <Input placeholder="Software Engineer Intern" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="company"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Company</FormLabel>
+                                    <FormControl>
+                                        <Input placeholder="Google" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="duration"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Duration</FormLabel>
+                                    <FormControl>
+                                        <Input placeholder="Jan 2025 - Present" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="description"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Description</FormLabel>
+                                    <FormControl>
+                                        <Textarea placeholder="Describe your achievements and tasks..." className="min-h-[120px]" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="image"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Logo URL (optional)</FormLabel>
+                                    <FormControl>
+                                        <Input placeholder="/assets/google_logo.png" {...field} value={field.value || ""} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <div className="flex gap-4 pt-2">
+                            <DialogTrigger asChild>
+                                <Button type="button" variant="outline" className="w-full">Cancel</Button>
+                            </DialogTrigger>
+                            <Button type="submit" className="w-full bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/25" disabled={isPending}>
+                                {isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Plus className="mr-2 h-4 w-4" />}
+                                {defaultValues ? 'Save Changes' : 'Add Experience'}
+                            </Button>
+                        </div>
+                    </form>
+                </Form>
+            </DialogContent>
+        </Dialog>
+    );
+}
+
 function ProfileManager() {
     const { toast } = useToast();
     const queryClient = useQueryClient();
@@ -1650,7 +1945,7 @@ function ProfileForm({ defaultValues, onSubmit, isPending }: {
                                     <div className="absolute top-0 right-0 p-8 opacity-10 blur-3xl rounded-full bg-primary w-64 h-64 -mr-20 -mt-20 pointer-events-none"></div>
                                     <div className="flex flex-col lg:flex-row items-center justify-between gap-8 relative z-10 text-center lg:text-left">
                                         <div className="flex flex-col items-center lg:items-start space-y-4 max-w-xl">
-                                            <h3 className="text-3xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70">
+                                            <h3 className="text-3xl md:text-5xl font-bold text-foreground">
                                                 Resume Audit Report
                                             </h3>
                                             <p className="text-muted-foreground text-lg md:text-xl leading-relaxed">

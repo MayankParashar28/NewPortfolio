@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { setupAuth } from "./auth";
 import { storage } from "./storage";
-import { insertProjectSchema, insertSkillSchema, insertCertificateSchema, insertProfileSchema } from "../shared/schema";
+import { insertProjectSchema, insertSkillSchema, insertCertificateSchema, insertProfileSchema, insertInternshipSchema } from "../shared/schema";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { GoogleAIFileManager } from "@google/generative-ai/server";
 import fs from "fs";
@@ -158,6 +158,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete("/api/certificates/:id", isAuthenticated, async (req, res) => {
     await storage.deleteCertificate(Number(req.params.id));
     res.sendStatus(204);
+  });
+
+  // Internships
+  app.get("/api/internships", async (req, res) => {
+    const list = await storage.getInternships();
+    res.json(list);
+  });
+
+  app.post("/api/internships", isAuthenticated, async (req, res) => {
+    const parsed = insertInternshipSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json(parsed.error);
+    }
+    const item = await storage.createInternship(parsed.data);
+    res.status(201).json(item);
+  });
+
+  app.patch("/api/internships/:id", isAuthenticated, async (req, res) => {
+    const parsed = insertInternshipSchema.partial().safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json(parsed.error);
+    }
+    try {
+      const item = await storage.updateInternship(Number(req.params.id), parsed.data);
+      res.json(item);
+    } catch (e) {
+      res.status(404).send("Internship not found");
+    }
+  });
+
+  app.delete("/api/internships/:id", isAuthenticated, async (req, res) => {
+    await storage.deleteInternship(Number(req.params.id));
+    res.sendStatus(204);
+  });
+
+  app.post("/api/internships/reorder", isAuthenticated, async (req, res) => {
+    const { items } = req.body;
+    if (!Array.isArray(items)) {
+      return res.status(400).send("Invalid items format");
+    }
+    await storage.reorderInternships(items);
+    res.sendStatus(200);
   });
 
   // Profile

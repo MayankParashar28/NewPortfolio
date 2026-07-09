@@ -164,7 +164,7 @@ export default React.memo(function Skills() {
             <TextScramble
               text="Skills & Expertise"
               as="h2"
-              className="text-3xl sm:text-4xl font-heading font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-primary to-purple-500 inline-block"
+              className="text-3xl sm:text-4xl font-heading font-bold mb-2 text-foreground inline-block"
             />
             <p className="text-muted-foreground text-sm max-w-2xl mx-auto">
               Mastering the tools of tomorrow.
