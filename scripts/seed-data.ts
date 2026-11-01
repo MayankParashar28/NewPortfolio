@@ -1,38 +1,14 @@
 import "dotenv/config";
 import { db } from "../server/db";
-import { projects, skills, certificates, users, internships } from "../shared/schema";
-import { scrypt, randomBytes } from "crypto";
-import { promisify } from "util";
+import { projects, skills, certificates, internships } from "../shared/schema";
 import { eq } from "drizzle-orm";
-
-const scryptAsync = promisify(scrypt);
-
-async function hashPassword(password: string) {
-    const salt = randomBytes(16).toString("hex");
-    const buf = (await scryptAsync(password, salt, 64)) as Buffer;
-    return `${buf.toString("hex")}.${salt}`;
-}
 
 async function main() {
     console.log("Seeding database...");
 
     try {
-        // 0. Seed Admin User
-        console.log("Seeding Admin User...");
-        const existingUser = await db.query.users.findFirst({
-            where: eq(users.username, "parasharmayank")
-        });
-
-        if (!existingUser) {
-            const hashedPassword = await hashPassword("admin123");
-            await db.insert(users).values({
-                username: "parasharmayank",
-                password: hashedPassword
-            });
-            console.log("Admin user created.");
-        } else {
-            console.log("Admin user already exists. Skipping.");
-        }
+        // No admin user is seeded: admin credentials live in the environment
+        // (ADMIN_USERNAME / ADMIN_PASSWORD), not in the database.
 
         // 1. Seed Projects
         console.log("Seeding Projects...");

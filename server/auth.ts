@@ -2,34 +2,47 @@ import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
 import { Express } from "express";
 import session from "express-session";
-import { scrypt, randomBytes, timingSafeEqual } from "crypto";
-import { promisify } from "util";
-import { storage } from "./storage";
-
-import { User } from "../shared/schema";
-
-const scryptAsync = promisify(scrypt);
-
-async function hashPassword(password: string) {
-    const salt = randomBytes(16).toString("hex");
-    const buf = (await scryptAsync(password, salt, 64)) as Buffer;
-    return `${buf.toString("hex")}.${salt}`;
-}
-
-async function comparePasswords(supplied: string, stored: string) {
-    const [hashed, salt] = stored.split(".");
-    const hashedBuf = Buffer.from(hashed, "hex");
-    const suppliedBuf = (await scryptAsync(supplied, salt, 64)) as Buffer;
-    return timingSafeEqual(hashedBuf, suppliedBuf);
-}
+import { randomBytes, createHash, timingSafeEqual } from "crypto";
 
 import connectPgSimple from "connect-pg-simple";
 import memoryStore from "memorystore";
 import { pool } from "./db";
 
+// This is a single-owner portfolio, so the admin credentials live in the
+// environment rather than in the database. To change them, edit the Vercel
+// environment variables and redeploy — no migration, no script, no DB access.
+export type AdminUser = { id: number; username: string };
+
+const ADMIN_ID = 1;
+
+// Compares via fixed-length digests so the comparison is constant time and
+// does not leak the length of the expected value.
+function constantTimeEquals(a: string, b: string) {
+    const ah = createHash("sha256").update(a).digest();
+    const bh = createHash("sha256").update(b).digest();
+    return timingSafeEqual(ah, bh);
+}
+
 export function setupAuth(app: Express) {
+    const isProduction = app.get("env") === "production";
+
+    const adminUsername = process.env.ADMIN_USERNAME;
+    const adminPassword = process.env.ADMIN_PASSWORD;
+    const credentialsConfigured = Boolean(adminUsername && adminPassword);
+
+    if (!credentialsConfigured) {
+        if (isProduction) {
+            throw new Error(
+                "ADMIN_USERNAME and ADMIN_PASSWORD must both be set in production.",
+            );
+        }
+        console.warn(
+            "[auth] ADMIN_USERNAME/ADMIN_PASSWORD are not set; admin login is disabled.",
+        );
+    }
+
     let sessionStore;
-    if (app.get("env") === "production") {
+    if (isProduction) {
         const PgStore = connectPgSimple(session);
         sessionStore = new PgStore({
             pool,
@@ -42,17 +55,34 @@ export function setupAuth(app: Express) {
         });
     }
 
+    // No hardcoded fallback: a secret committed to the repo lets anyone forge
+    // a session cookie. Production must supply one; dev gets an ephemeral one.
+    if (!process.env.SESSION_SECRET) {
+        if (isProduction) {
+            throw new Error(
+                "SESSION_SECRET must be set in production. Generate one with: openssl rand -hex 32",
+            );
+        }
+        console.warn(
+            "[auth] SESSION_SECRET is not set; using an ephemeral dev secret. Sessions reset on restart.",
+        );
+    }
+    const secret = process.env.SESSION_SECRET || randomBytes(32).toString("hex");
+
     const sessionSettings: session.SessionOptions = {
-        secret: process.env.SESSION_SECRET || "r8q/+&1LM3)Cd*zAGpx1XM{NeQhc;#",
+        secret,
         resave: false,
         saveUninitialized: false,
         store: sessionStore,
         cookie: {
-            secure: app.get("env") === "production",
+            httpOnly: true,
+            sameSite: "lax",
+            secure: isProduction,
+            maxAge: 1000 * 60 * 60 * 12, // 12 hours
         }
     };
 
-    if (app.get("env") === "production") {
+    if (isProduction) {
         app.set("trust proxy", 1);
     }
 
@@ -60,58 +90,43 @@ export function setupAuth(app: Express) {
     app.use(passport.initialize());
     app.use(passport.session());
 
-
     passport.use(
-        // we use "username" specifically, so we don't need to specify options
-        new LocalStrategy(async (username, password, done) => {
-            const user = await storage.getUserByUsername(username);
-            // If user has no password (e.g. phone auth only), deny local login
-            if (!user || !user.password || !(await comparePasswords(password, user.password))) {
-                return done(null, false);
-            } else {
-                return done(null, user);
-            }
+        new LocalStrategy((username, password, done) => {
+            if (!adminUsername || !adminPassword) return done(null, false);
+
+            const ok =
+                constantTimeEquals(username, adminUsername) &&
+                constantTimeEquals(password, adminPassword);
+
+            return done(null, ok ? { id: ADMIN_ID, username: adminUsername } : false);
         }),
     );
 
-    passport.serializeUser((user, done) => done(null, (user as User).id));
-    passport.deserializeUser(async (id, done) => {
-        const user = await storage.getUser(id as number);
-        done(null, user);
-    });
+    passport.serializeUser((user, done) => done(null, (user as AdminUser).username));
 
-    app.post("/api/register", async (req, res, next) => {
-        try {
-            const existingUser = await storage.getUserByUsername(req.body.username);
-            if (existingUser) {
-                return res.status(400).send("Username already exists");
-            }
-
-            const hashedPassword = await hashPassword(req.body.password);
-            const user = await storage.createUser({
-                ...req.body,
-                password: hashedPassword,
-            });
-
-            req.login(user, (err) => {
-                if (err) return next(err);
-                res.status(201).json(user);
-            });
-        } catch (err) {
-            next(err);
+    // Re-checked against the environment on every request, so changing
+    // ADMIN_USERNAME invalidates any session issued for the old one.
+    passport.deserializeUser<string>((username, done) => {
+        if (adminUsername && username === adminUsername) {
+            return done(null, { id: ADMIN_ID, username: adminUsername });
         }
+        return done(null, false);
     });
+
+    // There is deliberately no registration route: the only account is the one
+    // defined by ADMIN_USERNAME / ADMIN_PASSWORD.
 
     app.post("/api/login", passport.authenticate("local"), (req, res) => {
         res.status(200).json(req.user);
     });
 
-
-
     app.post("/api/logout", (req, res, next) => {
         req.logout((err) => {
             if (err) return next(err);
-            res.sendStatus(200);
+            req.session.destroy(() => {
+                res.clearCookie("connect.sid");
+                res.sendStatus(200);
+            });
         });
     });
 

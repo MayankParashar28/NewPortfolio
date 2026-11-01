@@ -1,6 +1,6 @@
 import { createContext, ReactNode, useContext } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { insertUserSchema, User, InsertUser } from "@shared/schema";
+import { User, InsertUser } from "@shared/schema";
 import { getQueryFn, apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 
@@ -9,9 +9,7 @@ type AuthContextType = {
     isLoading: boolean;
     error: Error | null;
     loginMutation: any;
-    loginFirebaseMutation: any;
     logoutMutation: any;
-    registerMutation: any;
 };
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -35,44 +33,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         onSuccess: (user: User) => {
             queryClient.setQueryData(["/api/user"], user);
         },
-        onError: (error: Error) => {
+        onError: () => {
+            // Deliberately generic: do not reveal whether the username exists.
             toast({
                 title: "Login failed",
-                description: error.message,
-                variant: "destructive",
-            });
-        },
-    });
-
-    const loginFirebaseMutation = useMutation({
-        mutationFn: async (token: string) => {
-            const res = await apiRequest("POST", "/api/login/firebase", { idToken: token });
-            return await res.json();
-        },
-        onSuccess: (user: User) => {
-            queryClient.setQueryData(["/api/user"], user);
-        },
-        onError: (error: Error) => {
-            toast({
-                title: "Login failed",
-                description: error.message,
-                variant: "destructive",
-            });
-        },
-    });
-
-    const registerMutation = useMutation({
-        mutationFn: async (credentials: InsertUser) => {
-            const res = await apiRequest("POST", "/api/register", credentials);
-            return await res.json();
-        },
-        onSuccess: (user: User) => {
-            queryClient.setQueryData(["/api/user"], user);
-        },
-        onError: (error: Error) => {
-            toast({
-                title: "Registration failed",
-                description: error.message,
+                description: "Incorrect username or password.",
                 variant: "destructive",
             });
         },
@@ -102,9 +67,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 isLoading,
                 error,
                 loginMutation,
-                loginFirebaseMutation,
                 logoutMutation,
-                registerMutation,
             }}
         >
             {children}
