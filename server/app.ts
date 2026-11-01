@@ -67,19 +67,28 @@ app.use((req, res, next) => {
   next();
 });
 
+export function registerErrorHandler(app: Express) {
+  app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
+    const status = err.status || err.statusCode || 500;
+
+    // The full error goes to the server log. Stacks and raw error strings can
+    // carry connection strings, keys and internal paths, so they never go to
+    // the client; 4xx messages are meant for the caller, 5xx are not.
+    log(`error ${status}: ${err?.stack || err}`, "error");
+
+    if (res.headersSent) return;
+    res
+      .status(status)
+      .json({ message: status < 500 ? err.message || "Request failed" : "Internal Server Error" });
+  });
+}
+
 export default async function runApp(
   setup: (app: Express, server: Server) => Promise<void>,
 ) {
   const server = await registerRoutes(app);
 
-  app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
-    const status = err.status || err.statusCode || 500;
-    const message = err.message || "Internal Server Error";
-
-    // DEBUG: Send full error details to client to diagnose Vercel 500 issue
-    res.status(status).json({ message, stack: err.stack, error: String(err) });
-    throw err;
-  });
+  registerErrorHandler(app);
 
   // importantly run the final setup after setting up all the other routes so
   // the catch-all route doesn't interfere with the other routes

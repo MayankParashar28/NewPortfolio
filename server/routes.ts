@@ -205,7 +205,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Profile
   app.get("/api/profile", async (req, res) => {
     const profile = await storage.getProfile();
-    res.json(profile);
+
+    // This endpoint is public: the portfolio front page reads it. openaiApiKey
+    // is a secret stored on the same row, so it is withheld from anyone who
+    // is not signed in, and only sent to the admin panel that edits it.
+    if (req.isAuthenticated()) {
+      return res.json(profile);
+    }
+    const { openaiApiKey: _openaiApiKey, ...publicProfile } = profile;
+    res.json(publicProfile);
   });
 
   app.post("/api/profile", isAuthenticated, async (req, res) => {
@@ -362,7 +370,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error("AI Optimization failed full error:", JSON.stringify(error, Object.getOwnPropertyNames(error), 2));
       const errorMessage = error.message || "Unknown error occurred during AI optimization";
-      res.status(500).json({ message: errorMessage, details: error.toString() });
+      res.status(500).json({ message: errorMessage });
     }
   });
 
