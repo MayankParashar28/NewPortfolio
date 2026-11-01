@@ -50,7 +50,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import ThemeToggle from "@/components/ThemeToggle";
 
 export default function Admin() {
-    const { user, logoutMutation } = useAuth();
+    const { user, isLoading: isAuthLoading, logoutMutation } = useAuth();
     const { toast } = useToast();
 
     // Prefetch counts for stats (or just use length from queries if loaded)
@@ -58,6 +58,17 @@ export default function Admin() {
     const { data: skills } = useQuery<Skill[]>({ queryKey: ["/api/skills"], enabled: !!user });
     const { data: certificates } = useQuery<Certificate[]>({ queryKey: ["/api/certificates"], enabled: !!user });
     const { data: internships } = useQuery<Internship[]>({ queryKey: ["/api/internships"], enabled: !!user });
+
+    // The /api/user query reports user as null while it is still in flight, so
+    // redirecting on !user alone bounces every visit through /login before the
+    // session has even been checked — and back again once it resolves.
+    if (isAuthLoading) {
+        return (
+            <div className="flex items-center justify-center min-h-screen bg-background">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+        );
+    }
 
     if (!user) {
         return <Redirect to="/login" />;

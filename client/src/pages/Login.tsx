@@ -9,7 +9,7 @@ import { motion } from "framer-motion";
 
 
 export default function Login() {
-    const { user, loginMutation } = useAuth();
+    const { user, isLoading: isAuthLoading, loginMutation } = useAuth();
 
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
@@ -21,6 +21,17 @@ export default function Login() {
         if (!username || !password) return;
         loginMutation.mutate({ username, password });
     };
+
+    // Don't show the form until the session check has finished: an already
+    // signed-in admin would otherwise see it flash and could start typing into
+    // a form that is about to redirect out from under them.
+    if (isAuthLoading) {
+        return (
+            <div className="min-h-screen w-full flex items-center justify-center bg-background">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+        );
+    }
 
     if (user) {
         return <Redirect to="/admin" />;

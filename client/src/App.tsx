@@ -7,15 +7,19 @@ import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from "@/components/ThemeProvider";
-import InteractiveSelection from "@/components/InteractiveSelection";
-import EasterEgg from "@/components/EasterEgg";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
-import BackToTop from "@/components/BackToTop";
-import ScrollProgress from "@/components/ScrollProgress";
-import SmoothScroll from "@/components/SmoothScroll";
 import Preloader from "@/components/Preloader";
 import { AuthProvider } from "@/context/AuthProvider";
+
+// Public-route extras only: effects with no initial paint, plus chrome that
+// appears on scroll. Keeping them out of the entry bundle speeds up every
+// route, and the admin routes never render them at all.
+const SmoothScroll = lazy(() => import("@/components/SmoothScroll"));
+const ScrollProgress = lazy(() => import("@/components/ScrollProgress"));
+const InteractiveSelection = lazy(() => import("@/components/InteractiveSelection"));
+const EasterEgg = lazy(() => import("@/components/EasterEgg"));
+const BackToTop = lazy(() => import("@/components/BackToTop"));
 
 // Lazy load pages for better initial bundle size
 const Home = lazy(() => import("@/pages/Home"));
@@ -79,13 +83,15 @@ function App() {
 
                 {!isAdminRoute && (
                   <>
-                    <SmoothScroll />
-                    <ScrollProgress />
+                    <Suspense fallback={null}>
+                      <SmoothScroll />
+                      <ScrollProgress />
+                      <InteractiveSelection />
+                      <EasterEgg />
+                    </Suspense>
                     <Suspense fallback={null}>
                       <Cursor3D />
                     </Suspense>
-                    <InteractiveSelection />
-                    <EasterEgg />
                     <Navigation />
                   </>
                 )}
@@ -94,7 +100,9 @@ function App() {
 
                 {!isAdminRoute && (
                   <>
-                    <BackToTop />
+                    <Suspense fallback={null}>
+                      <BackToTop />
+                    </Suspense>
                     <Footer />
                   </>
                 )}
