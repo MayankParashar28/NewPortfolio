@@ -10,7 +10,7 @@ import { Project, Skill, Certificate, Profile, Internship, insertProjectSchema, 
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { motion, Reorder, useDragControls } from "framer-motion";
 import { Plus, Trash2, LogOut, Loader2, Pencil, LayoutDashboard, Code2, GraduationCap, User as UserIcon, FileText, Github, Linkedin, Mail, Check, Sparkles, AlertCircle, Upload, X, GripVertical, Briefcase } from "lucide-react";
-import { compressImage } from "@/lib/imageUtils";
+import { compressAndUpload } from "@/lib/imageUtils";
 import { getIcon } from "@/lib/skillIcons";
 import { ImageUploadZone } from "@/components/ui/image-upload-zone";
 import {
@@ -621,10 +621,18 @@ function ProjectDialog({ trigger, onSubmit, isPending, defaultValues, title }: {
                                             <TabsContent value="upload" className="mt-4">
                                                 <ImageUploadZone onImageSelected={async (file) => {
                                                     try {
-                                                        const compressed = await compressImage(file);
-                                                        field.onChange(compressed);
-                                                    } catch (err) {
-                                                        console.error("Compression failed", err);
+                                                        // Stores a CDN URL, not the image bytes: a data URL
+                                                        // here would be sent to every visitor inside the
+                                                        // /api/projects response.
+                                                        const url = await compressAndUpload(file);
+                                                        field.onChange(url);
+                                                    } catch (err: any) {
+                                                        console.error("Image upload failed", err);
+                                                        toast({
+                                                            title: "Image upload failed",
+                                                            description: err?.message || "Could not upload the image.",
+                                                            variant: "destructive",
+                                                        });
                                                     }
                                                 }} />
                                             </TabsContent>

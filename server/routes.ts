@@ -5,6 +5,7 @@ import { storage } from "./storage";
 import { insertProjectSchema, insertSkillSchema, insertCertificateSchema, insertProfileSchema, insertInternshipSchema } from "../shared/schema";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { GoogleAIFileManager } from "@google/generative-ai/server";
+import { putBlob, parseDataUrl, extensionFor, safeName, isBlobConfigured } from "./blob";
 import fs from "fs";
 import path from "path";
 import os from "os";
@@ -51,6 +52,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
     res.status(401).send("Unauthorized");
   };
+
+  // Uploads. The admin panel sends a compressed data URL and gets back a CDN
+  // URL to store, so images and PDFs never end up inlined in a database row.
+  app.post("/api/upload", isAuthenticated, async (req, res) => {
+    try {
+      if (!isBlobConfigured()) {
+        return res.status(503).json({
+          message: "Blob storage is not configured. Set BLOB_READ_WRITE_TOKEN.",
+        });
+      }
+
+      const { dataUrl, filename } = req.body ?? {};
+      if (typeof dataUrl !== "string") {
+        return res.status(400).json({ message: "dataUrl is required" });
+      }
+
+      const parsed = parseDataUrl(dataUrl);
+      if (!parsed) {
+        return res.status(400).json({ message: "Expected a base64 data URL" });
+      }
+      if (!parsed.contentType.startsWith("image/") && parsed.contentType !== "application/pdf") {
+        return res.status(415).json({ message: "Only images and PDFs can be uploaded" });
+      }
+
+      const name = safeName(typeof filename === "string" ? filename : "upload");
+      const url = await putBlob(
+        `portfolio/${name}.${extensionFor(parsed.contentType)}`,
+        parsed.bytes,
+        parsed.contentType,
+      );
+      res.status(201).json({ url });
+    } catch (error: any) {
+      console.error("Upload failed:", error);
+      res.status(500).json({ message: error.message || "Upload failed" });
+    }
+  });
 
   // Projects
   app.get("/api/projects", async (req, res) => {

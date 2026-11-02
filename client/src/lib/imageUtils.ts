@@ -1,4 +1,6 @@
 
+import { apiRequest } from "@/lib/queryClient";
+
 /**
  * Compresses an image file to a lower quality JPEG to reduce size.
  * @param file The file to compress.
@@ -41,4 +43,18 @@ export async function compressImage(file: File, maxWidth = 800, quality = 0.6): 
         };
         reader.onerror = (error) => reject(error);
     });
+}
+
+/**
+ * Compresses an image and uploads it to blob storage, returning its URL.
+ *
+ * Prefer this over compressImage for anything that gets saved: a data URL
+ * stored in the database is sent to every visitor inside the API response,
+ * cannot be cached separately by the browser, and cannot be served by a CDN.
+ */
+export async function compressAndUpload(file: File, maxWidth = 1200, quality = 0.82): Promise<string> {
+    const dataUrl = await compressImage(file, maxWidth, quality);
+    const res = await apiRequest("POST", "/api/upload", { dataUrl, filename: file.name });
+    const { url } = (await res.json()) as { url: string };
+    return url;
 }
