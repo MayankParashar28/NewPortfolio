@@ -2,7 +2,7 @@ import { Github, Linkedin, Mail } from "lucide-react";
 import mlDashboardImg from "@assets/generated_images/ml_project_dashboard_mockup.png";
 import cvProjectImg from "@assets/generated_images/computer_vision_project_interface.png";
 import dlResearchImg from "@assets/generated_images/deep_learning_research_visualization.png";
-import myPhoto from "@assets/myphoto.png";
+import myPhoto from "@assets/myphoto.webp";
 import neuralNetworkImg from "@assets/generated_images/ai_neural_network_visualization.png";
 
 import ibmLogo from "@assets/ibm_logo.png";

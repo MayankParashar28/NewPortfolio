@@ -8,7 +8,7 @@ import TextScramble from "@/components/TextScramble";
 import ScratchRevealImage from "@/components/ScratchRevealImage";
 import { useQuery } from "@tanstack/react-query";
 import { Profile } from "@shared/schema";
-import myPhoto from "@assets/myphoto.png"; // Fallback/Default
+import myPhoto from "@assets/myphoto.webp"; // Fallback/Default
 
 export default function About() {
   const containerRef = useRef(null);
