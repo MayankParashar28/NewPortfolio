@@ -20,8 +20,14 @@ export const projects = pgTable("projects", {
   githubLink: text("github_link").notNull(),
   demoLink: text("demo_link"),
   featured: boolean("featured").default(false),
-  createdAt: text("created_at").default(new Date().toISOString()),
-  updatedAt: text("updated_at").default(new Date().toISOString()),
+  // $defaultFn runs per insert. .default(new Date().toISOString()) did not:
+  // it evaluated once when this module was first imported, so every row
+  // written by that process carried the same timestamp -- and on a serverless
+  // instance that could be hours stale.
+  createdAt: text("created_at").$defaultFn(() => new Date().toISOString()),
+  updatedAt: text("updated_at")
+    .$defaultFn(() => new Date().toISOString())
+    .$onUpdateFn(() => new Date().toISOString()),
   order: integer("order").notNull().default(0),
 });
 
@@ -54,7 +60,6 @@ export const profile = pgTable("profile", {
   githubUrl: text("github_url").notNull(),
   linkedinUrl: text("linkedin_url").notNull(),
   email: text("email").notNull(),
-  openaiApiKey: text("openai_api_key").notNull().default(""),
   atsScore: integer("ats_score"),
   atsFeedback: jsonb("ats_feedback"),
   views: integer("views").notNull().default(0),

@@ -5,7 +5,11 @@ import { storage } from "./storage";
 import { insertProjectSchema, insertSkillSchema, insertCertificateSchema, insertProfileSchema, insertInternshipSchema } from "../shared/schema";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { GoogleAIFileManager } from "@google/generative-ai/server";
-import { putBlob, parseDataUrl, extensionFor, safeName, isBlobConfigured } from "./blob";
+import { putBlob, parseDataUrl, extensionFor, safeName, isBlobConfigured, isDataUrl } from "./blob";
+import { db } from "./db";
+import { eq } from "drizzle-orm";
+import { throttle } from "./security";
+import { projects as projectsTable, certificates as certificatesTable, internships as internshipsTable, profile as profileTable } from "../shared/schema";
 import fs from "fs";
 import path from "path";
 import os from "os";
@@ -53,6 +57,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.status(401).send("Unauthorized");
   };
 
+  // Public, read-only content. s-maxage lets Vercel's CDN answer repeat
+  // requests at the edge instead of each one paying a function invocation
+  // plus a database round trip. The browser itself is told max-age=0, so a
+  // visitor always revalidates and an admin edit becomes visible once the
+  // edge entry expires -- within a minute, or sooner if nothing is reading it.
+  const publicCache = (res: any) => {
+    res.set("Cache-Control", "public, max-age=0, s-maxage=60, stale-while-revalidate=300");
+  };
+
   // Uploads. The admin panel sends a compressed data URL and gets back a CDN
   // URL to store, so images and PDFs never end up inlined in a database row.
   app.post("/api/upload", isAuthenticated, async (req, res) => {
@@ -89,9 +102,81 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // One-off backfill. Moves base64 data URLs that predate /api/upload out of
+  // the database and into Blob, leaving a CDN URL in their place. This lives
+  // here rather than in scripts/ because BLOB_READ_WRITE_TOKEN is set in the
+  // deployment environment, not on a developer machine.
+  //
+  // Safe to call more than once: a row whose column already holds a URL is
+  // skipped, so a second run reports zero migrated. Remove this route once the
+  // backfill has run in production.
+  app.post("/api/admin/migrate-images", isAuthenticated, async (_req, res) => {
+    if (!isBlobConfigured()) {
+      return res.status(503).json({
+        message: "Blob storage is not configured. Set BLOB_READ_WRITE_TOKEN.",
+      });
+    }
+
+    const targets = [
+      { label: "projects.image", table: projectsTable, column: "image", nameFrom: (r: any) => r.title },
+      { label: "certificates.image", table: certificatesTable, column: "image", nameFrom: (r: any) => r.title },
+      { label: "internships.image", table: internshipsTable, column: "image", nameFrom: (r: any) => r.role },
+      { label: "profile.resumeUrl", table: profileTable, column: "resumeUrl", nameFrom: (r: any) => `${r.name}-resume` },
+    ];
+
+    const migrated: Array<{ label: string; id: number; kbFreed: number; url: string }> = [];
+    const failed: Array<{ label: string; id: number; message: string }> = [];
+
+    try {
+      for (const target of targets) {
+        const rows = (await db.select().from(target.table as any)) as any[];
+
+        for (const row of rows) {
+          const value = row[target.column];
+          if (!isDataUrl(value)) continue;
+
+          const parsed = parseDataUrl(value);
+          if (!parsed) {
+            failed.push({ label: target.label, id: row.id, message: "value begins with data: but did not parse" });
+            continue;
+          }
+
+          const name = safeName(String(target.nameFrom(row) ?? "upload"));
+
+          try {
+            const url = await putBlob(
+              `portfolio/${name}.${extensionFor(parsed.contentType)}`,
+              parsed.bytes,
+              parsed.contentType,
+            );
+            await db
+              .update(target.table as any)
+              .set({ [target.column]: url })
+              .where(eq((target.table as any).id, row.id));
+            migrated.push({ label: target.label, id: row.id, kbFreed: Math.round(value.length / 1024), url });
+          } catch (error: any) {
+            // One unreadable or oversized row should not strand the others.
+            failed.push({ label: target.label, id: row.id, message: error?.message || "upload failed" });
+          }
+        }
+      }
+    } catch (error: any) {
+      console.error("Image migration failed:", error);
+      return res.status(500).json({ message: error?.message || "Migration failed", migrated, failed });
+    }
+
+    res.json({
+      migrated: migrated.length,
+      kbFreed: migrated.reduce((sum, m) => sum + m.kbFreed, 0),
+      failed: failed.length,
+      details: { migrated, failed },
+    });
+  });
+
   // Projects
   app.get("/api/projects", async (req, res) => {
     const projects = await storage.getProjects();
+    publicCache(res);
     res.json(projects);
   });
 
@@ -134,6 +219,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Skills
   app.get("/api/skills", async (req, res) => {
     const skills = await storage.getSkills();
+    publicCache(res);
     res.json(skills);
   });
 
@@ -167,6 +253,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Certificates
   app.get("/api/certificates", async (req, res) => {
     const certs = await storage.getCertificates();
+    publicCache(res);
     res.json(certs);
   });
 
@@ -200,6 +287,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Internships
   app.get("/api/internships", async (req, res) => {
     const list = await storage.getInternships();
+    publicCache(res);
     res.json(list);
   });
 
@@ -243,14 +331,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/profile", async (req, res) => {
     const profile = await storage.getProfile();
 
-    // This endpoint is public: the portfolio front page reads it. openaiApiKey
-    // is a secret stored on the same row, so it is withheld from anyone who
-    // is not signed in, and only sent to the admin panel that edits it.
-    if (req.isAuthenticated()) {
-      return res.json(profile);
-    }
-    const { openaiApiKey: _openaiApiKey, ...publicProfile } = profile;
-    res.json(publicProfile);
+    // Nothing on this row is secret. It used to carry an openaiApiKey column
+    // that had to be stripped for anonymous callers, which meant the response
+    // differed by session and could not be shared at the edge. That column was
+    // dead -- nothing ever read it to call anything -- so it is gone, and every
+    // caller now gets the same cacheable body.
+    publicCache(res);
+    res.json(profile);
   });
 
   app.post("/api/profile", isAuthenticated, async (req, res) => {
@@ -262,7 +349,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json(profile);
   });
 
-  app.post("/api/profile/views", async (req, res) => {
+  // The only write on the site that is deliberately open, so that a visitor
+  // can be counted. Capped per address because otherwise the counter can be
+  // inflated at will and each call is a database write. Every response counts
+  // toward the cap, not just failures -- the point here is the write, not a
+  // guess at a credential.
+  const viewThrottle = throttle({ maxFailures: 30, countOnly: () => true });
+
+  app.post("/api/profile/views", viewThrottle, async (req, res) => {
     try {
       const result = await storage.incrementProfileViews();
       res.json(result);
