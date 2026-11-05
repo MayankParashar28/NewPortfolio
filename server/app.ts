@@ -8,6 +8,7 @@ import express, {
 } from "express";
 
 import { registerRoutes } from "./routes";
+import { securityHeaders } from "./security";
 
 export function log(message: string, source = "express") {
   const formattedTime = new Date().toLocaleTimeString("en-US", {
@@ -22,45 +23,29 @@ export function log(message: string, source = "express") {
 
 export const app = express();
 
-declare module 'http' {
-  interface IncomingMessage {
-    rawBody: unknown
-  }
-}
-app.use(express.json({
-  limit: '50mb',
-  verify: (req, _res, buf) => {
-    req.rawBody = buf;
-  }
-}));
-app.use(express.urlencoded({ extended: false, limit: '50mb' }));
+securityHeaders(app);
+
+// The largest legitimate body is an image upload: blob.ts caps the decoded
+// file at 5 MB, which is about 6.7 MB once base64-encoded, so 8 MB covers it
+// with room for the surrounding JSON. The old 50 MB limit applied to every
+// route including unauthenticated ones, which meant anyone could make the
+// server buffer 50 MB per request. The verify hook that kept a second copy of
+// every body in req.rawBody is gone too -- nothing ever read it.
+app.use(express.json({ limit: '8mb' }));
+app.use(express.urlencoded({ extended: false, limit: '8mb' }));
 
 app.use((req, res, next) => {
   log(`Received request: ${req.method} ${req.path}`);
   const start = Date.now();
   const path = req.path;
 
-  let capturedJsonResponse: Record<string, any> | undefined = undefined;
-
-  const originalResJson = res.json;
-  res.json = function (bodyJson, ...args) {
-    capturedJsonResponse = bodyJson;
-    return originalResJson.apply(res, [bodyJson, ...args]);
-  };
-
   res.on("finish", () => {
     const duration = Date.now() - start;
     if (path.startsWith("/api")) {
-      let logLine = `${req.method} ${path} ${res.statusCode} in ${duration}ms`;
-      if (capturedJsonResponse) {
-        logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
-      }
-
-      if (logLine.length > 80) {
-        logLine = logLine.slice(0, 79) + "…";
-      }
-
-      log(logLine);
+      // Status and timing only. This used to append the serialised response
+      // body, so an authenticated /api/profile wrote a stored API key into the
+      // platform logs, where it would sit for as long as logs are retained.
+      log(`${req.method} ${path} ${res.statusCode} in ${duration}ms`);
     }
   });
 

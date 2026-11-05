@@ -17,7 +17,13 @@ async function setup() {
 
 export default async function handler(req: any, res: any) {
     if (!setupPromise) {
-        setupPromise = setup();
+        // A rejected promise must not be cached: if the first request on a cold
+        // instance failed during setup, every later request on that instance
+        // would replay the same failure until it recycled.
+        setupPromise = setup().catch((error) => {
+            setupPromise = null;
+            throw error;
+        });
     }
 
     await setupPromise;

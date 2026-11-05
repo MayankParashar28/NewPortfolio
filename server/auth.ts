@@ -7,6 +7,7 @@ import { randomBytes, createHash, timingSafeEqual } from "crypto";
 import connectPgSimple from "connect-pg-simple";
 import memoryStore from "memorystore";
 import { pool } from "./db";
+import { throttle } from "./security";
 
 // This is a single-owner portfolio, so the admin credentials live in the
 // environment rather than in the database. To change them, edit the Vercel
@@ -94,10 +95,14 @@ export function setupAuth(app: Express) {
         new LocalStrategy((username, password, done) => {
             if (!adminUsername || !adminPassword) return done(null, false);
 
-            const ok =
-                constantTimeEquals(username, adminUsername) &&
-                constantTimeEquals(password, adminPassword);
+            // Both comparisons always run. With && the password check was
+            // skipped whenever the username was wrong, so the two failures
+            // took measurably different time and that difference told an
+            // attacker when they had found the right username.
+            const userOk = constantTimeEquals(username, adminUsername);
+            const passOk = constantTimeEquals(password, adminPassword);
 
+            const ok = userOk && passOk;
             return done(null, ok ? { id: ADMIN_ID, username: adminUsername } : false);
         }),
     );
@@ -116,7 +121,15 @@ export function setupAuth(app: Express) {
     // There is deliberately no registration route: the only account is the one
     // defined by ADMIN_USERNAME / ADMIN_PASSWORD.
 
-    app.post("/api/login", passport.authenticate("local"), (req, res) => {
+    // Only a rejected sign-in counts against the limit, so a successful
+    // login clears the tally rather than adding to it.
+    const loginThrottle = throttle({
+        maxFailures: 8,
+        minResponseMs: 400,
+        countOnly: (status) => status === 401,
+    });
+
+    app.post("/api/login", loginThrottle, passport.authenticate("local"), (req, res) => {
         res.status(200).json(req.user);
     });
 
