@@ -62,10 +62,10 @@ export default function Login() {
                             <ShieldCheck className="w-8 h-8 drop-shadow-lg" />
                         </motion.div>
                         <CardTitle className="text-3xl font-heading font-bold bg-clip-text text-transparent bg-gradient-to-b from-white via-white/90 to-white/60 tracking-tight">
-                            Access Portfolio
+                            Sign in
                         </CardTitle>
                         <CardDescription className="text-muted-foreground/80 mt-2 text-base">
-                            Sign in to manage your portfolio content
+                            Manage your portfolio content
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-6 pb-8">
@@ -113,7 +113,7 @@ export default function Login() {
                                 </div>
                                 <p className="text-xs text-muted-foreground/60 ml-1 flex items-center gap-1.5">
                                     <span className="w-1 h-1 rounded-full bg-primary/50" />
-                                    Restricted access — authorised personnel only
+                                    This page is for the site owner.
                                 </p>
                             </div>
 

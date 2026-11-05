@@ -370,3 +370,17 @@ body {
   background-size: 200% auto;
   animation: logo-shimmer 3s ease-in-out infinite;
 }
+/* Anyone who has asked their system to reduce motion gets a still page.
+   Only two of this app's components checked for that individually, so this
+   covers every CSS animation and transition in one place; framer-motion's
+   JS-driven animations are handled separately by MotionConfig in App.tsx. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

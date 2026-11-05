@@ -308,9 +308,11 @@ function ProjectsManager() {
             <AlertDialog open={!!projectToDelete} onOpenChange={(open) => !open && setProjectToDelete(null)}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                        <AlertDialogTitle>
+                            Delete &ldquo;{projects?.find((p) => p.id === projectToDelete)?.title ?? "this project"}&rdquo;?
+                        </AlertDialogTitle>
                         <AlertDialogDescription>
-                            This project will be permanently deleted. This action cannot be undone.
+                            This permanently deletes the project and cannot be undone.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
@@ -423,6 +425,10 @@ function ProjectDialog({ trigger, onSubmit, isPending, defaultValues, title }: {
     const [open, setOpen] = useState(false);
     const { toast } = useToast();
     const form = useForm({
+        // Tell the user a field is wrong when they leave it, not only when
+        // they try to submit, and clear the error as soon as they fix it.
+        mode: "onBlur",
+        reValidateMode: "onChange",
         resolver: zodResolver(insertProjectSchema),
         defaultValues: {
             title: defaultValues?.title || "",
@@ -757,6 +763,14 @@ function SkillDialog({ trigger, onSubmit, isPending, defaultValues, title }: {
     const [suggestions, setSuggestions] = useState<any[]>([]);
 
     const form = useForm({
+
+        // Tell the user a field is wrong when they leave it, not only when
+
+        // they try to submit, and clear the error as soon as they fix it.
+
+        mode: "onBlur",
+
+        reValidateMode: "onChange",
         resolver: zodResolver(insertSkillSchema),
         defaultValues: {
             name: defaultValues?.name || "",
@@ -1288,6 +1302,10 @@ function CertificateDialog({ trigger, onSubmit, isPending, defaultValues, title 
     const { toast } = useToast();
     const [open, setOpen] = useState(false);
     const form = useForm({
+        // Tell the user a field is wrong when they leave it, not only when
+        // they try to submit, and clear the error as soon as they fix it.
+        mode: "onBlur",
+        reValidateMode: "onChange",
         resolver: zodResolver(insertCertificateSchema),
         defaultValues: {
             title: defaultValues?.title || "",
@@ -1617,6 +1635,10 @@ function InternshipFormDialog({
     const { toast } = useToast();
     const [open, setOpen] = useState(false);
     const form = useForm({
+        // Tell the user a field is wrong when they leave it, not only when
+        // they try to submit, and clear the error as soon as they fix it.
+        mode: "onBlur",
+        reValidateMode: "onChange",
         resolver: zodResolver(insertInternshipSchema),
         defaultValues: {
             role: defaultValues?.role || "",
@@ -1795,6 +1817,10 @@ function ProfileForm({ defaultValues, onSubmit, isPending }: {
     isPending: boolean
 }) {
     const form = useForm({
+        // Tell the user a field is wrong when they leave it, not only when
+        // they try to submit, and clear the error as soon as they fix it.
+        mode: "onBlur",
+        reValidateMode: "onChange",
         resolver: zodResolver(insertProfileSchema),
         defaultValues: {
             name: defaultValues?.name || "",
@@ -1805,7 +1831,6 @@ function ProfileForm({ defaultValues, onSubmit, isPending }: {
             githubUrl: defaultValues?.githubUrl || "",
             linkedinUrl: defaultValues?.linkedinUrl || "",
             email: defaultValues?.email || "",
-            openaiApiKey: defaultValues?.openaiApiKey || "",
             atsScore: defaultValues?.atsScore || 0,
             atsFeedback: defaultValues?.atsFeedback || null,
         }

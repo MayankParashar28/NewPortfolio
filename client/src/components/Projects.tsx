@@ -47,9 +47,9 @@ const ProjectCard = React.forwardRef<HTMLDivElement, { project: Project; index: 
       <motion.div
         ref={ref}
         layout
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.9 }}
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -12 }}
         transition={{ duration: 0.35, delay: index * 0.05, ease: "easeOut" }}
         className="h-full"
       >
@@ -58,7 +58,7 @@ const ProjectCard = React.forwardRef<HTMLDivElement, { project: Project; index: 
           onMouseMove={handleMouseMove}
           onMouseLeave={handleMouseLeave}
           className="relative h-full rounded-xl overflow-hidden cursor-default group"
-          whileHover={{ scale: 1.03 }}
+          whileHover={{ y: -6 }}
           transition={{ type: "spring", stiffness: 400, damping: 25 }}
         >
           {/* Mouse-tracking spotlight */}
@@ -188,7 +188,7 @@ export default React.memo(function Projects() {
             <div className="h-12 w-56 bg-muted rounded-lg animate-pulse mx-auto mb-4" />
             <div className="h-1 w-20 bg-muted rounded animate-pulse mx-auto" />
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 auto-rows-fr gap-6">
             {Array.from({ length: 4 }).map((_, i) => (
               <div key={i} className="rounded-xl bg-muted animate-pulse" style={{ height: 320 }} />
             ))}
@@ -251,7 +251,7 @@ export default React.memo(function Projects() {
 
         <motion.div
           layout
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 min-h-[400px]"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 auto-rows-fr gap-6 min-h-[400px]"
         >
           <AnimatePresence mode="popLayout">
             {filteredProjects.length === 0 && (

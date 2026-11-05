@@ -18,11 +18,11 @@ export default function Preloader({ onComplete }: PreloaderProps) {
   useEffect(() => {
     // Progress through the loading steps
     const timers = [
-      setTimeout(() => setLoadingStep(1), 800),
-      setTimeout(() => setLoadingStep(2), 1600),
-      setTimeout(() => setLoadingStep(3), 2400),
+      setTimeout(() => setLoadingStep(1), 330),
+      setTimeout(() => setLoadingStep(2), 660),
+      setTimeout(() => setLoadingStep(3), 990),
       // Trigger the completion callback shortly after the final text
-      setTimeout(() => onComplete(), 3200)
+      setTimeout(() => onComplete(), 1300)
     ];
 
     return () => timers.forEach(clearTimeout);
@@ -34,7 +34,7 @@ export default function Preloader({ onComplete }: PreloaderProps) {
       exit={{ 
         y: "-100%", 
         opacity: 0,
-        transition: { duration: 0.8, ease: [0.76, 0, 0.24, 1] } 
+        transition: { duration: 0.45, ease: [0.76, 0, 0.24, 1] } 
       }}
     >
       <div className="relative flex flex-col items-center">
@@ -44,7 +44,7 @@ export default function Preloader({ onComplete }: PreloaderProps) {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.3 }}
+            transition={{ duration: 0.18 }}
             className="h-10 flex items-center justify-center"
           >
             <TextScramble 
@@ -61,7 +61,7 @@ export default function Preloader({ onComplete }: PreloaderProps) {
             className="absolute top-0 left-0 bottom-0 bg-primary"
             initial={{ width: "0%" }}
             animate={{ width: `${(loadingStep / (loadingTexts.length - 1)) * 100}%` }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
+            transition={{ duration: 0.33, ease: "easeOut" }}
           />
         </div>
       </div>

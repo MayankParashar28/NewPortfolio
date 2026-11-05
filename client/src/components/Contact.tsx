@@ -138,12 +138,15 @@ export default function Contact() {
     setIsSubmitting(true);
     setButtonPhase("sending");
 
-    try {
-      // Show "sending" spinner briefly
-      await new Promise((r) => setTimeout(r, 600));
-      setButtonPhase("flying");
+    const startedAt = Date.now();
 
-      const response = await fetch("https://formspree.io/f/xqavoekj", {
+    try {
+      // Start the request first. This used to sit behind a 600ms pause and
+      // then a further 800ms afterwards, so every message took about 1.4s
+      // longer than it needed to -- on the one interaction that matters most
+      // on the page. The animation now plays over the request instead of
+      // around it.
+      const request = fetch("https://formspree.io/f/xqavoekj", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -151,8 +154,21 @@ export default function Contact() {
         body: JSON.stringify(values),
       });
 
-      // Let the fly animation play out
-      await new Promise((r) => setTimeout(r, 800));
+      const flyTimer = setTimeout(() => setButtonPhase("flying"), 250);
+      let response: Response;
+      try {
+        response = await request;
+      } finally {
+        clearTimeout(flyTimer);
+      }
+
+      // Hold briefly so the flight is visible on a fast connection, but never
+      // add time to a slow one.
+      const elapsed = Date.now() - startedAt;
+      if (elapsed < 650) {
+        setButtonPhase("flying");
+        await new Promise((r) => setTimeout(r, 650 - elapsed));
+      }
 
       if (response.ok) {
         setButtonPhase("done");

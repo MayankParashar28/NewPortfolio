@@ -45,7 +45,7 @@ function CertificateCard({ cert, index }: { cert: Certificate; index: number }) 
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
         className="relative h-full rounded-xl overflow-hidden cursor-default group"
-        whileHover={{ scale: 1.02 }}
+        whileHover={{ y: -6 }}
         transition={{ type: "spring", stiffness: 400, damping: 25 }}
       >
         {/* Mouse-tracking spotlight */}
@@ -145,7 +145,7 @@ export default function Certificates() {
             <div className="h-12 w-72 bg-muted rounded-lg animate-pulse mx-auto mb-4" />
             <div className="h-1 w-20 bg-muted rounded animate-pulse mx-auto" />
           </div>
-          <div className="grid gap-8 md:grid-cols-2">
+          <div className="grid gap-8 auto-rows-fr md:grid-cols-2">
             {Array.from({ length: 4 }).map((_, i) => (
               <div key={i} className="rounded-xl bg-muted animate-pulse" style={{ height: 160 }} />
             ))}

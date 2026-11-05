@@ -60,7 +60,7 @@ function SkillCard({ skill, index, categoryIndex }: { skill: Skill; index: numbe
           dragElastic={0.2}
           whileDrag={{ scale: 1.1, zIndex: 50, cursor: "grabbing" }}
           className="relative h-full rounded-xl overflow-hidden cursor-grab group bg-background"
-          whileHover={{ scale: 1.05 }}
+          whileHover={{ y: -4 }}
           transition={{ type: "spring", stiffness: 400, damping: 25 }}
         >
         {/* Animated spotlight overlay */}
@@ -130,7 +130,7 @@ export default React.memo(function Skills() {
             <div className="h-10 w-48 bg-muted rounded-lg animate-pulse mx-auto mb-3" />
             <div className="h-4 w-64 bg-muted rounded animate-pulse mx-auto" />
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 auto-rows-fr gap-3">
             {Array.from({ length: 12 }).map((_, i) => (
               <div key={i} className="h-20 rounded-xl bg-muted animate-pulse" />
             ))}
@@ -185,7 +185,7 @@ export default React.memo(function Skills() {
                 {category}
               </motion.h3>
 
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 auto-rows-fr gap-3">
                 {groupedSkills[category]?.map((skill, index) => (
                   <SkillCard
                     key={`${category}-${skill.name}-${index}`}
