@@ -112,7 +112,7 @@ export default function Internships() {
 
                   <div className="z-10 flex-grow leading-tight min-w-0">
                     <span className="block text-sm font-semibold truncate">{item.company}</span>
-                    <span className="block text-[11px] text-muted-foreground mt-0.5 truncate">{item.duration}</span>
+                    <span className="block text-xs text-muted-foreground mt-0.5 truncate">{item.duration}</span>
                   </div>
                 </button>
               );

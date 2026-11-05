@@ -202,7 +202,7 @@ export default function Hero() {
       >
         <p className="text-xs text-muted-foreground italic border-l-2 border-primary/50 pl-3">
           "The best way to predict the future is to invent it." <br />
-          <span className="not-italic text-[10px] opacity-70">– Alan Kay</span>
+          <span className="not-italic text-xs opacity-70">– Alan Kay</span>
         </p>
       </motion.div>
     </section >

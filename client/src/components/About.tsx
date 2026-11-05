@@ -210,7 +210,7 @@ function MagneticHighlightCard({ item, index }: { item: any; index: number }) {
             <h4 className="font-heading font-semibold mb-1 text-xs sm:text-sm group-hover:text-primary transition-colors duration-300">
               {item.title}
             </h4>
-            <p className="text-[10px] sm:text-xs text-muted-foreground">{item.description}</p>
+            <p className="text-xs text-muted-foreground">{item.description}</p>
           </Card>
         </SpotlightCard>
       </motion.div>

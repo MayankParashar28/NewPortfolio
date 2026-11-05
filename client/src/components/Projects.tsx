@@ -118,7 +118,7 @@ const ProjectCard = React.forwardRef<HTMLDivElement, { project: Project; index: 
                     >
                       <Badge
                         variant="secondary"
-                        className="text-[10px] px-1.5 py-0.5 bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 border-black/5 dark:border-white/5"
+                        className="text-xs px-1.5 py-0.5 bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 border-black/5 dark:border-white/5"
                         data-testid={`badge-project-${index}-tag-${tagIndex}`}
                       >
                         {tag}
@@ -129,7 +129,7 @@ const ProjectCard = React.forwardRef<HTMLDivElement, { project: Project; index: 
                     <motion.div layout key="expand-button">
                       <Badge
                         variant="secondary"
-                        className="text-[10px] px-1.5 py-0.5 bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/5 opacity-60 cursor-pointer hover:opacity-100 transition-opacity select-none"
+                        className="text-xs px-1.5 py-0.5 bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/5 opacity-60 cursor-pointer hover:opacity-100 transition-opacity select-none"
                         onClick={() => setIsExpandedTags(!isExpandedTags)}
                       >
                         {isExpandedTags ? "Show less" : `+${project.tags.length - 3} more`}
@@ -240,7 +240,7 @@ export default React.memo(function Projects() {
                     }`}
                 >
                   {category}
-                  <span className="ml-1.5 text-[10px] opacity-60">
+                  <span className="ml-1.5 text-xs opacity-60">
                     {category === "All" ? safeProjects.length : categoryCounts[category] || 0}
                   </span>
                 </Button>

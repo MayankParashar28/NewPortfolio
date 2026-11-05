@@ -376,8 +376,8 @@ function SortableProjectItem({
                                 )}
                             </p>
                             <div className="flex gap-2">
-                                {project.featured && <span className="text-[10px] px-2 py-0.5 rounded-full bg-yellow-500/10 text-yellow-500 font-medium border border-yellow-500/20">Featured</span>}
-                                <span className="text-[10px] px-2 py-0.5 rounded-full bg-muted text-muted-foreground border border-border">{project.category}</span>
+                                {project.featured && <span className="text-xs px-2 py-0.5 rounded-full bg-yellow-500/10 text-yellow-500 font-medium border border-yellow-500/20">Featured</span>}
+                                <span className="text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground border border-border">{project.category}</span>
                             </div>
                         </div>
                     </div>
@@ -2144,7 +2144,7 @@ function SortableSkillItem({ skill, onUpdate, onDelete, isUpdatePending }: {
                     </div>
                     <div className="text-center">
                         <p className="font-semibold text-base text-foreground">{skill.name}</p>
-                        <p className="text-[10px] text-muted-foreground uppercase tracking-wider">{skill.category}</p>
+                        <p className="text-xs text-muted-foreground uppercase tracking-wider">{skill.category}</p>
                     </div>
                 </div>
                 <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity absolute top-2 right-2">
