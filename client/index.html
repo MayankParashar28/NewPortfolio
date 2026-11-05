@@ -3,6 +3,22 @@
 
 <head>
   <meta charset="UTF-8" />
+  <script>
+    // Runs before first paint, on purpose. The theme used to be applied in a
+    // React effect, which cannot run until the bundle has downloaded, parsed
+    // and mounted -- so the page painted with the default light variables
+    // while the hero was styled for a dark background, leaving white text on
+    // white for several seconds. Keep this inline and blocking.
+    (function () {
+      try {
+        var t = localStorage.getItem("theme");
+        if (t !== "light" && t !== "dark") t = "dark";
+        document.documentElement.classList.add(t);
+      } catch (e) {
+        document.documentElement.classList.add("dark");
+      }
+    })();
+  </script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
   <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)" />
   <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
