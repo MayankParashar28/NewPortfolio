@@ -83,7 +83,7 @@ export default function About() {
           <TextScramble
             text="About Me"
             as="h2"
-            className="text-3xl sm:text-4xl font-heading font-bold mb-4 inline-block"
+            className="text-4xl sm:text-5xl font-heading font-bold mb-4 inline-block"
           />
           <div className="w-20 h-1 bg-foreground mx-auto"></div>
         </div>

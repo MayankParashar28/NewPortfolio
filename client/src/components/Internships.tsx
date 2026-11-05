@@ -50,7 +50,7 @@ export default function Internships() {
             <TextScramble
               text="Professional Experience"
               as="h2"
-              className="text-3xl sm:text-4xl md:text-5xl font-heading font-bold mb-4 text-foreground inline-block"
+              className="text-4xl sm:text-5xl font-heading font-bold mb-4 text-foreground inline-block"
             />
             <div className="w-20 h-1 bg-primary mx-auto rounded-full"></div>
             <p className="text-muted-foreground mt-6 max-w-2xl mx-auto text-base sm:text-lg">
@@ -142,7 +142,7 @@ export default function Internships() {
                           <span className="text-xs font-semibold uppercase tracking-wider text-primary mb-1 block">
                             Work Experience
                           </span>
-                          <h3 className="text-2xl sm:text-3xl font-heading font-bold text-foreground tracking-tight leading-tight">
+                          <h3 className="text-xl sm:text-2xl font-heading font-bold text-foreground tracking-tight leading-tight">
                             {activeInternship.role}
                           </h3>
                         </div>

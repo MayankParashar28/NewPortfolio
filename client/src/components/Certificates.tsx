@@ -165,7 +165,7 @@ export default function Certificates() {
             <TextScramble
               text="Certifications & Achievements"
               as="h2"
-              className="text-3xl sm:text-4xl md:text-5xl font-heading font-bold mb-4 block break-words max-w-full"
+              className="text-4xl sm:text-5xl font-heading font-bold mb-4 block break-words max-w-full"
             />
             <div className="w-20 h-1 bg-foreground mx-auto"></div>
             <p className="text-muted-foreground mt-6 max-w-2xl mx-auto">

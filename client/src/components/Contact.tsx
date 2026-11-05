@@ -211,7 +211,7 @@ export default function Contact() {
               className="text-4xl sm:text-5xl font-heading font-bold mb-4"
             />
             <div className="w-20 h-1 bg-foreground mx-auto"></div>
-            <p className="text-muted-foreground mt-6 max-w-2xl mx-auto text-lg leading-relaxed">
+            <p className="text-muted-foreground mt-6 max-w-2xl mx-auto text-base sm:text-lg leading-relaxed">
               Actively looking for <span className="text-primary font-semibold">ML/AI Engineer</span> and <span className="text-primary font-semibold">Computer Vision Engineer</span> roles; available for internships and full-time.
             </p>
           </motion.div>
@@ -433,7 +433,7 @@ export default function Contact() {
           >
             <Card className="border border-border">
               <CardHeader>
-                <CardTitle className="text-xl font-heading">Contact Info</CardTitle>
+                <CardTitle className="text-lg font-heading">Contact Info</CardTitle>
                 <CardDescription>Connect with me through these channels</CardDescription>
               </CardHeader>
               <CardContent className="space-y-3">

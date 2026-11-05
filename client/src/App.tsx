@@ -28,8 +28,7 @@ const NotFound = lazy(() => import("@/pages/not-found"));
 const Cursor3D = lazy(() => import("@/components/Cursor3D"));
 
 // The splash screen was removed: it was a fixed animation, not a progress
-// indicator, so it delayed the content without ever waiting on it. The
-// component is still in components/Preloader.tsx if it is ever wanted back.
+// indicator, so it delayed the content without ever waiting on it.
 
 // Everything the public page renders. Warming these here means the requests
 // are already in flight while the route chunk is still loading, and

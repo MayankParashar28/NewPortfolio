@@ -94,7 +94,7 @@ export default function Navigation() {
               trigger={
                 <Magnetic strength={0.3}>
                   <button
-                    className="group/logo text-xl font-heading font-bold hover-elevate active-elevate-2 px-3 py-2 rounded-md transition-all duration-300 flex items-center justify-center w-32 min-w-[128px]"
+                    className="group/logo text-lg font-heading font-bold hover-elevate active-elevate-2 px-3 py-2 rounded-md transition-all duration-300 flex items-center justify-center w-32 min-w-[128px]"
                     data-testid="button-logo"
                   >
                     <AnimatePresence mode="wait">

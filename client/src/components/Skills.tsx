@@ -164,7 +164,7 @@ export default React.memo(function Skills() {
             <TextScramble
               text="Skills & Expertise"
               as="h2"
-              className="text-3xl sm:text-4xl font-heading font-bold mb-2 text-foreground inline-block"
+              className="text-4xl sm:text-5xl font-heading font-bold mb-2 text-foreground inline-block"
             />
             <p className="text-muted-foreground text-sm max-w-2xl mx-auto">
               Mastering the tools of tomorrow.
@@ -180,7 +180,7 @@ export default React.memo(function Skills() {
                 whileInView={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.1 }}
                 viewport={{ once: true }}
-                className="text-lg sm:text-xl font-heading font-bold mb-3 pl-3 border-l-4 border-primary text-foreground/90"
+                className="text-base sm:text-lg font-heading font-bold mb-3 pl-3 border-l-4 border-primary text-foreground/90"
               >
                 {category}
               </motion.h3>

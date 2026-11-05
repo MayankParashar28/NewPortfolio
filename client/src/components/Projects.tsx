@@ -222,7 +222,7 @@ export default React.memo(function Projects() {
               className="text-4xl sm:text-5xl font-heading font-bold mb-4 text-foreground inline-block"
             />
             <div className="w-20 h-1 bg-primary mx-auto rounded-full"></div>
-            <p className="text-muted-foreground mt-6 max-w-2xl mx-auto text-lg">
+            <p className="text-muted-foreground mt-6 max-w-2xl mx-auto text-base sm:text-lg">
               Innovative AI solutions showcasing practical applications of machine learning
             </p>
           </ScrollReveal>

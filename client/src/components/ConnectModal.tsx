@@ -173,7 +173,7 @@ export default function ConnectModal({ trigger }: { trigger: React.ReactNode }) 
                                                         </div>
 
                                                         <div className="ml-5 sm:ml-6 md:ml-8 flex-1 relative z-10">
-                                                            <h3 className="text-lg sm:text-xl md:text-2xl font-bold tracking-tight text-foreground transition-colors">{contact.label}</h3>
+                                                            <h3 className="text-lg md:text-2xl font-bold tracking-tight text-foreground transition-colors">{contact.label}</h3>
                                                             <p className="text-xs sm:text-sm md:text-base text-muted-foreground transition-colors mt-0.5 font-medium line-clamp-1">
                                                                 {contact.value}
                                                             </p>

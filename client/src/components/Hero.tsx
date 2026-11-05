@@ -82,9 +82,9 @@ export default function Hero() {
             className="text-5xl sm:text-6xl lg:text-7xl font-heading font-bold mb-6 tracking-tight"
             data-testid="text-hero-title"
           >
-            <span className="block text-2xl sm:text-3xl mb-2 text-muted-foreground font-normal">
+            <span className="block text-xl sm:text-2xl mb-2 text-muted-foreground font-normal">
               Hello, I'm <GlitchText text={name} className="font-bold text-foreground" />
-              <span className="block text-xl sm:text-2xl mt-1 text-muted-foreground/80 font-normal">AI/ML Engineer</span>
+              <span className="block text-base sm:text-lg mt-1 text-muted-foreground/80 font-normal">AI/ML Engineer</span>
             </span>
             Building the Future with
             <span className="block mt-2 text-primary h-[1.2em]">
@@ -119,7 +119,7 @@ export default function Hero() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.5 }}
-            className="text-lg sm:text-xl text-muted-foreground max-w-3xl mx-auto mb-12 leading-relaxed"
+            className="text-base sm:text-lg text-muted-foreground max-w-3xl mx-auto mb-12 leading-relaxed"
             data-testid="text-hero-description"
           >
             {tagline}
