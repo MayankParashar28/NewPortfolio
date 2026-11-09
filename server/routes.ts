@@ -66,16 +66,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.set("Cache-Control", "public, max-age=0, s-maxage=60, stale-while-revalidate=300");
   };
 
-  // Uploads. The admin panel sends a compressed data URL and gets back a CDN
-  // URL to store, so images and PDFs never end up inlined in a database row.
+  // Uploads. The admin panel sends a compressed data URL and gets back a URL
+  // to store. Blob is the good outcome: the bytes go to a CDN and the database
+  // row holds a short link.
+  //
+  // Blob can be absent or misconfigured, though -- an unset token, or a token
+  // pointing at a store that no longer exists. That used to fail the whole
+  // request, which left the admin panel unable to add an image at all. Saving
+  // the image inline is worse than Blob but far better than not saving it, so
+  // that is the fallback, and the response says which path was taken.
+  const INLINE_LIMIT_BYTES = 2 * 1024 * 1024;
+
   app.post("/api/upload", isAuthenticated, async (req, res) => {
     try {
-      if (!isBlobConfigured()) {
-        return res.status(503).json({
-          message: "Blob storage is not configured. Set BLOB_READ_WRITE_TOKEN.",
-        });
-      }
-
       const { dataUrl, filename } = req.body ?? {};
       if (typeof dataUrl !== "string") {
         return res.status(400).json({ message: "dataUrl is required" });
@@ -89,13 +92,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(415).json({ message: "Only images and PDFs can be uploaded" });
       }
 
-      const name = safeName(typeof filename === "string" ? filename : "upload");
-      const url = await putBlob(
-        `portfolio/${name}.${extensionFor(parsed.contentType)}`,
-        parsed.bytes,
-        parsed.contentType,
-      );
-      res.status(201).json({ url });
+      if (isBlobConfigured()) {
+        try {
+          const name = safeName(typeof filename === "string" ? filename : "upload");
+          const url = await putBlob(
+            `portfolio/${name}.${extensionFor(parsed.contentType)}`,
+            parsed.bytes,
+            parsed.contentType,
+          );
+          return res.status(201).json({ url, storage: "blob" });
+        } catch (error: any) {
+          // Fall through to inline. Logged, because a portfolio quietly
+          // filling the database with base64 again is worth knowing about.
+          console.error("Blob upload failed, storing inline instead:", error?.message || error);
+        }
+      }
+
+      if (parsed.bytes.length > INLINE_LIMIT_BYTES) {
+        return res.status(503).json({
+          message:
+            `Blob storage is unavailable and this file is ${Math.round(parsed.bytes.length / 1024)} KB, ` +
+            `over the ${INLINE_LIMIT_BYTES / 1024 / 1024} MB inline limit. Connect a Blob store in Vercel, or use a smaller image.`,
+        });
+      }
+
+      res.status(201).json({ url: dataUrl, storage: "inline" });
     } catch (error: any) {
       console.error("Upload failed:", error);
       res.status(500).json({ message: error.message || "Upload failed" });
